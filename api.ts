@@ -1,99 +1,141 @@
-import express from 'express';
+// src/index.ts
+
+import express, { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import User from './models/User'; 
+import User from './models/User';  // your mongoose model
 
-mongoose.connect('mongodb://localhost:27017/myapp')
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
+// load .env into process.env
+dotenv.config();
+
+// constants
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/myapp';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('ERROR: Missing JWT_SECRET in environment');
+  process.exit(1);
+}
+
+// connect to MongoDB
+mongoose
+  .connect(MONGO_URI)
+  .then(() => console.log('✅ MongoDB connected'))
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1);
+  });
 
 const app = express();
 
-dotenv.config()
-const PORT = process.env.PORT || 3000;
-
 app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  }));
-
+  origin: '*',
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization']
+}));
 app.use(express.json());
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
-app.post('/register', async (req, res) => {
-  const { username, password, confirm_password, email } = req.body;
-  try {
-    if (password !== confirm_password) {
-      return res.status(400).json({ message: 'Passwords do not match' });    
-    }
-    
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const checkUsername = User.findOne({ username });
-    if (checkUsername != null) {
-        return res.status(400).json({ message: 'Account witht the same username already exists' });
-    }
-
-    const checkEmail = User.findOne({ email });
-    if (checkEmail != null) {
-        return res.status(400).json({ message: 'Account with the same email already exists' });
-    }
-
-    const newUser = new User({ id: Date.now(), username, password: hashedPassword });
-    await newUser.save();
-
-    
-    res.status(201).json({ message: 'User registered successfully'});
-  }
-  catch (error) {
-    return res.status(500).json({ error : error.message });
-}
-});
-
-app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+/**
+ * POST /register
+ */
+app.post(
+  '/register',
+  async (req: Request, res: Response): Promise<void> => {
     try {
-        if (!username || !password) {
-            return res.status(400).json({ message: 'Username and password are required' });
-        }
-        
-        const user: InstanceType<typeof User> | null = await User.findOne({ username });
+      const { username, password, confirm_password, email } = req.body;
 
-        if (!user) {
-            return res.status(401).json({ message: 'Invalid username' });
-        }
-        
-        const match = await bcrypt.compare(password, user.password);
-        if (!match) {
-            return res.status(401).json({ message: 'Invalid password' });
-        }
+      // basic validation
+      if (!username || !password || !confirm_password || !email) {
+        res.status(400).json({ message: 'All fields are required' });
+        return;
+      }
+      if (password !== confirm_password) {
+        res.status(400).json({ message: 'Passwords do not match' });
+        return;
+      }
 
-        const token = jwt.sign({ id: user.id }, 'secret', { expiresIn: '1h' });
-        
+      // check duplicates
+      const existingUser  = await User.findOne({ username });
+      if (existingUser) {
+        res.status(400).json({ message: 'Username already taken' });
+        return;
+      }
+      const existingEmail = await User.findOne({ email });
+      if (existingEmail) {
+        res.status(400).json({ message: 'Email already registered' });
+        return;
+      }
 
-        return res.status(200).json({ message: 'Login successful', token });
+      // hash & save
+      const hashed = await bcrypt.hash(password, 10);
+      const newUser = new User({ 
+        id: Date.now(), 
+        username, 
+        email, 
+        password: hashed 
+      });
+      await newUser.save();
 
-        }
-    catch (error) {
-        return res.status(500).json({ error : error.message });
+      res.status(201).json({ message: 'User registered successfully' });
+      return;
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: err.message });
+      return;
     }
-    
-    });
+  }
+);
 
+/**
+ * POST /login
+ */
+app.post(
+  '/login',
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { username, password } = req.body;
 
+      // basic validation
+      if (!username || !password) {
+        res.status(400).json({ message: 'Username and password are required' });
+        return;
+      }
 
+      // find user
+      const user = await User.findOne({ username });
+      if (!user) {
+        res.status(401).json({ message: 'Invalid username or password' });
+        return;
+      }
 
+      // check password
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
+        res.status(401).json({ message: 'Invalid username or password' });
+        return;
+      }
 
+      // sign JWT
+      const token = jwt.sign(
+        { id: user.id, username: user.username },
+        JWT_SECRET,
+        { expiresIn: '1h' }
+      );
 
+      res.status(200).json({ message: 'Login successful', token });
+      return;
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: err.message });
+      return;
+    }
+  }
+);
 
+// start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
