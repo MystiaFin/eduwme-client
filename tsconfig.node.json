@@ -1,24 +1,26 @@
 {
   "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
-    "target": "ES2022",
-    "lib": ["ES2023"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-    
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "noEmit": true,
+    // --- Core Node.js ESM Settings ---
+    "target": "ES2022",                 // Target modern Node.js (v22 supports this well)
+    "module": "NodeNext",               // Use Node.js's native ES module system
+    "moduleResolution": "NodeNext",     // How modules are found, matching the 'module' setting
+    "outDir": "./dist-server",          // **Emit JS files** to a separate directory for the server
+    "esModuleInterop": true,            // Allows cleaner imports from CommonJS modules
+    "strict": true,                     // Enable strict type-checking
 
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    // --- Project References & Build ---
+    "composite": true,                  // Enable project references build features
+    "sourceMap": true,                  // Generate source maps for easier debugging
+    "declaration": true,                // Optionally generate .d.ts files (good practice)
+    "declarationMap": true,             // Generate source maps for .d.ts files
+
+    // --- Other Settings ---
+    "skipLibCheck": true,               // Skip type checking of declaration files (faster builds)
+    "forceConsistentCasingInFileNames": true, // Prevent case-related import issues
+
   },
-  "include": ["vite.config.ts"]
+  // **Include your backend source files**
+  "include": ["api.ts", "models/**/*.ts"],
+  // Exclude node_modules and frontend source
+  "exclude": ["node_modules", "src", "dist"]
 }
