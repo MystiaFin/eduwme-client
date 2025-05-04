@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Import useEffect
 import { useNavigate, useLocation } from 'react-router-dom';
 import Register from '../component/register.tsx';
 import Login from '../component/login.tsx';
@@ -7,6 +7,17 @@ const AuthLayout = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isLogin, setIsLogin] = useState(location.pathname === '/login');
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            navigate('/dashboard', { replace: true });
+        }
+        else {
+            navigate('/login', { replace: true });
+        }
+
+    }, [navigate]);
 
     const toggleForm = () => {
         setIsLogin(!isLogin);
@@ -22,7 +33,7 @@ const AuthLayout = () => {
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-600">
                         {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
-                        <button 
+                        <button
                             onClick={toggleForm}
                             className="font-medium text-indigo-600 hover:text-indigo-500"
                         >
@@ -30,7 +41,7 @@ const AuthLayout = () => {
                         </button>
                     </p>
                 </div>
-                
+
                 {isLogin ? <Login /> : <Register />}
             </div>
         </div>
