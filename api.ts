@@ -69,7 +69,6 @@ app.post(
       // hash & save
       const hashed = await bcrypt.hash(password, 10);
       const newUser = new User({ 
-        id: Date.now(), 
         username, 
         email, 
         password: hashed 
