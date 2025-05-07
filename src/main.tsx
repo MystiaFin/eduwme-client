@@ -1,15 +1,13 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-// Correct the import path for react-router-dom
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./index.css";
 import AuthLayout from "./pages/auth-layout.tsx";
-// Import the Home component
 import Home from "./component/home.tsx";
 import ProtectedRoute from "./component/protectedRoute.tsx";
 import CourseDetail from "./component/courseDetail.tsx";
-// Import the simplified layout if needed for other routes
-// import SharedLayout from "./pages/layout.tsx";
+import LeaderboardPage from "./pages/leaderboard.tsx";
+
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -25,10 +23,9 @@ createRoot(document.getElementById("root")!).render(
           {/* Routes nested inside will only be accessible if token exists */}
           <Route path="/dashboard" element={<Home />} />
           <Route path="/profile" element={<Home />} />
-          <Route path="/leaderboard" element={<Home />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/shop" element={<Home />} />
           <Route path="/course/:courseId" element={<CourseDetail />} />
-          {/* Add any other routes that require login here */}
         </Route>
         {/* --- End Protected Routes --- */}
 

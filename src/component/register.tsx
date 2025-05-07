@@ -64,7 +64,7 @@ const Register = () => {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('/register', {
+      const response = await fetch('http://localhost:3000/register', { // Changed to absolute URL
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,6 +73,7 @@ const Register = () => {
           username: formData.username,
           email: formData.email,
           password: formData.password,
+          confirm_password: formData.confirmPassword,
         }),
       });
       
