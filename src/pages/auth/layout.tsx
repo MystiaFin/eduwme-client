@@ -10,7 +10,7 @@ const AuthLayout = () => {
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
-    navigate(isLogin ? "/auth" : "/login");
+    navigate(isLogin ? "/register" : "/login");
   };
 
   return (
