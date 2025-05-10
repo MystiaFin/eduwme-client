@@ -12,10 +12,15 @@ import User from './models/User.js';  // your mongoose model
 dotenv.config();
 
 // constants
-const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/myapp';
-const JWT_SECRET = process.env.JWT_SECRET;
 
+// fill in the MongdoDB URI '' with your own values if needed
+
+// fill in the JWT secret with your own value if needed
+
+// when deployed, these values will be set by the host env
+const PORT: number = process.env.PORT ? Number(process.env.PORT) : 3000;
+const MONGO_URI: undefined | string = process.env.MONGO_URI || '';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // connect to MongoDB
 mongoose
@@ -119,7 +124,8 @@ app.post(
       const token = jwt.sign(
         { id: user.id, username: user.username },
         JWT_SECRET || 'default_secret',
-        { expiresIn: '1h' }
+        // set the expiration time to 1 hour (adjust if needed)
+        { expiresIn: '1h'  }
       );
 
       res.status(200).json({ message: 'Login successful', token });
