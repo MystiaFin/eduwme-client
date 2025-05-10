@@ -20,8 +20,22 @@ dotenv.config();
 // when deployed, these values will be set by the host env
 const PORT: number = process.env.PORT ? Number(process.env.PORT) : 3000;
 const MONGO_URI: undefined | string = process.env.MONGO_URI || "";
-const JWT_SECRET = process.env.JWT_SECRET;
-const EXPIRATION_TIME = process.env.EXPIRATION_TIME;
+const JWT_SECRET: string = process.env.JWT_SECRET;
+const EXPIRATION_TIME: string = process.env.EXPIRATION_TIME;
+
+// .env variables checking
+const requiredEnv = {
+  MONGO_URI,
+  JWT_SECRET,
+  EXPIRATION_TIME,
+};
+
+for (const [key, value] of Object.entries(requiredEnv)) {
+  if (!value) {
+    console.error(` ${key} is not set`);
+    process.exit(1);
+  }
+}
 
 // connect to MongoDB
 mongoose
