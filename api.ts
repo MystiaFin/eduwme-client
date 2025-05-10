@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import User from './models/User';  // your mongoose model
+import User from './models/User.js';  // your mongoose model
 
 // load .env into process.env
 dotenv.config();
@@ -15,10 +15,7 @@ dotenv.config();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/myapp';
 const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  console.error('ERROR: Missing JWT_SECRET in environment');
-  process.exit(1);
-}
+
 
 // connect to MongoDB
 mongoose
@@ -72,7 +69,6 @@ app.post(
       // hash & save
       const hashed = await bcrypt.hash(password, 10);
       const newUser = new User({ 
-        id: Date.now(), 
         username, 
         email, 
         password: hashed 
@@ -83,7 +79,8 @@ app.post(
       return;
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: err.message });
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      res.status(500).json({ error: message });
       return;
     }
   }
@@ -121,15 +118,16 @@ app.post(
       // sign JWT
       const token = jwt.sign(
         { id: user.id, username: user.username },
-        JWT_SECRET,
+        JWT_SECRET || 'default_secret',
         { expiresIn: '1h' }
       );
 
       res.status(200).json({ message: 'Login successful', token });
       return;
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: err.message });
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
       return;
     }
   }

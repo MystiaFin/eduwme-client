@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router";
 import "./index.css";
+import AuthLayout from "./pages/auth-layout.tsx";
 import App from "./App.tsx";
 
 // Layout Import
@@ -22,6 +23,8 @@ createRoot(document.getElementById("root")!).render(
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
+        <Route path="/auth" element={<AuthLayout />} />
+        <Route path="/login" element={<AuthLayout />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
