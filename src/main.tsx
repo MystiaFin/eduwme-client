@@ -2,16 +2,20 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router";
 import "./index.css";
-import AuthLayout from "./pages/auth-layout.tsx";
 import App from "./App.tsx";
 
 // Layout Import
 import MainLayout from "./pages/layout.tsx";
+import AuthLayout from "./pages/auth/layout.tsx";
 
 // Page Import
 import HomePage from "./pages/Home.tsx";
 import LeaderboardPage from "./pages/Leaderboard.tsx";
 import ProfilePage from "./pages/Profile.tsx";
+
+// Auth Pages Import
+import Register from "./pages/auth/register.tsx";
+import Login from "./pages/auth/login.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -23,8 +27,10 @@ createRoot(document.getElementById("root")!).render(
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
-        <Route path="/auth" element={<AuthLayout />} />
-        <Route path="/login" element={<AuthLayout />} />
+        <Route element={<AuthLayout />}>
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   </StrictMode>,

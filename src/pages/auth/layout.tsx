@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router";
-import Register from "../component/register.tsx";
-import Login from "../component/login.tsx";
+import Register from "./register.tsx";
+import Login from "./login.tsx";
 
 const AuthLayout = () => {
   const navigate = useNavigate();
@@ -38,4 +38,3 @@ const AuthLayout = () => {
 };
 
 export default AuthLayout;
-
