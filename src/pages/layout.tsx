@@ -1,9 +1,15 @@
-import React from 'react'
+import TopNavbar from "../components/topnav";
+import BottomNavbar from "../components/bottomnav";
+import { Outlet } from "react-router";
 
-const HomeLayout = () => {
+const MainLayout = () => {
   return (
-    <div>HomeLayout</div>
-  )
-}
+    <div className="h-screen">
+      <TopNavbar />
+      <Outlet />
+      <BottomNavbar />
+    </div>
+  );
+};
 
-export default HomeLayout
+export default MainLayout;
