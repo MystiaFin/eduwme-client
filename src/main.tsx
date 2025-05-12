@@ -1,0 +1,44 @@
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import "./index.css";
+import App from "./App.tsx";
+
+// Layout Import
+import MainLayout from "./pages/layout.tsx";
+import AuthLayout from "./pages/auth/layout.tsx";
+
+// Page Import
+import LandingPage from "./pages/Landing.tsx";
+import HomePage from "./pages/Home.tsx";
+import LeaderboardPage from "./pages/Leaderboard.tsx";
+import ProfilePage from "./pages/Profile.tsx";
+
+// Auth Pages Import
+import Register from "./pages/auth/register.tsx";
+import Login from "./pages/auth/login.tsx";
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <BrowserRouter>
+      <Routes>
+        {/* Tanpa layout, standalone */}
+        <Route path="/" element={<App />} />
+        <Route path="/landing" element={<LandingPage />} />
+
+        {/* Dengan layout utama */}
+        <Route element={<MainLayout />}>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
+
+        {/* Dengan layout auth */}
+        <Route element={<AuthLayout />}>
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  </StrictMode>
+);
