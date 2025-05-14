@@ -1,12 +1,14 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./index.css";
-import AuthLayout from "./pages/auth-layout.tsx";
-import Home from "./component/home.tsx";
-import ProtectedRoute from "./component/protectedRoute.tsx";
-import CourseDetail from "./component/courseDetail.tsx";
+import AuthLayout from "./pages/auth/auth-layout.tsx";
+import Home from "./pages/home.tsx";
+import ProtectedRoute from "./pages/protectedRoute.tsx";
+import CourseDetail from "./pages/courseDetail.tsx";
 import LeaderboardPage from "./pages/leaderboard.tsx";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import Login from "./pages/auth/login.tsx";
+import Register from "./pages/auth/register.tsx";
 
 
 createRoot(document.getElementById("root")!).render(
@@ -14,8 +16,10 @@ createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <Routes>
         {/* Authentication Routes */}
-        <Route path="/auth" element={<AuthLayout />} />
-        <Route path="/login" element={<AuthLayout />} />
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Route>
 
           {/* --- Protected Routes --- */}
         {/* Use ProtectedRoute as a layout route */}

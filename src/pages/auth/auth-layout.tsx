@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'; // Import useEffect
-import { useNavigate, useLocation } from 'react-router-dom';
-import Register from '../component/register.tsx';
-import Login from '../component/login.tsx';
+import Register from './register.tsx';
+import Login from './login.tsx';
+import { useNavigate, useLocation } from 'react-router';
 
 const AuthLayout = () => {
     const navigate = useNavigate();
@@ -21,12 +21,16 @@ const AuthLayout = () => {
 
     const toggleForm = () => {
         setIsLogin(!isLogin);
-        navigate(isLogin ? '/auth' : '/login');
+        navigate(isLogin ? '/register' : '/login');
     };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            
             <div className="max-w-md w-full space-y-8">
+                <div className="flex justify-center mb-6"> 
+                    <img className="h-{50px} w-auto" src="./src/assets/GogoMathLogo.png" alt="GogoMath" />
+                </div>
                 <div>
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
                         {isLogin ? 'Sign in to your account' : 'Create your account'}

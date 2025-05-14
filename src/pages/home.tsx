@@ -36,9 +36,16 @@ const Home = () => {
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen">
-      {/* Sidebar/Navigation (Duolingo Style) */}
+      {/* Sidebar/Navigation (Duolingo style)*/}
+
+      
       <nav className="w-full lg:w-64 bg-white border-r border-gray-200 p-4 flex flex-col items-center lg:items-start">
-        <div className="text-2xl font-bold text-green-500 mb-8">EduWMe</div>
+        <div className="flex items-center flex-row mb-6 ml-3">
+          <img src="./src/assets/GogoMathLogo.png" alt="GogoMath" className="h-10 w-auto mt-3" />
+          <span className="text-xl font-bold text-red-600 ml-2">Gogo</span>
+          <span className="text-xl font-bold text-yellow-400">Math</span>
+        </div>
+      
         {/* --- Start of restored nav links --- */}
         <ul className="space-y-4 w-full">
           <li>
@@ -89,7 +96,9 @@ const Home = () => {
         </div>
 
        {/* Course/Skill Tree - 3 Column Grid */}
-       <h1 className="text-2xl font-bold text-gray-800 mb-6">Your Learning Path</h1>
+       <div className="flex items-center mb-4">
+            <h1 className="text-2xl font-bold text-gray-800 mb-6">Learning Courses</h1>
+       </div>
         {/* Use Tailwind Grid */}
         <div className="grid grid-cols-3 gap-x-8 gap-y-12 justify-items-center">
           {sampleCourses.map((course) => (

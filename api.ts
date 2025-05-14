@@ -12,9 +12,11 @@ import User from './models/User.js';  // your mongoose model
 dotenv.config();
 
 // constants
-const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/myapp';
+const PORT: number = process.env.PORT ? Number(process.env.PORT) : 3000;
+const MONGO_URI: string | undefined = process.env.MONGO_URI || 'mongodb://localhost:27017/myapp';
 const JWT_SECRET = process.env.JWT_SECRET;
+
+const EXPIRATION_TIME: string = process.env.EXPIRATION_TIME || '1h'; // default to 1 hour
 
 
 // connect to MongoDB
