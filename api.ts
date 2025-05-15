@@ -1,10 +1,10 @@
 // src/index.ts
 
-import express, { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 import cors from "cors";
+import dotenv from "dotenv";
+import express, { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import User from "./models/User.js"; // your mongoose model
 
@@ -151,6 +151,45 @@ app.post("/login", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 });
+
+app.put("/update", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { username, email, password, confirm_password } = req.body;
+
+    if (!username) {
+      res.status(400).json({ message: "Username is required" });
+      return;
+    }
+
+    if (!email && !password) {
+      res.status(400).json({ message: "Email or password must be provided" });
+      return;
+    }
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    if (password) {
+      if (!confirm_password || password !== confirm_password) {
+        res.status(400).json({ message: "Passwords do not match or missing" });
+        return;
+      }
+
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    await user.save();
+    res.status(200).json({ message: "User updated successfully", user });
+  } catch (err) {
+    console.error(err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
+  }
+});
+
 
 // start server
 app.listen(PORT, () => {
