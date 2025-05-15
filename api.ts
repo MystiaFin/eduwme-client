@@ -152,6 +152,8 @@ app.post("/login", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+//PUT
+//Update User
 app.put("/update", async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, email, password, confirm_password } = req.body;
@@ -183,6 +185,24 @@ app.put("/update", async (req: Request, res: Response): Promise<void> => {
 
     await user.save();
     res.status(200).json({ message: "User updated successfully", user });
+  } catch (err) {
+    console.error(err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
+  }
+});
+
+app.delete("/delete/:id", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const deletedUser = await User.findByIdAndDelete(id);
+    if (!deletedUser) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json({ message: "User deleted successfully", user: deletedUser });
   } catch (err) {
     console.error(err);
     const message = err instanceof Error ? err.message : "Unknown error";
