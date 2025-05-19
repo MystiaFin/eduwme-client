@@ -1,1 +1,5 @@
 @import "tailwindcss";
+
+@theme {
+  --color-confirm-blue: #303442;
+}

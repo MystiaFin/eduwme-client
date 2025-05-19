@@ -32,7 +32,7 @@ const requiredEnv = {
 
 for (const [key, value] of Object.entries(requiredEnv)) {
   if (!value) {
-    console.error(` ${key} is not set`);
+    console.error(`${key} is not set`);
     process.exit(1);
   }
 }

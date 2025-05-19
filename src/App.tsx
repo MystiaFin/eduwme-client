@@ -1,12 +1,18 @@
 import "./App.css";
+import MainLogo from "@src/assets/logo.svg";
+
+const buttonStyle: string = "bg-confirm-blue text-white p-2 rounded-full";
 
 function App() {
   return (
-    <div className="text-xl">
-      this is a dummy page
-      <br />
-      <span>edit this page for landing</span>
-    </div>
+    <main>
+      <h2>Welcome to</h2>
+      <h1>
+        EduWMe <br /> Project
+      </h1>
+      <img src={MainLogo} alt="EduWMe Logo" />
+      <button className={buttonStyle}>Get Started</button>
+    </main>
   );
 }
 

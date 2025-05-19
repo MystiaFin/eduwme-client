@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "server": "nodemon --exec vite-node api.ts"
+    "server": "nodemon --exec vite-node api.ts",
+    "host": "vite --host"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.4",
