@@ -13,3 +13,22 @@ React + Vite + Typescript project
 ```
 npm run server
 ```
+
+# Frontend local hosting
+
+1. Open the terminal and run:
+
+```bash
+npm install
+```
+2. Run the following command to start the development server:
+
+```bash
+npm run dev
+```
+or you can use
+
+```bash
+npm run host
+```
+3. Open your browser and navigate to `http://localhost:5173` or `http://192.168.x.x:5173` to see the application running.
