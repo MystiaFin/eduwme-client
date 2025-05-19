@@ -2,4 +2,9 @@
 
 @theme {
   --color-confirm-blue: #303442;
+  --color-header-blue: #444444;
+}
+
+.text-stroke {
+  -webkit-text-stroke: 1px white;
 }

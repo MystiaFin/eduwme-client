@@ -5,6 +5,7 @@ import "./index.css";
 import App from "./App.tsx";
 
 // Layout Import
+import RootLayout from "./rootlayout.tsx";
 import MainLayout from "./pages/layout.tsx";
 import AuthLayout from "./pages/auth/layout.tsx";
 
@@ -22,23 +23,24 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        {/* Tanpa layout, standalone */}
-        <Route path="/" element={<App />} />
-        <Route path="/landing" element={<LandingPage />} />
+        <Route element={<RootLayout />}>
+          {/* Tanpa layout, standalone */}
+          <Route path="/" element={<App />} />
 
-        {/* Dengan layout utama */}
-        <Route element={<MainLayout />}>
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-        </Route>
+          {/* Dengan layout utama */}
+          <Route element={<MainLayout />}>
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+          </Route>
 
-        {/* Dengan layout auth */}
-        <Route element={<AuthLayout />}>
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
+          {/* Dengan layout auth */}
+          <Route element={<AuthLayout />}>
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>
-  </StrictMode>
+  </StrictMode>,
 );
