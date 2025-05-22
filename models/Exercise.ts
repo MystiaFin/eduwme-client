@@ -10,7 +10,8 @@ const exerciseSchema = new mongoose.Schema({
   animType: { type: String, required: true },
   type: { type: String, required: true },
   question: { type: String, required: true },
-  answer: { type: [String], required: true },
+  options: { type: [String], required: true },
+  answer: { type: String, required: true }
 });
 
 const Exercise = mongoose.model('Exercise', exerciseSchema);

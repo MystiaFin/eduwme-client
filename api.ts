@@ -1038,6 +1038,7 @@ app.post(
       animType,
       type,
       question,
+      options,
       answer
     } = validatedData;
 
@@ -1077,6 +1078,7 @@ app.post(
       animType,
       type,
       question,
+      options,
       answer
     });
 
@@ -1153,7 +1155,8 @@ app.get(
       animType: string; 
       type: string; 
       question: string; 
-      answer: string[];
+      options: string[];
+      answer: string;
     }
     
     const exerciseList: ExerciseItem[] = [];
@@ -1169,6 +1172,7 @@ app.get(
         animType: exercise.animType,
         type: exercise.type,
         question: exercise.question,
+        options: exercise.options,
         answer: exercise.answer
       });
     });
@@ -1246,6 +1250,7 @@ app.put(
       animType,
       type,
       question,
+      options,
       answer
     } = validatedData;
 
@@ -1284,6 +1289,7 @@ app.put(
     exercise.animType = animType;
     exercise.type = type;
     exercise.question = question;
+    exercise.options = options;
     exercise.answer = answer;
     await exercise.save();
     res.status(200).json({ message: 'Exercise updated successfully', exercise });

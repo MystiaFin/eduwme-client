@@ -10,7 +10,8 @@ export const createExerciseSchema = z.object({
     animType: z.string().min(1), 
     type: z.string().min(1), 
     question: z.string().min(1), 
-    answer: z.array(z.string()).min(1) 
+    options: z.array(z.string()).min(1),
+    answer: z.string().min(1)
 });
 
 export const updateExerciseSchema = z.object({
@@ -22,6 +23,7 @@ export const updateExerciseSchema = z.object({
     difficultyLevel: z.number().int().positive(), 
     animType: z.string().min(1), 
     type: z.string().min(1), 
-    question: z.string().min(1), 
-    answer: z.array(z.string()).min(1) 
+    question: z.string().min(1),
+    options: z.array(z.string()).min(1),
+    answer: z.string().min(1)
 }); 
