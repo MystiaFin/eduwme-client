@@ -1,78 +1,79 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate } from "react-router";
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    username: '',
-    password: ''
+    username: "",
+    password: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
-  
+  const [submitError, setSubmitError] = useState("");
+
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors({ ...errors, [name]: '' });
+      setErrors({ ...errors, [name]: "" });
     }
   };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.username.trim()) {
-      newErrors.username = 'Username is required';
+      newErrors.username = "Username is required";
     }
-    
+
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitError('');
-    
+    setSubmitError("");
+
     if (!validateForm()) return;
-    
+
     setIsSubmitting(true);
-    
+
     try {
-      const response = await fetch('http://localhost:3000/login', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           username: formData.username,
           password: formData.password,
         }),
       });
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+        throw new Error(data.message || "Login failed");
       }
-      
+
       // Store JWT token in localStorage
       if (data.token) {
-        localStorage.setItem('token', data.token);
+        localStorage.setItem("token", data.token);
       }
-      
+
       // Redirect to dashboard or home page
-      navigate('/dashboard');
-      
+      navigate("/dashboard");
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'An unknown error occurred');
+      setSubmitError(
+        error instanceof Error ? error.message : "An unknown error occurred",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -92,7 +93,7 @@ const Login = () => {
             autoComplete="username"
             required
             className={`appearance-none relative block w-full px-3 py-2 border ${
-              errors.username ? 'border-red-300' : 'border-gray-300'
+              errors.username ? "border-red-300" : "border-gray-300"
             } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
             placeholder="Username"
             value={formData.username}
@@ -102,7 +103,7 @@ const Login = () => {
             <p className="mt-1 text-sm text-red-600">{errors.username}</p>
           )}
         </div>
-        
+
         <div>
           <label htmlFor="password" className="sr-only">
             Password
@@ -114,7 +115,7 @@ const Login = () => {
             autoComplete="current-password"
             required
             className={`appearance-none relative block w-full px-3 py-2 border ${
-              errors.password ? 'border-red-300' : 'border-gray-300'
+              errors.password ? "border-red-300" : "border-gray-300"
             } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
             placeholder="Password"
             value={formData.password}
@@ -134,13 +135,19 @@ const Login = () => {
             type="checkbox"
             className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
           />
-          <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+          <label
+            htmlFor="remember-me"
+            className="ml-2 block text-sm text-gray-900"
+          >
             Remember me
           </label>
         </div>
 
         <div className="text-sm">
-          <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
+          <a
+            href="#"
+            className="font-medium text-indigo-600 hover:text-indigo-500"
+          >
             Forgot your password?
           </a>
         </div>
@@ -157,12 +164,12 @@ const Login = () => {
           type="submit"
           disabled={isSubmitting}
           className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-            isSubmitting 
-              ? 'bg-indigo-400 cursor-not-allowed' 
-              : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+            isSubmitting
+              ? "bg-indigo-400 cursor-not-allowed"
+              : "bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           }`}
         >
-          {isSubmitting ? 'Signing in...' : 'Sign in'}
+          {isSubmitting ? "Signing in..." : "Sign in"}
         </button>
       </div>
     </form>
@@ -170,4 +177,3 @@ const Login = () => {
 };
 
 export default Login;
-
