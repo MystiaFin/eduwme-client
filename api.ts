@@ -4,14 +4,21 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import mongoose from 'mongoose';
+import { ZodError } from 'zod';
 
 import User from './models/User.js';  
 import Course from './models/Course.js';
 import Exercise from './models/Exercise.js';
+import CourseBatch from './models/CourseBatch.js';
+
+import verifyTokenMiddleware from './middleware.js';
 
 import { registerSchema, loginSchema } from './validators/auth.validators.js';
-import { courseBatchSchema } from './validators/courseBatch.validators.js';
-import { courseSchema } from './validators/course.validators.js';
+import { courseBatchSchema, courseBatchUpdateSchema } from './validators/courseBatch.validators.js';
+import { courseSchema, courseUpdateSchema } from './validators/course.validators.js';
+import { completeSchema } from './validators/progress.validators.js';
+import { createExerciseSchema, updateExerciseSchema } from './validators/exercise.validators.js';
+
 
 // load .env into process.env
 dotenv.config();
@@ -19,7 +26,7 @@ dotenv.config();
 // constants
 const PORT: number = process.env.PORT ? Number(process.env.PORT) : 3000;
 const MONGO_URI: string | undefined = process.env.MONGO_URI || 'mongodb://localhost:27017/myapp';
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET: string | undefined = process.env.JWT_SECRET;
 
 const EXPIRATION_TIME: string = process.env.EXPIRATION_TIME || '1h'; // default to 1 hour
 
@@ -40,6 +47,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type','Authorization']
 }));
 app.use(express.json());
+
+
 
 /**
  * POST /register
@@ -74,12 +83,14 @@ app.post(
         return;
       }
 
+ 
       // hash & save
       const hashed = await bcrypt.hash(password, 10);
       const newUser = new User({ 
         username, 
         email, 
-        password: hashed 
+        password: hashed,
+        courseBatchesProgress: [] 
       });
       await newUser.save();
 
@@ -143,36 +154,306 @@ app.post(
   }
 );
 
+
 /**
- * GET /verifyToken
+ * POST /complete/:userId/:courseBatchId/:courseId/:exerciseId
  */
-app.get(
-  '/verifyToken',
+app.post(
+  '/complete/:userId/:courseBatchId/:courseId/:exerciseId', 
+  verifyTokenMiddleware, 
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const token = req.headers['authorization']?.split(' ')[1];
-
-      if (!token) {
-        res.status(401).json({ message: 'Token is required' });
+      // validate request body with zod
+      const validatedData = completeSchema.parse(req.params);
+      const {userId, courseBatchId, courseId, exerciseId} = validatedData;
+      
+      // Find the user first - we'll need the complete document
+      const user = await User.findById(userId);
+      if (!user) {
+        res.status(404).json({ message: 'User not found' });
+        return;
+      }
+      
+      // Verify that all referenced entities exist
+      const courseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
+      if (!courseBatch) {
+        res.status(404).json({ message: 'Course batch not found' });
         return;
       }
 
-      jwt.verify(token, JWT_SECRET || 'default_secret', (err, decoded) => {
-        if (err) {
-          res.status(401).json({ message: 'Invalid token' });
-          return;
-        }
-        res.status(200).json({ message: 'Token is valid', decoded });
+      const course = await Course.findOne({ courseId: courseId });
+      if (!course) {
+        res.status(404).json({ message: 'Course not found' });
         return;
+      }
+      
+      const exercise = await Exercise.findOne({ exerciseId: exerciseId });
+      if (!exercise) {
+        res.status(404).json({ message: 'Exercise not found' });
+        return;
+      }
+
+      // Find if the batch exists in user's progress
+      const batchIndex = user.courseBatchesProgress.findIndex(
+        (batch) => batch.courseBatchId === courseBatchId
+      );
+      const batchExists = batchIndex !== -1;
+      
+      // Find if the course exists within the specific batch
+      let courseExists = false;
+      let courseIndex = -1;
+      if (batchExists) {
+        courseIndex = user.courseBatchesProgress[batchIndex].courses.findIndex(
+          (c) => c.courseId === courseId
+        );
+        courseExists = courseIndex !== -1;
+      }
+      
+      // Find if the exercise exists within the specific course in the specific batch
+      let exerciseExists = false;
+      let exerciseIndex = -1;
+      let alreadyCompleted = false;
+      if (courseExists) {
+        exerciseIndex = user.courseBatchesProgress[batchIndex].courses[courseIndex].exercises.findIndex(
+          (e) => e.exerciseId === exerciseId
+        );
+        exerciseExists = exerciseIndex !== -1;
+        
+        // Check if already completed
+        if (exerciseExists) {
+          const exerciseStatus = user.courseBatchesProgress[batchIndex].courses[courseIndex].exercises[exerciseIndex].status;
+          alreadyCompleted = exerciseStatus === 'completed';
+        }
+      }
+
+      // Calculate XP based on difficulty (only if not already completed)
+      let awardedXp = 0;
+      if (!alreadyCompleted) {
+        // Award XP based on difficulty level
+        awardedXp = exercise.difficultyLevel * 10; // Base formula - adjust as needed
+        
+        // Add XP to user
+        user.xp = (user.xp || 0) + awardedXp;
+        
+        // Check if user should level up (simple formula: level = 1 + floor(xp/100))
+        const newLevel = Math.floor(1 + (user.xp / 100));
+        if (newLevel > user.level) {
+          user.level = newLevel;
+        }
+      }
+
+      // Define objects as before
+      const exercises = {
+        exerciseId: exerciseId,
+        status: 'completed',
+        score: 0,
+        lastAttempted: new Date()
+      }
+
+      const fullBeginnerBatchProgress = {
+        courseBatchId: courseBatchId,
+        status: 'in_progress',
+        completedCoursesCount: 0,
+        totalCoursesInBatch: courseBatch.courseList.length, 
+        courses: [
+          {
+            courseId: courseId,
+            status: 'in_progress',
+            completedExercisesCount: 1, // Set to 1 since this exercise is completed
+            totalExercisesInCourse: course.exerciseBatchList.length,
+            exercises: [
+              {
+                exerciseId: exerciseId,
+                status: 'completed',
+                score: 0,
+                lastAttempted: new Date()
+              }
+            ]
+          }
+        ]
+      }
+
+      const fullCourse = {
+        courseId: courseId,
+        status: 'in_progress', 
+        completedExercisesCount: 1, // Set to 1 since this exercise is completed
+        totalExercisesInCourse: course.exerciseBatchList.length,
+        exercises: [
+          {
+            exerciseId: exerciseId,
+            status: 'completed', 
+            score: 0,
+            lastAttempted: new Date()
+          }
+        ]
+      }
+
+      // Update based on what exists
+      if (!batchExists) {
+        // Add the new batch progress
+        user.courseBatchesProgress.push(fullBeginnerBatchProgress);
+        
+        // Get the new indexes since we just added items
+        const newBatchIndex = user.courseBatchesProgress.length - 1;
+        
+        // Check if course is now complete
+        const totalExercises = course.exerciseBatchList.length;
+        const completedExercises = user.courseBatchesProgress[newBatchIndex].courses[0].completedExercisesCount;
+        
+        if (completedExercises >= totalExercises) {
+          // Mark course as completed
+          user.courseBatchesProgress[newBatchIndex].courses[0].status = 'completed';
+          
+          // Increment completed courses count for the batch
+          user.courseBatchesProgress[newBatchIndex].completedCoursesCount += 1;
+          
+          // Check if batch is now complete
+          const totalCourses = courseBatch.courseList.length;
+          const completedCourses = user.courseBatchesProgress[newBatchIndex].completedCoursesCount;
+          
+          if (completedCourses >= totalCourses) {
+            // Mark batch as completed
+            user.courseBatchesProgress[newBatchIndex].status = 'completed';
+          }
+        }
+      } else if (!courseExists) {
+        // Add the new course to existing batch
+        user.courseBatchesProgress[batchIndex].courses.push(fullCourse);
+        
+        // Get the new course index since we just added it
+        const newCourseIndex = user.courseBatchesProgress[batchIndex].courses.length - 1;
+        
+        // Check if course is now complete
+        const totalExercises = course.exerciseBatchList.length;
+        const completedExercises = user.courseBatchesProgress[batchIndex].courses[newCourseIndex].completedExercisesCount;
+        
+        if (completedExercises >= totalExercises) {
+          // Mark course as completed
+          user.courseBatchesProgress[batchIndex].courses[newCourseIndex].status = 'completed';
+          
+          // Increment completed courses count for the batch
+          user.courseBatchesProgress[batchIndex].completedCoursesCount += 1;
+          
+          // Check if batch is now complete
+          const totalCourses = courseBatch.courseList.length;
+          const completedCourses = user.courseBatchesProgress[batchIndex].completedCoursesCount;
+          
+          if (completedCourses >= totalCourses) {
+            // Mark batch as completed
+            user.courseBatchesProgress[batchIndex].status = 'completed';
+          }
+        }
+      } else if (!exerciseExists) {
+        // Add the new exercise to existing course
+        user.courseBatchesProgress[batchIndex].courses[courseIndex].exercises.push(exercises);
+        
+        // Update completion counts if this is a new completion (and we already have batch and course)
+        if (batchExists && courseExists) {
+          // Increment completed exercises count for this course
+          user.courseBatchesProgress[batchIndex].courses[courseIndex].completedExercisesCount += 1;
+          
+          // Check if course is now complete
+          const totalExercises = course.exerciseBatchList.length;
+          const completedExercises = user.courseBatchesProgress[batchIndex].courses[courseIndex].completedExercisesCount;
+          
+          if (completedExercises >= totalExercises) {
+            // Mark course as completed
+            user.courseBatchesProgress[batchIndex].courses[courseIndex].status = 'completed';
+            
+            // Increment completed courses count for the batch
+            user.courseBatchesProgress[batchIndex].completedCoursesCount += 1;
+            
+            // Check if batch is now complete
+            const totalCourses = courseBatch.courseList.length;
+            const completedCourses = user.courseBatchesProgress[batchIndex].completedCoursesCount;
+            
+            if (completedCourses >= totalCourses) {
+              // Mark batch as completed
+              user.courseBatchesProgress[batchIndex].status = 'completed';
+            }
+          }
+        }
+      } else if (!alreadyCompleted) {
+        // Update existing exercise if not already completed
+        user.courseBatchesProgress[batchIndex].courses[courseIndex].exercises[exerciseIndex].status = 'completed';
+        user.courseBatchesProgress[batchIndex].courses[courseIndex].exercises[exerciseIndex].lastAttempted = new Date();
+        
+        // Update completion counts (we know batch and course exist since we're updating an exercise)
+        // Increment completed exercises count for this course
+        user.courseBatchesProgress[batchIndex].courses[courseIndex].completedExercisesCount += 1;
+        
+        // Check if course is now complete
+        const totalExercises = course.exerciseBatchList.length;
+        const completedExercises = user.courseBatchesProgress[batchIndex].courses[courseIndex].completedExercisesCount;
+        
+        if (completedExercises >= totalExercises) {
+          // Mark course as completed
+          user.courseBatchesProgress[batchIndex].courses[courseIndex].status = 'completed';
+          
+          // Increment completed courses count for the batch
+          user.courseBatchesProgress[batchIndex].completedCoursesCount += 1;
+          
+          // Check if batch is now complete
+          const totalCourses = courseBatch.courseList.length;
+          const completedCourses = user.courseBatchesProgress[batchIndex].completedCoursesCount;
+          
+          if (completedCourses >= totalCourses) {
+            // Mark batch as completed
+            user.courseBatchesProgress[batchIndex].status = 'completed';
+          }
+        }
+      }
+
+    // Default to 0 for course progress
+    let courseProgress = 0;
+
+    // Only calculate course progress if both batch and course exist
+    if (batchExists && courseExists) {
+      courseProgress = user.courseBatchesProgress[batchIndex].courses[courseIndex].completedExercisesCount / 
+                      user.courseBatchesProgress[batchIndex].courses[courseIndex].totalExercisesInCourse;
+    }
+
+    // Updating course progress if batch exists but course does not
+    if (!batchExists) {
+      const newBatchIndex = user.courseBatchesProgress.length - 1;
+      courseProgress = user.courseBatchesProgress[newBatchIndex].courses[0].completedExercisesCount / 
+                      user.courseBatchesProgress[newBatchIndex].courses[0].totalExercisesInCourse;
+    } else if (!courseExists) {
+      const newCourseIndex = user.courseBatchesProgress[batchIndex].courses.length - 1;
+      courseProgress = user.courseBatchesProgress[batchIndex].courses[newCourseIndex].completedExercisesCount / 
+                      user.courseBatchesProgress[batchIndex].courses[newCourseIndex].totalExercisesInCourse;
+    }
+
+      // Mark as modified and save the user document
+      user.markModified('courseBatchesProgress');
+      user.markModified('xp');
+      user.markModified('level');
+      await user.save();
+      
+      res.status(200).json({ 
+        message: 'Exercise completed successfully', 
+        awardedXp,
+        currentXp: user.xp,
+        level: user.level,
+        alreadyCompleted,
+        exerciseStatus: {
+          courseBatchId: courseBatchId,
+          courseId: courseId,
+          exerciseId: exerciseId,
+          status: 'completed'
+        },
+        courseProgress: courseProgress
       });
-    } catch (err) {
-        console.error(err);
-        const message = err instanceof Error ? err.message : 'An unknown error occurred';
-        res.status(500).json({ error: message });
+      return;
+    }
+    catch (err) {
+      console.error(err);
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      res.status(500).json({ error: message });
       return;
     }
   }
-)
+);
 
 
 /**
@@ -225,7 +506,6 @@ app.get(
         xp: number; 
         level: number;
       }
-      
 
       const userList: UserItem[] = [];
 
@@ -276,33 +556,36 @@ app.get(
 
 app.post (
   '/createCourseBatch',
+  verifyTokenMiddleware,
   async (req: Request, res: Response): Promise<void> => {
   try {
     // validate request body
     const validatedData = courseBatchSchema.parse(req.body);
-    const { courseBatchId, courseList, stage } = validatedData;
+    const { courseBatchId, stage } = validatedData;
 
     // basic validation
     if (!courseBatchId) {
       res.status(400).json({ message: 'Course batch ID is required' });
       return;
     }
-    if (!courseList || courseList.length === 0) {
-      res.status(400).json({ message: 'Courses are required' });
-      return;
-    }
     // check if courseBatchId already exists in the database
-    const existingCourseBatch = await Course.findOne({ courseBatchId: courseBatchId });
+    const existingCourseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
     if (existingCourseBatch) {
       res.status(400).json({ message: 'Course batch ID already exists' });
       return;
     }
 
-    const courseBatch = new Course({
+    const courseList: string[] = [];
+
+    // check how many courses are in the course database
+    const coursesLength: number = courseList.length;
+
+    const courseBatch = new CourseBatch({
       courseBatchId,
       dateCreated: new Date(),
       courseList: courseList,
-      stage: stage
+      stage: stage,
+      coursesLength
     });
     await courseBatch.save();
 
@@ -317,6 +600,162 @@ app.post (
 }
 )
 
+/**
+ * GET /getCourseBatches
+ */
+
+app.get(
+  '/getCourseBatches',
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const courseBatches = await CourseBatch.find();
+      
+      if (!courseBatches || courseBatches.length === 0) {
+        res.status(404).json({ message: 'No course batches found' });
+        return;
+      }
+
+      interface CourseBatchItem {
+        courseBatchId: string;
+        dateCreated: Date | string; 
+        courseList: string[]; 
+        stage: number; 
+        coursesLength: number;
+      }
+      
+      const courseBatchList: CourseBatchItem[] = [];
+
+      courseBatches.forEach((courseBatch) => {
+        courseBatchList.push({
+          courseBatchId: courseBatch.courseBatchId,
+          dateCreated: courseBatch.dateCreated,
+          courseList: courseBatch.courseList,
+          stage: courseBatch.stage,
+          coursesLength: courseBatch.coursesLength
+        });
+      });
+
+      res.status(200).json({ message: 'Course batches retrieved successfully', courseBatchList });
+      return;
+    } catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
+      return;
+    }
+  });
+
+/**
+ * GET /getCourseBatch/:courseBatchId
+ */
+
+app.get(
+  '/getCourseBatch/:courseBatchId', async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { courseBatchId } = req.params;
+
+      // basic validation
+      if (!courseBatchId) {
+        res.status(400).json({ message: 'Course batch ID is required' });
+        return;
+      }
+
+      // find course batch
+      const courseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
+      if (!courseBatch) {
+        res.status(404).json({ message: `Course batch with Course Batch ID ${courseBatchId} not found.` });
+        return;
+      }
+
+      res.status(200).json({ message: 'Course batch retrieved successfully', courseBatch });
+      return;
+    }
+    catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
+      return;
+    }
+})
+
+
+/**
+ * PUT /updateCourseBatch
+ */
+
+app.put('/updateCourseBatch', verifyTokenMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const validatedData = courseBatchUpdateSchema.parse(req.body);
+    const { courseBatchId, stage } = validatedData;
+
+    // basic validation
+    if (!courseBatchId) {
+      res.status(400).json({ message: 'Course batch ID is required' });
+      return;
+    }
+
+    // find course batch
+    const courseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
+    if (!courseBatch) {
+      res.status(404).json({ message: 'Course batch not found' });
+      return;
+    }
+    
+    // update the date
+    const newDate = new Date();
+
+    courseBatch.stage = stage;
+    courseBatch.dateCreated = newDate;
+    await courseBatch.save();
+
+    res.status(200).json({ message: 'Course batch updated successfully', courseBatch });
+  } catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
+      return;
+  }
+}
+);
+
+/**
+ * DELETE /deleteCourseBatch
+ */
+
+app.delete(
+  '/deleteCourseBatch',
+  verifyTokenMiddleware,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { courseBatchId } = req.body;
+
+      // basic validation
+      if (!courseBatchId) {
+        res.status(400).json({ message: 'Course batch ID is required' });
+        return;
+      }
+
+      // find course batch
+      const existingCourseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
+      if (!existingCourseBatch) {
+        res.status(404).json({ message: `Course batch with Course Batch ID ${courseBatchId} not found` });
+        return;
+      }
+
+      // delete course batch
+      await CourseBatch.deleteOne({ courseBatchId : courseBatchId });
+
+      res.status(200).json({ message: 'Course batch deleted successfully' });
+      return;
+    } catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
+      return;
+    }
+  }
+);
+
 
 /**
  * POST /createCourse
@@ -324,13 +763,18 @@ app.post (
 
 app.post(
   '/createCourse',
+  verifyTokenMiddleware,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const validatedData = courseSchema.parse(req.body);
-      const { courseId, level, exerciseBatchList } = validatedData;
-
+      const { courseBatchId, courseId, title, level } = validatedData;
 
       // basic validation
+      if (!courseBatchId) {
+        res.status(400).json({ message: 'Course batch ID is required' });
+        return;
+      }
+
       if (!courseId) {
         res.status(400).json({ message: 'Course ID is required' });
         return;
@@ -340,10 +784,13 @@ app.post(
         return;
       }
 
-      if (!exerciseBatchList) {
-        res.status(400).json({ message: 'Exercise batch is required' });
+      // check if courseBatchId already exists in the database
+      const existingCourseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
+      if (!existingCourseBatch) {
+        res.status(404).json({ message: 'Course batch not found' });
         return;
       }
+
       // find course
       const courseFind = await Course.findOne({courseId: courseId});
       if (courseFind) {
@@ -351,15 +798,29 @@ app.post(
         return;
       }
 
+      // push courseId to courseList in courseBatch
+      existingCourseBatch.courseList.push(courseId);
+      existingCourseBatch.coursesLength += 1;
+      await existingCourseBatch.save();
+
       // create date
       const dateCreated = new Date();
+      
+      // exercises length
+      const exerciseBatchList: string[] = [];
+
+      // check how many exercises are in the exercise database
+      const exercisesLength = exerciseBatchList.length;
 
       // create course
       const course = new Course({
+        courseBatchId,
         courseId,
+        title,
         level,
         dateCreated,
-        exerciseBatchList
+        exerciseBatchList,
+        exercisesLength
       });
       await course.save();
 
@@ -389,21 +850,26 @@ app.get(
       }
 
       interface CourseItem {
+        courseBatchId: string;
         courseId: string; 
+        title: string;
         level: string | number; 
         dateCreated: Date | string; 
         exerciseBatchList: string[]; 
+        exercisesLength: number;
       }
       
-
       const courseList: CourseItem[] = [];
 
       courses.forEach((course) => {
         courseList.push({
+          courseBatchId: course.courseBatchId,
           courseId: course.courseId,
+          title: course.title,
           level: course.level,
           dateCreated: course.dateCreated,
-          exerciseBatchList: course.exerciseBatchList 
+          exerciseBatchList: course.exerciseBatchList, 
+          exercisesLength: course.exercisesLength
         });
       });
 
@@ -435,7 +901,7 @@ app.get(
       // find course
       const course = await Course.findOne({ courseId: courseId });
       if (!course) {
-        res.status(404).json({ message: 'Course not found' });
+        res.status(404).json({ message: `Course with Course ID ${courseId} not found.` });
         return;
       }
 
@@ -450,15 +916,17 @@ app.get(
     }
   })
 
-/**
- * POST /updateCourse 
- */
 
-app.post(
+/**
+ * PUT /updateCourse 
+ */
+app.put(
   '/updateCourse',
+  verifyTokenMiddleware,
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const { courseId, level, dateCreated, exerciseBatchList } = req.body;
+      const validatedData = courseUpdateSchema.parse(req.body);
+      const { courseBatchId, courseId, title, level } = validatedData;
 
       // basic validation
       if (!courseId) {
@@ -467,16 +935,26 @@ app.post(
       }
 
       // find course
-      const course = await Course.findById(courseId);
+      const course = await Course.findOne({courseId: courseId});
       if (!course) {
-        res.status(404).json({ message: 'Course not found' });
+        res.status(404).json({ message: `Course with course ID ${course} not found.` });
         return;
       }
 
+      // check if courseBatchId already exists in the database
+      const existingCourseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
+      if (!existingCourseBatch) {
+        res.status(404).json({ message: 'Course batch not found' });
+        return;
+      }
+
+      // create new current date
+      const dateCreated = new Date();
+
       // update course
+      course.title = title;
       course.level = level;
       course.dateCreated = dateCreated;
-      course.exerciseBatchList = exerciseBatchList;
       await course.save();
 
       res.status(200).json({ message: 'Course updated successfully', course });
@@ -491,14 +969,15 @@ app.post(
 );
 
 /**
- * POST /deleteCourse
+ * DELETE /deleteCourse
  */ 
 
 app.delete(
   '/deleteCourse',
+  verifyTokenMiddleware,
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const { courseId } = req.body;
+      const { courseId, courseBatchId } = req.body;
 
       // basic validation
       if (!courseId) {
@@ -507,11 +986,24 @@ app.delete(
       }
 
       // find course
-      const course = await Course.findOne({courseId: courseId});
-      if (!course) {
-        res.status(404).json({ message: 'Course not found' });
+      const existingCourse = await Course.findOne({courseId: courseId});
+      if (!existingCourse) {
+        res.status(404).json({ message: `Course with Course ID ${courseId} not found` });
         return;
       }
+
+      const existingCourseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
+      if (!existingCourseBatch) {
+        res.status(404).json({ message: `Course batch with Course Batch ID ${courseBatchId} not found` });
+        return;
+      }
+
+      // delete courseId from courseList in courseBatch
+      existingCourseBatch.courseList = existingCourseBatch.courseList.filter((course) => course !== courseId);
+      if (existingCourseBatch.coursesLength > 0) {
+        existingCourseBatch.coursesLength -= 1;
+      }
+      await existingCourseBatch.save();
 
       // delete course
       await Course.deleteOne({ courseId : courseId });
@@ -528,35 +1020,209 @@ app.delete(
 )
 
 /**
- * POST /createExercises
+ * POST /createExercise
  */
 
-app.post( '/createExercise', async (req: Request, res: Response): Promise<void> => {
+app.post( 
+  '/createExercise', 
+  verifyTokenMiddleware, // Assuming exercise creation requires authentication
+  async (req: Request, res: Response): Promise<void> => {
   try {
-    const {exerciseId, animtype, courseId, type, difficultyLevel, question, answer } = req.body;
+    const validatedData = createExerciseSchema.parse(req.body);
+    const {
+      exerciseId,
+      courseId,
+      courseBatchId,
+      title, 
+      difficultyLevel,
+      animType,
+      type,
+      question,
+      answer
+    } = validatedData;
 
-    if (!exerciseId || !animtype || !courseId || !type || !difficultyLevel || !question || !answer) {
-      res.status(400).json({ message: 'All fields are required' });
-      return;
-    }
-    // check if exerciseId already exists
+    // Check if exerciseId already exists
     const existingExercise = await Exercise.findOne({ exerciseId });
     if (existingExercise) {
       res.status(400).json({ message: 'Exercise ID already exists' });
       return;
     }
 
-    // unfinished code
-    / will be used to check if exerciseId has a corresponding courseId  
-    const exerciseIdCompare = exerciseId;
-  
-    
-   
-    if(!animtype) {
+    // Check if the referenced courseId exists
+    const existingCourse = await Course.findOne({ courseId });
+    if (!existingCourse) {
+      res.status(404).json({ message: `Course with ID ${courseId} not found.` });
       return;
     }
 
+    // Check if the referenced courseBatchId exists
+    const existingCourseBatch = await CourseBatch.findOne({ courseBatchId });
+    if (!existingCourseBatch) {
+      res.status(404).json({ message: `CourseBatch with ID ${courseBatchId} not found.` });
+      return;
+    }
 
+    // push exerciseId to exerciseBatchList in course
+    existingCourse.exerciseBatchList.push(exerciseId);
+    existingCourse.exercisesLength += 1;
+    await existingCourse.save();
+    
+    const newExercise = new Exercise({
+      exerciseId,
+      courseId,
+      courseBatchId, // Will be undefined if not provided, which is fine if schema is optional
+      title,
+      dateCreated: new Date(), // Set by the server
+      difficultyLevel,
+      animType,
+      type,
+      question,
+      answer
+    });
+
+    await newExercise.save();
+
+    res.status(201).json({ message: 'Exercise created successfully', exercise: newExercise });
+    return;
+
+  } catch (err) {
+    console.error(err);
+    if (err instanceof ZodError) {
+      res.status(400).json({ message: "Validation failed", errors: err.errors });
+      return;
+    }
+    const message = err instanceof Error ? err.message : 'An unknown error occurred';
+    res.status(500).json({ error: message });
+    return;
+  }
+})
+
+/**
+ * GET /getExercises
+ */
+app.get(
+  '/getExercise/:exerciseId',
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { exerciseId } = req.params;
+      // basic validation
+      if (!exerciseId) {
+        res.status(400).json({ message: 'Exercise ID is required' });
+        return;
+      }
+      // find exercise
+      const exercise = await Exercise.findOne({ exerciseId: exerciseId });
+      if (!exercise) {
+        res.status(404).json({ message: `Exercise with Exercise ID ${exerciseId} not found` });
+        return;
+      }
+      res.status(200).json({ message: 'Exercise retrieved successfully', exercise });
+      return;
+    }
+    catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
+      return;
+    }
+  }
+)
+
+
+/**
+ * GET /getExercises
+ */
+
+app.get(
+  '/getExercises', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const exercises = await Exercise.find();
+    
+    if (!exercises || exercises.length === 0) {
+      res.status(404).json({ message: 'No exercises found' });
+      return;
+    }
+
+    interface ExerciseItem {
+      exerciseId: string; 
+      courseId: string; 
+      courseBatchId: string; 
+      title: string; 
+      dateCreated: Date | string; 
+      difficultyLevel: number | string; 
+      animType: string; 
+      type: string; 
+      question: string; 
+      answer: string[];
+    }
+    
+    const exerciseList: ExerciseItem[] = [];
+
+    exercises.forEach((exercise) => {
+      exerciseList.push({
+        exerciseId: exercise.exerciseId,
+        courseId: exercise.courseId,
+        courseBatchId: exercise.courseBatchId,
+        title: exercise.title,
+        dateCreated: exercise.dateCreated,
+        difficultyLevel: exercise.difficultyLevel,
+        animType: exercise.animType,
+        type: exercise.type,
+        question: exercise.question,
+        answer: exercise.answer
+      });
+    });
+
+    res.status(200).json({ message: 'Exercises retrieved successfully', exerciseList });
+    return;
+  } catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
+      return;
+  }
+  }
+)
+
+/**
+ * DELETE /deleteExercise
+*/
+app.delete(
+  '/deleteExercise', verifyTokenMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { exerciseId, courseId } = req.body;
+
+    // basic validation
+    if (!exerciseId) {
+      res.status(400).json({ message: 'Exercise ID is required' });
+      return;
+    }
+
+    const existingCourse = await Course.findOne({ courseId: courseId });
+    if (!existingCourse) {
+      res.status(404).json({ message: `Course with Course ID ${courseId} not found` });
+      return;
+    }
+
+    // find exercise
+    const exercise = await Exercise.findOne({ exerciseId: exerciseId });
+    if (!exercise) {
+      res.status(404).json({ message: `Exercise with Exercise ID ${exerciseId} not found` });
+      return;
+    }
+
+    // delete exerciseId from exerciseBatchList in course
+    existingCourse.exerciseBatchList = existingCourse.exerciseBatchList.filter((exercise) => exercise !== exerciseId);
+    if (existingCourse.exercisesLength > 0) {
+      existingCourse.exercisesLength -= 1;
+    }
+    await existingCourse.save();
+
+    // delete exercise
+    await Exercise.deleteOne({ exerciseId : exerciseId });
+
+    res.status(200).json({ message: 'Exercise deleted successfully' });
+    return;
   }
   catch (err) {
     console.error(err);
@@ -564,11 +1230,76 @@ app.post( '/createExercise', async (req: Request, res: Response): Promise<void> 
     res.status(500).json({ error: message });
     return;
   }
-})
+}
+)
 
+app.put(
+  '/updateExercise',verifyTokenMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const validatedData = updateExerciseSchema.parse(req.body);
+    const {
+      exerciseId,
+      courseId,
+      courseBatchId,
+      title,
+      difficultyLevel,
+      animType,
+      type,
+      question,
+      answer
+    } = validatedData;
 
+    // basic validation
+    if (!exerciseId) {
+      res.status(400).json({ message: 'Exercise ID is required' });
+      return;
+    }
+    // find exercise
+    const exercise = await Exercise.findOne({ exerciseId: exerciseId });
+    if (!exercise) {
+      res.status(404).json({ message: `Exercise with Exercise ID ${exerciseId} not found` });
+      return;
+    }
 
+    // check if courseId already exists in the database
+    const existingCourse = await Course.findOne({ courseId: courseId });
+    if (!existingCourse) {
+      res.status(404).json({ message: 'Course not found' });
+      return;
+    }
 
+    // check if courseBatchId already exists in the database
+    const existingCourseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
+    if (!existingCourseBatch) {
+      res.status(404).json({ message: 'Course batch not found' });
+      return;
+    }
+    // create new current date
+    const dateCreated = new Date();
+
+    // update exercise
+    exercise.title = title;
+    exercise.difficultyLevel = difficultyLevel;
+    exercise.dateCreated = dateCreated;
+    exercise.animType = animType;
+    exercise.type = type;
+    exercise.question = question;
+    exercise.answer = answer;
+    await exercise.save();
+    res.status(200).json({ message: 'Exercise updated successfully', exercise });
+    return;
+  } catch (err) {
+    console.error(err);
+    if (err instanceof ZodError) {
+      res.status(400).json({ message: "Validation failed", errors: err.errors });
+      return;
+    }
+    const message = err instanceof Error ? err.message : 'An unknown error occurred';
+    res.status(500).json({ error: message });
+    return;
+  }
+}
+)
 
 
 // start server

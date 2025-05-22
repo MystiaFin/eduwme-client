@@ -2,7 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 
 // Sub-schema for individual exercise progress
 const exerciseProgressSchema = new Schema({
-  exerciseId: { type: String, required: true }, // Corresponds to Exercise.exerciseId
+  exerciseId: { type: String }, // Corresponds to Exercise.exerciseId
   status: {
     type: String,
     enum: ['not_started', 'in_progress', 'completed'],
@@ -15,13 +15,14 @@ const exerciseProgressSchema = new Schema({
 
 // Sub-schema for progress within a single course
 const courseProgressSchema = new Schema({
-  courseId: { type: String, required: true }, // Corresponds to Course.courseId
+  courseId: { type: String }, // Corresponds to Course.courseId
   status: {
     type: String,
     enum: ['not_started', 'in_progress', 'completed'],
     default: 'not_started',
     required: true
   },
+  totalExercisesInCourse: { type: Number, default: 0, required: true }, // Total exercises in the course
   // To calculate progressPercentage = (completedExercises / totalExercisesInCourse) * 100
   completedExercisesCount: { type: Number, default: 0, required: true },
   // totalExercisesInCourse might be populated when a user starts a course, by looking up the Course model
@@ -30,18 +31,21 @@ const courseProgressSchema = new Schema({
 
 // Sub-schema for progress within a course batch
 const courseBatchProgressSchema = new Schema({
-  courseBatchId: { type: String, required: true }, // Corresponds to CourseBatch.courseBatchId
+  courseBatchId: { type: String }, // Corresponds to CourseBatch.courseBatchId
   status: {
     type: String,
     enum: ['not_started', 'in_progress', 'completed'],
     default: 'not_started',
     required: true
   },
+  totalCoursesInBatch: { type: Number, default: 0, required: true }, // Total exercises in the batch
   // To calculate progressPercentage = (completedCourses / totalCoursesInBatch) * 100
+
   completedCoursesCount: { type: Number, default: 0, required: true },
   // totalCoursesInBatch might be populated when a user starts a batch
   courses: [courseProgressSchema] // Detailed progress for each course in this batch
 }, { _id: false }); // No separate _id for each course batch progress entry
+
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },

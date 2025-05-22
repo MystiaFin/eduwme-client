@@ -1,7 +1,16 @@
 import { z } from 'zod';
 
 export const courseSchema = z.object({
+    courseBatchId: z.string().min(1),
     courseId: z.string().min(1),
+    title: z.string().min(1),
     level: z.number().int().positive(),
-    exerciseBatchList: z.array(z.string()).nonempty(),
 })
+
+export const courseUpdateSchema = z.object({
+    courseBatchId: z.string().min(1),
+    courseId: z.string().min(1),
+    title: z.string().min(1),
+    level: z.number().int().positive(),
+})
+
