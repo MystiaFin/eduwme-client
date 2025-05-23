@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const courseBatchSchema = new mongoose.Schema({
-  courseBatchId: { type: String, required: true },  
+  courseBatchId: { type: String, required: true, unique: true },  
   dateCreated: { type: Date, required: true },
   courseList: { type: [String], required: true },
   coursesLength: { type: Number, required: true },

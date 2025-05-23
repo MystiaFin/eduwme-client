@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 
 const courseSchema = new mongoose.Schema({
-  courseBatchId: { type: String, required: true },
-  courseId: { type: String, required: true },
+  courseBatchId: { type: String, required: true, unique: true },
+  courseId: { type: String, required: true, unique: true },
   title: { type: String, required: true },  
   level: { type: Number, required: true },
   dateCreated: { type: Date, required: true },

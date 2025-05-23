@@ -128,42 +128,7 @@ app.post(
       res.status(500).json({ error: message });
       return;
     }
-    if (password !== confirm_password) {
-      res.status(400).json({ message: "Passwords do not match" });
-      return;
-    }
-
-    // check duplicates
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      res.status(400).json({ message: "Username already taken" });
-      return;
-    }
-    const existingEmail = await User.findOne({ email });
-    if (existingEmail) {
-      res.status(400).json({ message: "Email already registered" });
-      return;
-    }
-
-    // hash & save
-    const hashed = await bcrypt.hash(password, 10);
-    const newUser = new User({
-      username,
-      email,
-      password: hashed,
-    });
-    await newUser.save();
-
-    res.status(201).json({ message: "User registered successfully" });
-    return;
-  } catch (err) {
-    console.error(err);
-    const message =
-      err instanceof Error ? err.message : "An unknown error occurred";
-    res.status(500).json({ error: message });
-    return;
-  }
-});
+})
 
 /**
  * POST /login
@@ -211,39 +176,7 @@ app.post(
         res.status(500).json({ error: message });
       return;
     }
-
-    // find user
-    const user = await User.findOne({ username });
-    if (!user) {
-      res.status(401).json({ message: "Invalid username or password" });
-      return;
-    }
-
-    // check password
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      res.status(401).json({ message: "Invalid username or password" });
-      return;
-    }
-
-    // sign JWT
-    const token = jwt.sign(
-      { id: user.id, username: user.username },
-      JWT_SECRET || "default_secret",
-      // set the expiration time to 1 hour (adjust if needed)
-      { expiresIn: EXPIRATION_TIME },
-    );
-
-    res.status(200).json({ message: "Login successful", token });
-    return;
-  } catch (err) {
-    console.error(err);
-    const message =
-      err instanceof Error ? err.message : "An unknown error occurred";
-    res.status(500).json({ error: message });
-    return;
-  }
-});
+})
 
 /**
  * POST /addProfile
