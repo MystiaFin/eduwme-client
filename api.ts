@@ -686,7 +686,7 @@ app.post(
  * GET /leaderboard
  */
 app.get(
-  '/leaderboard',
+  '/leaderboard', verifyTokenMiddleware,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const leaderboard = await User.find().sort({ xp: -1 }).limit(10);
