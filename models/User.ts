@@ -50,10 +50,16 @@ const courseBatchProgressSchema = new Schema({
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  nickname: { type: String },
+  biodata: { type: String },
+  profilePicture: { type: String }, 
   email: { type: String, required: true, unique: true },
   xp: { type: Number, default: 0, required: true }, // User's total experience points
   level: { type: Number, default: 1, required: true }, // User's overall level
-  courseBatchesProgress: [courseBatchProgressSchema] // Array to store progress for all course batches
+  courseBatchesProgress: [courseBatchProgressSchema],// Array to store progress for all course batches
+  dateCreated: { type: Date, default: Date.now },
+  dateUpdated: { type: Date },
+  dateLastLogin: { type: Date }
 });
 
 const User = mongoose.model('User', userSchema);

@@ -3,7 +3,6 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 const JWT_SECRET: string | undefined = process.env.JWT_SECRET;
 
-
 const verifyTokenMiddleware = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const token = req.headers['authorization']?.split(' ')[1];

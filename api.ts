@@ -6,6 +6,8 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import { ZodError } from 'zod';
 
+
+
 import User from './models/User.js';  
 import Course from './models/Course.js';
 import Exercise from './models/Exercise.js';
@@ -18,6 +20,7 @@ import { courseBatchSchema, courseBatchUpdateSchema } from './validators/courseB
 import { courseSchema, courseUpdateSchema } from './validators/course.validators.js';
 import { completeSchema } from './validators/progress.validators.js';
 import { createExerciseSchema, updateExerciseSchema } from './validators/exercise.validators.js';
+import { profileSchema } from './validators/profile.validators.js';
 
 
 // load .env into process.env
@@ -90,7 +93,9 @@ app.post(
         username, 
         email, 
         password: hashed,
-        courseBatchesProgress: [] 
+        dateCreated: new Date(),
+        courseBatchesProgress: [],
+        dateLastLogin: new Date(),
       });
       await newUser.save();
 
@@ -128,6 +133,8 @@ app.post(
         res.status(401).json({ message: 'Invalid username or password' });
         return;
       }
+      user.dateLastLogin = new Date();
+      await user.save();
 
       // check password
       const match = await bcrypt.compare(password, user.password);
@@ -154,6 +161,207 @@ app.post(
   }
 );
 
+/**
+ * POST /addProfile
+ */
+
+app.put(
+  '/addProfile',
+  verifyTokenMiddleware,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      // validate request body with zod
+      const validatedData = profileSchema.parse(req.body);
+      const { userId, nickname, biodata, profilePicture } = validatedData;
+
+      // find user
+      const user = await User.findById(userId);
+      if (!user) {
+        res.status(404).json({ message: 'User not found' });
+        return;
+      }
+
+      // update user profile
+      user.nickname = nickname;
+      user.biodata = biodata;
+      user.profilePicture = profilePicture;
+      user.dateUpdated = new Date();
+
+      await user.save();
+
+      res.status(200).json({ message: 'Profile created successfully', user });
+      return;
+    } catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
+      return;
+    }
+  }
+);
+
+/**
+ * GET /getProfile/:userId
+ */
+
+app.get(
+  '/getProfile/:userId',
+  verifyTokenMiddleware,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { userId } = req.params;
+
+      // basic validation
+      if (!userId) {
+        res.status(400).json({ message: 'User ID is required' });
+        return;
+      }
+
+      // find user
+      const user = await User.findById(userId);
+      if (!user) {
+        res.status(404).json({ message: 'User not found' });
+        return;
+      }
+
+      res.status(200).json({ message: 'Profile retrieved successfully', user });
+      return;
+    } catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
+      return;
+    }
+  }
+)
+
+
+/**
+ * GET /getUser:userId
+ */
+app.get('getUser/:userId', verifyTokenMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+
+    // basic validation
+    if (!userId) {
+      res.status(400).json({ message: 'User ID is required' });
+      return;
+    }
+
+    // find user
+    const user = await User.findById({ _id: userId});
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    res.status(200).json({ message: 'User retrieved successfully', user });
+    return;
+  } catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
+      return;
+  }
+})
+
+/**
+ * Search, Sort and Pagination Function
+ */
+async function searchUsers(search: string, sort: string, pageNumber: number, pageSize: number) {
+  // Create a MongoDB query filter 
+  let filter = {};
+  
+  if (search) {
+    const [searchKey, searchValue] = search.split(':');
+    
+    if (searchKey !== 'username' && searchKey !== 'email' && searchKey !== 'nickname') {
+      throw new Error('Invalid search key');
+    }
+    
+    // Fix: Use MongoDB query filtering
+    filter = { [searchKey]: { $regex: searchValue, $options: 'i' } };
+  }
+
+  // Get total count for pagination calculations
+  const totalUsers = await User.countDocuments(filter);
+  
+  // Prepare sort options
+  let sortOptions = {};
+  if (sort) {
+    const [sortKey, sortOrder] = sort.toLowerCase().split(':');
+    
+    // Validate sort order
+    if (sortOrder !== 'asc' && sortOrder !== 'desc') {
+      // Default to ascending if invalid
+      sortOptions = { [sortKey]: 1 };
+    } else {
+      sortOptions = { [sortKey]: sortOrder === 'asc' ? 1 : -1 };
+    }
+  }
+
+  // Calculate pagination values
+  const totalPages = Math.ceil(totalUsers / pageSize);
+  const startIndex = (pageNumber - 1) * pageSize;
+  
+  // Get paginated results with filtering and sorting at database level
+  const modifiedUsers = await User.find(filter)
+    .sort(sortOptions)
+    .skip(startIndex)
+    .limit(pageSize);
+
+  // Generate pagination metadata
+  const hasNextPage = totalUsers > startIndex + pageSize;
+  const hasPreviousPage = startIndex > 0;
+  const nextPage = hasNextPage ? pageNumber + 1 : null;
+  const previousPage = hasPreviousPage ? pageNumber - 1 : null;
+  
+  return { modifiedUsers, totalUsers, totalPages, nextPage, previousPage };
+}
+
+/**
+ * GET /getUsers
+ */
+app.get(
+  '/getUsers',
+  verifyTokenMiddleware,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const pageSize = Number(req.query.page_size) || 10;
+      const page = Number(req.query.page) || 1;
+      const search = typeof req.query.search === 'string' ? req.query.search : '';
+      const sort = typeof req.query.sort === 'string' ? req.query.sort : '';
+
+      // Fixed destructuring to match the properties returned by searchUsers
+      const {
+        modifiedUsers: users, // renamed from modifiedUsers to users
+        totalUsers: totalItems, // renamed from totalUsers to totalItems
+        totalPages,
+        nextPage,
+        previousPage,
+      } = await searchUsers(search, sort, page, pageSize);
+
+      if (users.length === 0) {
+        res.status(404).json({ message: 'No users found' });
+        return;
+      }
+
+      res.status(200).json({
+        message: 'Users retrieved successfully',
+        users,
+        totalItems,
+        totalPages,
+        nextPage,
+        previousPage,
+      });
+    } catch (err) {
+      console.error(err);
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      res.status(500).json({ error: message });
+    }
+  }
+);
 
 /**
  * POST /complete/:userId/:courseBatchId/:courseId/:exerciseId
@@ -455,79 +663,6 @@ app.post(
   }
 );
 
-
-/**
- * GET /getUser:userId
- */
-app.get('getUser/:userId', async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { userId } = req.params;
-
-    // basic validation
-    if (!userId) {
-      res.status(400).json({ message: 'User ID is required' });
-      return;
-    }
-
-    // find user
-    const user = await User.findById({ _id: userId});
-    if (!user) {
-      res.status(404).json({ message: 'User not found' });
-      return;
-    }
-
-    res.status(200).json({ message: 'User retrieved successfully', user });
-    return;
-  } catch (err) {
-        console.error(err);
-        const message = err instanceof Error ? err.message : 'An unknown error occurred';
-        res.status(500).json({ error: message });
-      return;
-  }
-})
-
-/**
- * GET /getUsers
- */
-app.get(
-  '/getUsers',
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const users = await User.find();
-      
-      if (!users || users.length === 0) {
-        res.status(404).json({ message: 'No users found' });
-        return;
-      }
-
-      interface UserItem {
-        username: string; 
-        email: string; 
-        xp: number; 
-        level: number;
-      }
-
-      const userList: UserItem[] = [];
-
-      users.forEach((user) => {
-        userList.push({
-          username: user.username,
-          email: user.email,
-          xp: user.xp,
-          level: user.level
-        });
-      });
-
-      res.status(200).json({ message: 'Users retrieved successfully', userList });
-      return;
-    } catch (err) {
-        console.error(err); 
-        const message = err instanceof Error ? err.message : 'An unknown error occurred';
-        res.status(500).json({ error: message });
-      return;
-    }
-  }
-)
 
 
 /**
