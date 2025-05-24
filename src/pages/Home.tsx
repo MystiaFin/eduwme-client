@@ -11,21 +11,21 @@ const Home = () => {
   return (
     <div className="gap-5 flex flex-col mt-20">
       <section className="flex items-center justify-center gap-5">
-        <NavLink className={ButtonStyle}>
+        <NavLink to="/courses/addition" className={ButtonStyle}>
           <img src={AdditionIcon} />
           <p>Addition</p>
         </NavLink>
-        <NavLink className={ButtonStyle}>
+        <NavLink to="/courses/subtraction" className={ButtonStyle}>
           <img src={SubtractionIcon} />
           <p>Subtraction</p>
         </NavLink>
       </section>
       <section className="flex items-center justify-center gap-5">
-        <NavLink className={ButtonStyle}>
+        <NavLink to="/courses/multiplication" className={ButtonStyle}>
           <img src={MultiplicationIcon} />
           <p className="text-md">Multiplication</p>
         </NavLink>
-        <NavLink className={ButtonStyle}>
+        <NavLink to="/courses/division" className={ButtonStyle}>
           <img src={DivisionIcon} />
           <p>Division</p>
         </NavLink>
