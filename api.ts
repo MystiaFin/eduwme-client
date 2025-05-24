@@ -6,8 +6,6 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import { ZodError } from 'zod';
 
-
-
 import User from './models/User.js';  
 import Course from './models/Course.js';
 import Exercise from './models/Exercise.js';
@@ -265,30 +263,62 @@ app.get('getUser/:userId', verifyTokenMiddleware, async (req: Request, res: Resp
 })
 
 /**
- * Search, Sort and Pagination Function
+ * Generic Search, Sort and Pagination Function
+ * @param model - The Mongoose model to search
+ * @param validSearchKeys - Array of valid keys for searching
+ * @param validSortKeys - Array of valid keys for sorting
+ * @param numericFields - Array of fields that should be treated as numbers
+ * @param search - Search string in format "key:value"
+ * @param sort - Sort string in format "field:order"
+ * @param pageNumber - Page number for pagination
+ * @param pageSize - Number of items per page
  */
-async function searchUsers(search: string, sort: string, pageNumber: number, pageSize: number) {
+async function genericSearch(
+  model: any,
+  validSearchKeys: string[],
+  validSortKeys: string[],
+  numericFields: string[],
+  search: string,
+  sort: string,
+  pageNumber: number,
+  pageSize: number
+) {
   // Create a MongoDB query filter 
   let filter = {};
   
   if (search) {
     const [searchKey, searchValue] = search.split(':');
     
-    if (searchKey !== 'username' && searchKey !== 'email' && searchKey !== 'nickname') {
-      throw new Error('Invalid search key');
+    // Validate search key
+    if (!validSearchKeys.includes(searchKey)) {
+      throw new Error(`Invalid search key. Allowed keys: ${validSearchKeys.join(', ')}`);
     }
     
-    // Fix: Use MongoDB query filtering
-    filter = { [searchKey]: { $regex: searchValue, $options: 'i' } };
+    // Handle numeric fields differently
+    if (numericFields.includes(searchKey)) {
+      const numValue = parseInt(searchValue);
+      if (isNaN(numValue)) {
+        throw new Error(`${searchKey} must be a number`);
+      }
+      filter = { [searchKey]: numValue };
+    } else {
+      // Use regex for text fields
+      filter = { [searchKey]: { $regex: searchValue, $options: 'i' } };
+    }
   }
 
   // Get total count for pagination calculations
-  const totalUsers = await User.countDocuments(filter);
+  const totalItems = await model.countDocuments(filter);
   
   // Prepare sort options
   let sortOptions = {};
   if (sort) {
     const [sortKey, sortOrder] = sort.toLowerCase().split(':');
+    
+    // Validate sort key
+    if (!validSortKeys.includes(sortKey)) {
+      throw new Error(`Invalid sort key. Allowed keys: ${validSortKeys.join(', ')}`);
+    }
     
     // Validate sort order
     if (sortOrder !== 'asc' && sortOrder !== 'desc') {
@@ -300,23 +330,104 @@ async function searchUsers(search: string, sort: string, pageNumber: number, pag
   }
 
   // Calculate pagination values
-  const totalPages = Math.ceil(totalUsers / pageSize);
+  const totalPages = Math.ceil(totalItems / pageSize);
   const startIndex = (pageNumber - 1) * pageSize;
   
   // Get paginated results with filtering and sorting at database level
-  const modifiedUsers = await User.find(filter)
+  const items = await model.find(filter)
     .sort(sortOptions)
     .skip(startIndex)
     .limit(pageSize);
 
   // Generate pagination metadata
-  const hasNextPage = totalUsers > startIndex + pageSize;
+  const hasNextPage = totalItems > startIndex + pageSize;
   const hasPreviousPage = startIndex > 0;
   const nextPage = hasNextPage ? pageNumber + 1 : null;
   const previousPage = hasPreviousPage ? pageNumber - 1 : null;
   
-  return { modifiedUsers, totalUsers, totalPages, nextPage, previousPage };
+  return { items, totalItems, totalPages, nextPage, previousPage };
 }
+
+// For users
+async function searchUsers(search: string, sort: string, pageNumber: number, pageSize: number) {
+  const validSearchKeys = ['username', 'email', 'nickname'];
+  const validSortKeys = ['username', 'email', 'nickname', 'dateCreated', 'xp', 'level'];
+  const numericFields = ['xp', 'level'];
+  
+  const result = await genericSearch(
+    User, 
+    validSearchKeys, 
+    validSortKeys, 
+    numericFields,
+    search, 
+    sort, 
+    pageNumber, 
+    pageSize
+  );
+  
+  // Rename the items to maintain backward compatibility
+  return { 
+    modifiedUsers: result.items, 
+    totalUsers: result.totalItems,
+    totalPages: result.totalPages,
+    nextPage: result.nextPage,
+    previousPage: result.previousPage
+  };
+}
+
+// For courses
+async function searchCourses(search: string, sort: string, pageNumber: number, pageSize: number) {
+  const validSearchKeys = ['courseBatchId', 'title', 'level'];
+  const validSortKeys = ['courseBatchId', 'title', 'level', 'dateCreated'];
+  const numericFields = ['level'];
+  
+  const result = await genericSearch(
+    Course, 
+    validSearchKeys, 
+    validSortKeys, 
+    numericFields,
+    search, 
+    sort, 
+    pageNumber, 
+    pageSize
+  );
+  
+  return { 
+    courses: result.items, 
+    totalCourses: result.totalItems,
+    totalPages: result.totalPages,
+    nextPage: result.nextPage,
+    previousPage: result.previousPage
+  };
+}
+
+// For exercises
+async function searchExercises(search: string, sort: string, pageNumber: number, pageSize: number) {
+  const validSearchKeys = ['exerciseId', 'courseId', 'courseBatchId', 'title', 'difficultyLevel', 'type'];
+  const validSortKeys = ['exerciseId', 'courseId', 'title', 'difficultyLevel', 'dateCreated', 'type'];
+  const numericFields = ['difficultyLevel'];
+  
+  const result = await genericSearch(
+    Exercise, 
+    validSearchKeys, 
+    validSortKeys, 
+    numericFields,
+    search, 
+    sort, 
+    pageNumber, 
+    pageSize
+  );
+  
+  return { 
+    exercises: result.items, 
+    totalExercises: result.totalItems,
+    totalPages: result.totalPages,
+    nextPage: result.nextPage,
+    previousPage: result.previousPage
+  };
+}
+
+
 
 /**
  * GET /getUsers
@@ -668,6 +779,7 @@ app.post(
  */
 app.get(
   '/leaderboard',
+  verifyTokenMiddleware,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const leaderboard = await User.find().sort({ xp: -1 }).limit(10);
@@ -968,6 +1080,7 @@ app.post(
   }
 );
 
+
 /**
  * GET /getCourses
  */ 
@@ -975,7 +1088,18 @@ app.get(
   '/getCourses',
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const courses = await Course.find();
+      const pageSize = Number(req.query.page_size) || 10;
+      const page = Number(req.query.page) || 1;
+      const search = typeof req.query.search === 'string' ? req.query.search : '';
+      const sort = typeof req.query.sort === 'string' ? req.query.sort : '';
+
+      const {
+        courses,
+        totalCourses,
+        totalPages,
+        nextPage,
+        previousPage,
+      } = await searchCourses(search, sort, page, pageSize);
       
       if (!courses || courses.length === 0) {
         res.status(404).json({ message: 'No courses found' });
@@ -986,7 +1110,7 @@ app.get(
         courseBatchId: string;
         courseId: string; 
         title: string;
-        level: string | number; 
+        level: number; 
         dateCreated: Date | string; 
         exerciseBatchList: string[]; 
         exercisesLength: number;
@@ -994,7 +1118,7 @@ app.get(
       
       const courseList: CourseItem[] = [];
 
-      courses.forEach((course) => {
+      courses.forEach((course: any) => {
         courseList.push({
           courseBatchId: course.courseBatchId,
           courseId: course.courseId,
@@ -1006,7 +1130,15 @@ app.get(
         });
       });
 
-      res.status(200).json({ message: 'Courses retrieved successfully', courseList });
+      res.status(200).json({ 
+        message: 'Courses retrieved successfully', 
+        courseList,
+        totalItems: totalCourses,
+        totalPages,
+        currentPage: page,
+        nextPage,
+        previousPage
+      });
       return;
     } catch (err) {
         console.error(err);
@@ -1233,7 +1365,7 @@ app.post(
 })
 
 /**
- * GET /getExercises
+ * GET /getExercise
  */
 app.get(
   '/getExercise/:exerciseId',
@@ -1263,63 +1395,48 @@ app.get(
   }
 )
 
-
 /**
  * GET /getExercises
- */
-
+ */ 
 app.get(
-  '/getExercises', async (req: Request, res: Response): Promise<void> => {
-  try {
-    const exercises = await Exercise.find();
-    
-    if (!exercises || exercises.length === 0) {
-      res.status(404).json({ message: 'No exercises found' });
-      return;
-    }
+  '/getExercises',
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const pageSize = Number(req.query.page_size) || 10;
+      const page = Number(req.query.page) || 1;
+      const search = typeof req.query.search === 'string' ? req.query.search : '';
+      const sort = typeof req.query.sort === 'string' ? req.query.sort : '';
 
-    interface ExerciseItem {
-      exerciseId: string; 
-      courseId: string; 
-      courseBatchId: string; 
-      title: string; 
-      dateCreated: Date | string; 
-      difficultyLevel: number | string; 
-      animType: string; 
-      type: string; 
-      question: string; 
-      options: string[];
-      answer: string;
-    }
-    
-    const exerciseList: ExerciseItem[] = [];
+      const {
+        exercises,
+        totalExercises,
+        totalPages,
+        nextPage,
+        previousPage,
+      } = await searchExercises(search, sort, page, pageSize);
+      
+      if (!exercises || exercises.length === 0) {
+        res.status(404).json({ message: 'No exercises found' });
+        return;
+      }
 
-    exercises.forEach((exercise) => {
-      exerciseList.push({
-        exerciseId: exercise.exerciseId,
-        courseId: exercise.courseId,
-        courseBatchId: exercise.courseBatchId,
-        title: exercise.title,
-        dateCreated: exercise.dateCreated,
-        difficultyLevel: exercise.difficultyLevel,
-        animType: exercise.animType,
-        type: exercise.type,
-        question: exercise.question,
-        options: exercise.options,
-        answer: exercise.answer
+      res.status(200).json({ 
+        message: 'Exercises retrieved successfully', 
+        exercises,
+        totalItems: totalExercises,
+        totalPages,
+        currentPage: page,
+        nextPage,
+        previousPage
       });
-    });
-
-    res.status(200).json({ message: 'Exercises retrieved successfully', exerciseList });
-    return;
-  } catch (err) {
-        console.error(err);
-        const message = err instanceof Error ? err.message : 'An unknown error occurred';
-        res.status(500).json({ error: message });
       return;
-  }
-  }
-)
+    } catch (err) {
+      console.error(err);
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      res.status(500).json({ error: message });
+      return;
+    }
+  });
 
 /**
  * PUT /updateExercise
