@@ -1,4 +1,5 @@
 export default async function genericSearch(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   model: any,
   validSearchKeys: string[],
   validSortKeys: string[],
@@ -6,7 +7,7 @@ export default async function genericSearch(
   search: string,
   sort: string,
   pageNumber: number,
-  pageSize: number,
+  pageSize: number
 ) {
   // Create a MongoDB query filter
   let filter = {};
@@ -17,7 +18,7 @@ export default async function genericSearch(
     // Validate search key
     if (!validSearchKeys.includes(searchKey)) {
       throw new Error(
-        `Invalid search key. Allowed keys: ${validSearchKeys.join(", ")}`,
+        `Invalid search key. Allowed keys: ${validSearchKeys.join(", ")}`
       );
     }
 
@@ -45,7 +46,7 @@ export default async function genericSearch(
     // Validate sort key
     if (!validSortKeys.includes(sortKey)) {
       throw new Error(
-        `Invalid sort key. Allowed keys: ${validSortKeys.join(", ")}`,
+        `Invalid sort key. Allowed keys: ${validSortKeys.join(", ")}`
       );
     }
 
