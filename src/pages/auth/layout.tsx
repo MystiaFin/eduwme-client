@@ -29,7 +29,6 @@ const AuthLayout = () => {
             className="mt-6 text-center text-3xl font-extrabold text-gray-900"
             style={{
               WebkitTextStroke: "1px white",
-              textStroke: "1px white",
             }}
           >
             {isLogin ? "Welcome Back!" : "Join Us!"}
