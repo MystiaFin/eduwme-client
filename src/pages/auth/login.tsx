@@ -127,7 +127,7 @@ const Login = () => {
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
+      {/* <div className="flex items-center justify-between">
         <div className="flex items-center">
           <input
             id="remember-me"
@@ -151,7 +151,7 @@ const Login = () => {
             Forgot your password?
           </a>
         </div>
-      </div>
+      </div> */}
 
       {submitError && (
         <div className="p-3 bg-red-50 text-red-700 rounded-md">

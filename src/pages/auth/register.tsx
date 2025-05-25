@@ -121,7 +121,7 @@ const Register = () => {
               )}
             </div>
             
-            <div>
+            {/* <div>
               <label htmlFor="email" className="sr-only">
                 Email address
               </label>
@@ -141,7 +141,7 @@ const Register = () => {
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600">{errors.email}</p>
               )}
-            </div>
+            </div> */}
             
             <div>
               <label htmlFor="password" className="sr-only">
