@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 const JWT_SECRET: string | undefined = process.env.JWT_SECRET;
 
-const verifyTokenMiddleware = async (
+export const verifyTokenMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -35,4 +35,3 @@ const verifyTokenMiddleware = async (
 };
 
 export default verifyTokenMiddleware;
-
