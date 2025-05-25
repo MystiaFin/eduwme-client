@@ -52,10 +52,11 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, select: false}, // Password should be hashed before saving
   nickname: { type: String, trim: true }, 
   biodata: { type: String },
-  profilePicture: { type: String }, 
+  profilePicture: { type: String, default: 'default-profile.png' }, // Default profile picture
   email: { type: String, required: true, unique: true, trim: true, match: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/ }, // Basic email validation
   xp: { type: Number, default: 0, required: true }, // User's total experience points
   level: { type: Number, default: 1, required: true }, // User's overall level
+  gems: { type: Number, default: 0, required: true }, // User's total gems
   courseBatchesProgress: [courseBatchProgressSchema],// Array to store progress for all course batches
   dateCreated: { type: Date, default: Date.now },
   dateUpdated: { type: Date },
