@@ -55,16 +55,6 @@ app.use(
 );
 app.use(express.json());
 
-genericSearch();
-searchUsers();
-searchCourses();
-searchExercises();
-
-// routes initiation
-app.use("/users", userRoutes);
-app.use("/courses", courseRoutes);
-app.use("/exercises", exerciseRoutes);
-
 /**
  * Generic Search, Sort and Pagination Function
  * @param model - The Mongoose model to search
@@ -76,6 +66,16 @@ app.use("/exercises", exerciseRoutes);
  * @param pageNumber - Page number for pagination
  * @param pageSize - Number of items per page
  */
+
+genericSearch();
+searchUsers();
+searchCourses();
+searchExercises();
+
+// routes initiation
+app.use("/users", userRoutes);
+app.use("/courses", courseRoutes);
+app.use("/exercises", exerciseRoutes);
 
 // start server
 app.listen(PORT, () => {
