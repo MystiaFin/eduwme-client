@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation } from "react-router-dom";  // ini diperbaiki
+import { useLocation } from "react-router-dom";
 import Register from "./register.tsx";
 import Login from "./login.tsx";
 import ellipseBg from "../../assets/ellipse-bg.svg";
