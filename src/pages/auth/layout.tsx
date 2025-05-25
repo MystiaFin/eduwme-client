@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router";
+import React from "react";
+import { useLocation } from "react-router";
 import Register from "./register.tsx";
 import Login from "./login.tsx";
 import ellipseBg from "../../assets/ellipse-bg.svg";
