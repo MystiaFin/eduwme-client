@@ -12,6 +12,7 @@ interface UserProfile {
   profilePicture?: string;
   xp: number;
   level: number;
+  gems: number;
   dateCreated: string;
   dateUpdated?: string;
   dateLastLogin?: string;

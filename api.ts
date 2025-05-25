@@ -25,28 +25,49 @@ import { profileSchema } from './validators/profile.validators.js';
 dotenv.config();
 
 // constants
-const PORT: number = process.env.PORT ? Number(process.env.PORT) : 3000;
-const MONGO_URI: string | undefined = process.env.MONGO_URI || 'mongodb://localhost:27017/myapp';
-const JWT_SECRET: string | undefined = process.env.JWT_SECRET;
 
-const EXPIRATION_TIME: string = process.env.EXPIRATION_TIME || '1h'; // default to 1 hour
+// fill in the MongdoDB URI '' with your own values if needed
+
+// fill in the JWT secret with your own value if needed
+
+// when deployed, these values will be set by the host env
+const PORT: number = process.env.PORT ? Number(process.env.PORT) : 3000;
+const MONGO_URI: undefined | string = process.env.MONGO_URI || "";
+const JWT_SECRET: string = process.env.JWT_SECRET;
+const EXPIRATION_TIME: string = process.env.EXPIRATION_TIME;
+
+// .env variables checking
+const requiredEnv = {
+  MONGO_URI,
+  JWT_SECRET,
+  EXPIRATION_TIME,
+};
+
+for (const [key, value] of Object.entries(requiredEnv)) {
+  if (!value) {
+    console.error(`${key} is not set`);
+    process.exit(1);
+  }
+}
 
 // connect to MongoDB
 mongoose
   .connect(MONGO_URI)
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch(err => {
-    console.error('❌ MongoDB connection error:', err);
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
     process.exit(1);
   });
 
 const app = express();
 
-app.use(cors({
-  origin: '*',
-  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization']
-}));
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 app.use(express.json());
 
 
@@ -105,8 +126,7 @@ app.post(
       res.status(500).json({ error: message });
       return;
     }
-  }
-);
+})
 
 /**
  * POST /login
@@ -154,8 +174,7 @@ app.post(
         res.status(500).json({ error: message });
       return;
     }
-  }
-);
+})
 
 /**
  * POST /addProfile
@@ -427,8 +446,6 @@ async function searchExercises(search: string, sort: string, pageNumber: number,
   };
 }
 
-
-
 /**
  * GET /getUsers
  */
@@ -543,14 +560,20 @@ app.post(
         }
       }
 
-      // Calculate XP based on difficulty (only if not already completed)
+      // Calculate XP and Gems based on difficulty (only if not already completed)
       let awardedXp = 0;
+      let awardedGems = 0;
       if (!alreadyCompleted) {
         // Award XP based on difficulty level
         awardedXp = exercise.difficultyLevel * 10; // Base formula - adjust as needed
+
+        awardedGems = exercise.difficultyLevel * 5; // 5 gems per difficulty level
         
         // Add XP to user
         user.xp = (user.xp || 0) + awardedXp;
+
+        // Add Gems to user
+        user.gems = (user.gems || 0) + awardedGems; 
         
         // Check if user should level up (simple formula: level = 1 + floor(xp/100))
         const newLevel = Math.floor(1 + (user.xp / 100));
@@ -744,13 +767,16 @@ app.post(
       // Mark as modified and save the user document
       user.markModified('courseBatchesProgress');
       user.markModified('xp');
+      user.markModified('gems');
       user.markModified('level');
       await user.save();
       
       res.status(200).json({ 
         message: 'Exercise completed successfully', 
         awardedXp,
+        awardedGems,
         currentXp: user.xp,
+        currentGems: user.gems,
         level: user.level,
         alreadyCompleted,
         exerciseStatus: {
@@ -773,13 +799,11 @@ app.post(
 );
 
 
-
 /**
  * GET /leaderboard
  */
 app.get(
-  '/leaderboard',
-  verifyTokenMiddleware,
+  '/leaderboard', verifyTokenMiddleware,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const leaderboard = await User.find().sort({ xp: -1 }).limit(10);
@@ -793,6 +817,7 @@ app.get(
     }
   }
 )
+
 
 
 /**
@@ -1080,7 +1105,6 @@ app.post(
   }
 );
 
-
 /**
  * GET /getCourses
  */ 
@@ -1149,7 +1173,7 @@ app.get(
   });
 
 /**
- * GET /getCourses/:courseId
+ * GET /getCourse/:courseId
  */
 app.get(
   '/getCourse/:courseId',
@@ -1365,7 +1389,7 @@ app.post(
 })
 
 /**
- * GET /getExercise
+ * GET /getExercise/:exerciseId
  */
 app.get(
   '/getExercise/:exerciseId',
@@ -1394,6 +1418,7 @@ app.get(
     }
   }
 )
+
 
 /**
  * GET /getExercises
@@ -1549,77 +1574,6 @@ app.delete(
   }
 }
 )
-
-app.put(
-  '/updateExercise',verifyTokenMiddleware, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const validatedData = updateExerciseSchema.parse(req.body);
-    const {
-      exerciseId,
-      courseId,
-      courseBatchId,
-      title,
-      difficultyLevel,
-      animType,
-      type,
-      question,
-      options,
-      answer
-    } = validatedData;
-
-    // basic validation
-    if (!exerciseId) {
-      res.status(400).json({ message: 'Exercise ID is required' });
-      return;
-    }
-    // find exercise
-    const exercise = await Exercise.findOne({ exerciseId: exerciseId });
-    if (!exercise) {
-      res.status(404).json({ message: `Exercise with Exercise ID ${exerciseId} not found` });
-      return;
-    }
-
-    // check if courseId already exists in the database
-    const existingCourse = await Course.findOne({ courseId: courseId });
-    if (!existingCourse) {
-      res.status(404).json({ message: 'Course not found' });
-      return;
-    }
-
-    // check if courseBatchId already exists in the database
-    const existingCourseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
-    if (!existingCourseBatch) {
-      res.status(404).json({ message: 'Course batch not found' });
-      return;
-    }
-    // create new current date
-    const dateCreated = new Date();
-
-    // update exercise
-    exercise.title = title;
-    exercise.difficultyLevel = difficultyLevel;
-    exercise.dateCreated = dateCreated;
-    exercise.animType = animType;
-    exercise.type = type;
-    exercise.question = question;
-    exercise.options = options;
-    exercise.answer = answer;
-    await exercise.save();
-    res.status(200).json({ message: 'Exercise updated successfully', exercise });
-    return;
-  } catch (err) {
-    console.error(err);
-    if (err instanceof ZodError) {
-      res.status(400).json({ message: "Validation failed", errors: err.errors });
-      return;
-    }
-    const message = err instanceof Error ? err.message : 'An unknown error occurred';
-    res.status(500).json({ error: message });
-    return;
-  }
-}
-)
-
 
 // start server
 app.listen(PORT, () => {
