@@ -800,8 +800,6 @@ app.post(
   }
 );
 
-
-
 /**
  * GET /leaderboard
  */
