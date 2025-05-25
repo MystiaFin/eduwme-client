@@ -14,6 +14,7 @@ import LandingPage from "./pages/Landing.tsx";
 import HomePage from "./pages/Home.tsx";
 import LeaderboardPage from "./pages/Leaderboard.tsx";
 import ProfilePage from "./pages/Profile.tsx";
+import Courses from "./pages/Courses.tsx";
 
 // Auth Pages Import
 import Register from "./pages/auth/register.tsx";
@@ -32,6 +33,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/home" element={<HomePage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/courses/:categoryId" element={<Courses />} />
           </Route>
 
           {/* Dengan layout auth */}
