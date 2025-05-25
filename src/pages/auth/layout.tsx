@@ -1,21 +1,13 @@
 import React from "react";
-import { useLocation } from "react-router";
+import { useLocation } from "react-router-dom";  // ini diperbaiki
 import Register from "./register.tsx";
 import Login from "./login.tsx";
 import ellipseBg from "../../assets/ellipse-bg.svg";
 import Icon from "../../assets/Icon.svg";
 
 const AuthLayout = () => {
-  // const navigate = useNavigate();
   const location = useLocation();
-  // const [isLogin, setIsLogin] = useState(location.pathname === "/login");
   const isLogin = location.pathname === "/login";
-
-  // Fungsi toggleForm dikomentari karena tidak dipakai saat ini
-  // const toggleForm = () => {
-  //   setIsLogin(!isLogin);
-  //   navigate(isLogin ? "/register" : "/login");
-  // };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-[#8FE1FF] py-12 px-4 sm:px-6 lg:px-8 relative">
@@ -37,21 +29,11 @@ const AuthLayout = () => {
             className="mt-6 text-center text-3xl font-extrabold text-gray-900"
             style={{
               WebkitTextStroke: "1px white",
+              textStroke: "1px white",
             }}
           >
             {isLogin ? "Welcome Back!" : "Join Us!"}
           </h2>
-
-          {/* Bagian tombol toggle form juga dikomentari */}
-          {/* <p className="mt-2 text-center text-sm text-gray-600">
-            {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-            <button
-              onClick={toggleForm}
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              {isLogin ? "Sign up" : "Sign in"}
-            </button>
-          </p> */}
         </div>
 
         {isLogin ? <Login /> : <Register />}
