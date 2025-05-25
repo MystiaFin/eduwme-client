@@ -1,21 +1,24 @@
-// filepath: c:\Users\Univ_and_Work_files\Programming\mix-language-files\eduwme-project\eduwme-client\src\component\LeaderboardPage.tsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { HiArrowLeft } from 'react-icons/hi';
 
-// Sample data - replace with actual data fetching later
-const sampleLeaderboardData = [
-  { rank: 1, name: 'Alex J.', xp: 1450, avatar: '👨‍🎓', league: 'Diamond' },
-  { rank: 2, name: 'Taylor S.', xp: 1380, avatar: '👩‍🎓', league: 'Diamond' },
-  { rank: 3, name: 'Jordan P.', xp: 1320, avatar: '👨‍🎓', league: 'Diamond' },
-  { rank: 4, name: 'Casey M.', xp: 1250, avatar: '🧑‍🏫', league: 'Diamond' },
-  { rank: 5, name: 'Morgan K.', xp: 1180, avatar: '👩‍🏫', league: 'Diamond' },
-  { rank: 6, name: 'Riley B.', xp: 1100, avatar: '👨‍🎓', league: 'Ruby' },
-  { rank: 7, name: 'Jamie L.', xp: 1050, avatar: '👩‍🎓', league: 'Ruby' },
-  { rank: 8, name: 'Skyler W.', xp: 980, avatar: '🧑‍🎓', league: 'Ruby' },
-  { rank: 9, name: 'Drew N.', xp: 920, avatar: '👨‍🏫', league: 'Emerald' },
-  { rank: 10, name: 'Chris G.', xp: 850, avatar: '👩‍🏫', league: 'Emerald' },
-  // Add more users as needed
-];
+interface LeaderboardUser {
+  _id: string;
+  username: string;
+  nickname?: string;
+  profilePicture?: string;
+  xp: number;
+  level: number;
+}
+
+// Helper function to determine user league based on XP
+const getUserLeague = (xp: number): string => {
+  if (xp >= 1200) return 'Diamond';
+  if (xp >= 900) return 'Ruby';
+  if (xp >= 600) return 'Emerald';
+  if (xp >= 300) return 'Sapphire';
+  return 'Bronze';
+};
 
 // Helper to get league color
 const getLeagueColor = (league: string) => {
@@ -28,79 +31,148 @@ const getLeagueColor = (league: string) => {
   }
 };
 
-const LeaderboardPage = () => {
+const LeaderboardPage: React.FC = () => {
+  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError('User not authenticated.');
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch('http://localhost:3000/leaderboard', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.leaderboard) {
+          setLeaderboard(data.leaderboard);
+        } else {
+          setLeaderboard([]);
+        }
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unknown error occurred.');
+        }
+        console.error('Failed to fetch leaderboard:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeaderboard();
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
-            <Link to="/dashboard" className="text-blue-600 hover:text-blue-800 font-medium">
-                &larr; Back to Dashboard
-            </Link>
+        {/* Modern Back Button */}
+        <div className="mb-8">
+          <Link 
+            to="/dashboard" 
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300"
+          >
+            <HiArrowLeft className="mr-2 h-5 w-5" />
+            Back to Dashboard
+          </Link>
         </div>
 
-        <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">
-          Leaderboard
-        </h1>
+        <div className="bg-white shadow-2xl rounded-xl overflow-hidden border border-gray-200">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-8 text-white">
+            <h1 className="text-4xl font-bold text-center">
+              Leaderboard
+            </h1>
+            <p className="text-center mt-2 text-blue-100">Top performers in the community</p>
+          </div>
 
-        {/* You can add tabs for different leaderboards (e.g., Global, Friends, Weekly) here */}
-        {/* <div className="mb-6 flex justify-center space-x-2">
-          <button className="px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold">Global</button>
-          <button className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300">Friends</button>
-        </div> */}
-
-        <div className="bg-white shadow-xl rounded-lg overflow-hidden">
-          <table className="min-w-full">
-            <thead className="bg-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Rank</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Player</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider hidden sm:table-cell">League</th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">XP</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {sampleLeaderboardData.map((user, index) => (
-                <tr key={user.rank} className={`${index < 3 ? 'bg-yellow-50' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')} hover:bg-gray-100`}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`text-lg font-bold ${index < 3 ? 'text-yellow-600' : 'text-gray-700'}`}>
-                      {user.rank}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10 text-2xl flex items-center justify-center bg-gray-200 rounded-full">
-                        {user.avatar}
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                        <div className="text-sm text-gray-500 sm:hidden">{user.league}</div> {/* Show league on small screens here */}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getLeagueColor(user.league)} text-white`}>
-                      {user.league}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <span className="text-sm font-semibold text-gray-900">{user.xp} XP</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : error ? (
+            <div className="text-center p-12 text-red-500">{error}</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Rank</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Player</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider hidden sm:table-cell">League</th>
+                    <th className="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">XP</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {leaderboard.map((user, index) => {
+                    const league = getUserLeague(user.xp);
+                    return (
+                      <tr key={user._id} className={`${index < 3 ? 'bg-yellow-50' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')} hover:bg-gray-100 transition-colors duration-150`}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {index < 3 ? (
+                            <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                                 style={{ background: index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32' }}>
+                              {index + 1}
+                            </div>
+                          ) : (
+                            <span className="text-lg font-semibold text-gray-700">
+                              {index + 1}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-12 w-12 bg-gray-200 rounded-full overflow-hidden">
+                              <img 
+                                src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.nickname || user.username}&background=random`} 
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">{user.nickname || user.username}</div>
+                              <div className="text-xs text-gray-500">Level {user.level}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                          <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getLeagueColor(league)} text-white`}>
+                            {league}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <span className="text-sm font-bold text-indigo-600">{user.xp.toLocaleString()} XP</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              
+              {leaderboard.length === 0 && !loading && !error && (
+                <div className="py-12 text-center text-gray-500">
+                  No users on the leaderboard yet.
+                </div>
+              )}
+            </div>
+          )}
         </div>
-
-        {/* Pagination can be added here if the list is long */}
-        {/* <div className="mt-8 flex justify-center">
-          <button className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-            Previous
-          </button>
-          <button className="ml-3 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-            Next
-          </button>
-        </div> */}
-
       </div>
     </div>
   );

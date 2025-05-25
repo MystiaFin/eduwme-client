@@ -9,6 +9,7 @@ import LeaderboardPage from "./pages/leaderboard.tsx";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import Login from "./pages/auth/login.tsx";
 import Register from "./pages/auth/register.tsx";
+import Profile from "./pages/profile.tsx";
 
 
 createRoot(document.getElementById("root")!).render(
@@ -26,7 +27,7 @@ createRoot(document.getElementById("root")!).render(
         <Route element={<ProtectedRoute />}>
           {/* Routes nested inside will only be accessible if token exists */}
           <Route path="/dashboard" element={<Home />} />
-          <Route path="/profile" element={<Home />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/shop" element={<Home />} />
           <Route path="/course/:courseId" element={<CourseDetail />} />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 // Import useNavigate
 import { Link, useNavigate } from 'react-router-dom';
+import LeaderboardSection from '../components/LeaderboardSection';
 
 // Sample data
 const sampleCourses = [
@@ -148,24 +149,7 @@ const Home = () => {
         </div>
 
         {/* Leaderboard Preview */}
-        <div>
-          <h2 className="text-lg font-bold text-gray-800 mb-3">Leaderboard</h2>
-          <div className="space-y-3">
-            {sampleLeaderboard.map((user) => (
-              <div key={user.rank} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                <div className="flex items-center">
-                  <span className="font-bold w-6 text-center mr-2">{user.rank}</span>
-                  <span className="text-2xl mr-2">{user.avatar}</span>
-                  <span className="text-sm font-medium text-gray-700">{user.name}</span>
-                </div>
-                <span className="text-sm text-gray-500">{user.xp} XP</span>
-              </div>
-            ))}
-          </div>
-          <Link to="/leaderboard" className="block text-center mt-4 text-sm font-semibold text-blue-500 hover:text-blue-700">
-            View Full Leaderboard
-          </Link>
-        </div>
+        <LeaderboardSection />
         {/* --- End of restored sidebar content --- */}
       </aside>
     </div>
