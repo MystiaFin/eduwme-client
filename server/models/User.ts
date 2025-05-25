@@ -66,7 +66,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, select: false }, // Password should be hashed before saving
   nickname: { type: String, trim: true },
   biodata: { type: String },
-  profilePicture: { type: String },
+  profilePicture: { type: String, default: "default-profile.png" }, // Default profile picture
   email: {
     type: String,
     required: true,
@@ -76,6 +76,7 @@ const userSchema = new mongoose.Schema({
   }, // Basic email validation
   xp: { type: Number, default: 0, required: true }, // User's total experience points
   level: { type: Number, default: 1, required: true }, // User's overall level
+  gems: { type: Number, default: 0, required: true }, // User's total gems
   courseBatchesProgress: [courseBatchProgressSchema], // Array to store progress for all course batches
   dateCreated: { type: Date, default: Date.now },
   dateUpdated: { type: Date },
@@ -85,3 +86,4 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema);
 
 export default User;
+

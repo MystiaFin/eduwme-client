@@ -163,6 +163,7 @@ app.use(searchExercises);
 //    }
 //  },
 //);
+=======
 
 // start server
 app.listen(PORT, () => {
