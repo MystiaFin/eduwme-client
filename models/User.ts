@@ -50,6 +50,12 @@ const courseBatchProgressSchema = new Schema({
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true, match: /^[a-zA-Z0-9_]+$/ }, // Alphanumeric and underscores only, trim removes whitespace
   password: { type: String, required: true, select: false}, // Password should be hashed before saving
+  role: { 
+    type: String, 
+    enum: ['user', 'admin'], 
+    default: 'user',
+    required: true 
+  },
   nickname: { type: String, trim: true }, 
   biodata: { type: String },
   profilePicture: { type: String }, 

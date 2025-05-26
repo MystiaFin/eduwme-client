@@ -10,6 +10,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import Login from "./pages/auth/login.tsx";
 import Register from "./pages/auth/register.tsx";
 import Profile from "./pages/profile.tsx";
+import Exercise from "./pages/exercise.tsx";
 
 
 createRoot(document.getElementById("root")!).render(
@@ -31,6 +32,7 @@ createRoot(document.getElementById("root")!).render(
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/shop" element={<Home />} />
           <Route path="/course/:courseId" element={<CourseDetail />} />
+          <Route path="/exercise/:exerciseId" element={<Exercise />} />
         </Route>
         {/* --- End Protected Routes --- */}
 

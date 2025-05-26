@@ -11,7 +11,7 @@ import Course from './models/Course.js';
 import Exercise from './models/Exercise.js';
 import CourseBatch from './models/CourseBatch.js';
 
-import verifyTokenMiddleware from './middleware.js';
+import {verifyTokenMiddleware, isAdmin, isUser} from './middleware.js';
 
 import { registerSchema, loginSchema } from './validators/auth.validators.js';
 import { courseBatchSchema, courseBatchUpdateSchema } from './validators/courseBatch.validators.js';
@@ -71,7 +71,6 @@ app.use(
 app.use(express.json());
 
 
-
 /**
  * POST /register
  */
@@ -122,7 +121,7 @@ app.post(
       return;
     } catch (err) {
       console.error(err);
-      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      const message = err instanceof Error ? err.message  : 'An unknown error occurred';
       res.status(500).json({ error: message });
       return;
     }
@@ -161,7 +160,7 @@ app.post(
 
       // sign JWT
       const token = jwt.sign(
-        { id: user.id, username: user.username },
+        { id: user.id, username: user.username, role: user.role },
         JWT_SECRET || 'default_secret',
         { expiresIn: EXPIRATION_TIME }
       );
