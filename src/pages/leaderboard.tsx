@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { HiArrowLeft } from 'react-icons/hi';
 
 interface LeaderboardUser {
-  _id: string;
   username: string;
   nickname?: string;
   profilePicture?: string;
@@ -123,7 +122,7 @@ const LeaderboardPage: React.FC = () => {
                   {leaderboard.map((user, index) => {
                     const league = getUserLeague(user.xp);
                     return (
-                      <tr key={user._id} className={`${index < 3 ? 'bg-yellow-50' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')} hover:bg-gray-100 transition-colors duration-150`}>
+                      <tr key={user.username} className={`${index < 3 ? 'bg-yellow-50' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')} hover:bg-gray-100 transition-colors duration-150`}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {index < 3 ? (
                             <div className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-white font-bold text-sm"

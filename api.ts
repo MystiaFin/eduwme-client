@@ -11,7 +11,7 @@ import Course from './models/Course.js';
 import Exercise from './models/Exercise.js';
 import CourseBatch from './models/CourseBatch.js';
 
-import {verifyTokenMiddleware, isAdmin, isUser} from './middleware.js';
+import {isAdmin, isUser} from './middleware.js';
 
 import { registerSchema, loginSchema } from './validators/auth.validators.js';
 import { courseBatchSchema, courseBatchUpdateSchema } from './validators/courseBatch.validators.js';
@@ -25,49 +25,28 @@ import { profileSchema } from './validators/profile.validators.js';
 dotenv.config();
 
 // constants
-
-// fill in the MongdoDB URI '' with your own values if needed
-
-// fill in the JWT secret with your own value if needed
-
-// when deployed, these values will be set by the host env
 const PORT: number = process.env.PORT ? Number(process.env.PORT) : 3000;
-const MONGO_URI: undefined | string = process.env.MONGO_URI || "";
-const JWT_SECRET: string = process.env.JWT_SECRET;
-const EXPIRATION_TIME: string = process.env.EXPIRATION_TIME;
+const MONGO_URI: string | undefined = process.env.MONGO_URI || 'mongodb://localhost:27017/myapp';
+const JWT_SECRET: string | undefined = process.env.JWT_SECRET;
 
-// .env variables checking
-const requiredEnv = {
-  MONGO_URI,
-  JWT_SECRET,
-  EXPIRATION_TIME,
-};
-
-for (const [key, value] of Object.entries(requiredEnv)) {
-  if (!value) {
-    console.error(`${key} is not set`);
-    process.exit(1);
-  }
-}
+const EXPIRATION_TIME: string = process.env.EXPIRATION_TIME || '1h'; // default to 1 hour
 
 // connect to MongoDB
 mongoose
   .connect(MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
+  .then(() => console.log('✅ MongoDB connected'))
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err);
     process.exit(1);
   });
 
 const app = express();
 
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-);
+app.use(cors({
+  origin: '*',
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization']
+}));
 app.use(express.json());
 
 
@@ -125,7 +104,8 @@ app.post(
       res.status(500).json({ error: message });
       return;
     }
-})
+  }
+);
 
 /**
  * POST /login
@@ -173,7 +153,54 @@ app.post(
         res.status(500).json({ error: message });
       return;
     }
-})
+  }
+);
+
+/**
+ * POST /setup-first-admin
+ * This endpoint is only available when no admin users exist in the system
+ */
+app.post(
+  '/setup-first-admin',
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      // Check if any admin users already exist
+      const adminExists = await User.findOne({ role: 'admin' });
+      if (adminExists) {
+        res.status(403).json({ message: 'Setup already completed. Admin users already exist.' });
+        return;
+      }
+
+      // Continue with admin creation using the same logic as in createAdmin
+      const validatedData = registerSchema.parse(req.body);
+      const { username, password, confirm_password, email } = validatedData;
+
+      if (confirm_password !== password) {
+        res.status(400).json({ message: 'Passwords do not match' });
+        return;
+      }
+
+      // Create the admin user
+      const hashed = await bcrypt.hash(password, 10);
+      const newUser = new User({
+        username, 
+        email, 
+        password: hashed,
+        role: 'admin',
+        dateCreated: new Date(),
+        courseBatchesProgress: [],
+        dateLastLogin: new Date(),
+      });
+      await newUser.save();
+
+      res.status(201).json({ message: 'First admin created successfully' });
+    } catch (err) {
+      console.error(err);
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      res.status(500).json({ error: message });
+    }
+  }
+);
 
 /**
  * POST /addProfile
@@ -181,7 +208,7 @@ app.post(
 
 app.put(
   '/addProfile',
-  verifyTokenMiddleware,
+  isUser,
   async (req: Request, res: Response): Promise<void> => {
     try {
       // validate request body with zod
@@ -220,7 +247,7 @@ app.put(
 
 app.get(
   '/getProfile/:userId',
-  verifyTokenMiddleware,
+  isUser,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { userId } = req.params;
@@ -250,35 +277,7 @@ app.get(
 )
 
 
-/**
- * GET /getUser:userId
- */
-app.get('getUser/:userId', verifyTokenMiddleware, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { userId } = req.params;
 
-    // basic validation
-    if (!userId) {
-      res.status(400).json({ message: 'User ID is required' });
-      return;
-    }
-
-    // find user
-    const user = await User.findById({ _id: userId});
-    if (!user) {
-      res.status(404).json({ message: 'User not found' });
-      return;
-    }
-
-    res.status(200).json({ message: 'User retrieved successfully', user });
-    return;
-  } catch (err) {
-        console.error(err);
-        const message = err instanceof Error ? err.message : 'An unknown error occurred';
-        res.status(500).json({ error: message });
-      return;
-  }
-})
 
 /**
  * Generic Search, Sort and Pagination Function
@@ -445,12 +444,47 @@ async function searchExercises(search: string, sort: string, pageNumber: number,
   };
 }
 
+
+/**
+ * GET /leaderboard
+ */
+app.get(
+  '/leaderboard',
+  isUser,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const leaderboard = await User.find().sort({ xp: -1 }).limit(10);
+
+      const safeLeaderboard = leaderboard.map((user: any) => ({
+        username: user.username,
+        nickname: user.nickname,
+        profilePicture: user.profilePicture,
+        xp: user.xp,
+        level: user.level,
+      }))
+
+      if (safeLeaderboard.length === 0) {
+        res.status(404).json({ message: 'No users found in leaderboard' });
+      }
+
+      res.status(200).json({ message: 'Leaderboard retrieved successfully', leaderboard : safeLeaderboard });
+      return;
+    } catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
+      return;
+    }
+  }
+)
+
+
 /**
  * GET /getUsers
  */
 app.get(
   '/getUsers',
-  verifyTokenMiddleware,
+  isUser,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const pageSize = Number(req.query.page_size) || 10;
@@ -466,15 +500,27 @@ app.get(
         nextPage,
         previousPage,
       } = await searchUsers(search, sort, page, pageSize);
+      
 
-      if (users.length === 0) {
+      const safeUsers = users.map((user: any) => ({
+        username: user.username,
+        nickname: user.nickname,
+        xp: user.xp,
+        level: user.level,
+        gems: user.gems,
+        biodata: user.biodata,
+        profilePicture: user.profilePicture,  
+      // Include only what's necessary, exclude _id
+      }));
+
+      if (safeUsers.length === 0) {
         res.status(404).json({ message: 'No users found' });
         return;
       }
 
       res.status(200).json({
         message: 'Users retrieved successfully',
-        users,
+        Users: safeUsers,
         totalItems,
         totalPages,
         nextPage,
@@ -493,7 +539,7 @@ app.get(
  */
 app.post(
   '/complete/:userId/:courseBatchId/:courseId/:exerciseId', 
-  verifyTokenMiddleware, 
+  isUser, 
   async (req: Request, res: Response): Promise<void> => {
     try {
       // validate request body with zod
@@ -559,19 +605,15 @@ app.post(
         }
       }
 
-      // Calculate XP and Gems based on difficulty (only if not already completed)
+      // Calculate XP based on difficulty (only if not already completed)
       let awardedXp = 0;
       let awardedGems = 0;
       if (!alreadyCompleted) {
         // Award XP based on difficulty level
         awardedXp = exercise.difficultyLevel * 10; // Base formula - adjust as needed
-
-        awardedGems = exercise.difficultyLevel * 5; // 5 gems per difficulty level
-        
-        // Add XP to user
+        awardedGems = exercise.difficultyLevel * 5; // Assuming 1 gem per difficulty level for simplicity
+        // Add XP and Gems to user
         user.xp = (user.xp || 0) + awardedXp;
-
-        // Add Gems to user
         user.gems = (user.gems || 0) + awardedGems; 
         
         // Check if user should level up (simple formula: level = 1 + floor(xp/100))
@@ -773,7 +815,7 @@ app.post(
       res.status(200).json({ 
         message: 'Exercise completed successfully', 
         awardedXp,
-        awardedGems,
+        awardedGems, 
         currentXp: user.xp,
         currentGems: user.gems,
         level: user.level,
@@ -799,33 +841,12 @@ app.post(
 
 
 /**
- * GET /leaderboard
- */
-app.get(
-  '/leaderboard', verifyTokenMiddleware,
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const leaderboard = await User.find().sort({ xp: -1 }).limit(10);
-      res.status(200).json({ message: 'Leaderboard retrieved successfully', leaderboard });
-      return;
-    } catch (err) {
-        console.error(err);
-        const message = err instanceof Error ? err.message : 'An unknown error occurred';
-        res.status(500).json({ error: message });
-      return;
-    }
-  }
-)
-
-
-
-/**
  * POST /createCourseBatch
  */
 
 app.post (
   '/createCourseBatch',
-  verifyTokenMiddleware,
+  isAdmin,
   async (req: Request, res: Response): Promise<void> => {
   try {
     // validate request body
@@ -868,6 +889,85 @@ app.post (
   }
 }
 )
+
+
+/**
+ * PUT /updateCourseBatch
+ */
+
+app.put('/updateCourseBatch', isAdmin, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const validatedData = courseBatchUpdateSchema.parse(req.body);
+    const { courseBatchId, stage } = validatedData;
+
+    // basic validation
+    if (!courseBatchId) {
+      res.status(400).json({ message: 'Course batch ID is required' });
+      return;
+    }
+
+    // find course batch
+    const courseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
+    if (!courseBatch) {
+      res.status(404).json({ message: 'Course batch not found' });
+      return;
+    }
+    
+    // update the date
+    const newDate = new Date();
+
+    courseBatch.stage = stage;
+    courseBatch.dateCreated = newDate;
+    await courseBatch.save();
+
+    res.status(200).json({ message: 'Course batch updated successfully', courseBatch });
+  } catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
+      return;
+  }
+}
+);
+
+/**
+ * DELETE /deleteCourseBatch
+ */
+
+app.delete(
+  '/deleteCourseBatch',
+  isAdmin,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { courseBatchId } = req.body;
+
+      // basic validation
+      if (!courseBatchId) {
+        res.status(400).json({ message: 'Course batch ID is required' });
+        return;
+      }
+
+      // find course batch
+      const existingCourseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
+      if (!existingCourseBatch) {
+        res.status(404).json({ message: `Course batch with Course Batch ID ${courseBatchId} not found` });
+        return;
+      }
+
+      // delete course batch
+      await CourseBatch.deleteOne({ courseBatchId : courseBatchId });
+
+      res.status(200).json({ message: 'Course batch deleted successfully' });
+      return;
+    } catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
+      return;
+    }
+  }
+);
+
 
 /**
  * GET /getCourseBatches
@@ -947,92 +1047,13 @@ app.get(
     }
 })
 
-
-/**
- * PUT /updateCourseBatch
- */
-
-app.put('/updateCourseBatch', verifyTokenMiddleware, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const validatedData = courseBatchUpdateSchema.parse(req.body);
-    const { courseBatchId, stage } = validatedData;
-
-    // basic validation
-    if (!courseBatchId) {
-      res.status(400).json({ message: 'Course batch ID is required' });
-      return;
-    }
-
-    // find course batch
-    const courseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
-    if (!courseBatch) {
-      res.status(404).json({ message: 'Course batch not found' });
-      return;
-    }
-    
-    // update the date
-    const newDate = new Date();
-
-    courseBatch.stage = stage;
-    courseBatch.dateCreated = newDate;
-    await courseBatch.save();
-
-    res.status(200).json({ message: 'Course batch updated successfully', courseBatch });
-  } catch (err) {
-        console.error(err);
-        const message = err instanceof Error ? err.message : 'An unknown error occurred';
-        res.status(500).json({ error: message });
-      return;
-  }
-}
-);
-
-/**
- * DELETE /deleteCourseBatch
- */
-
-app.delete(
-  '/deleteCourseBatch',
-  verifyTokenMiddleware,
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { courseBatchId } = req.body;
-
-      // basic validation
-      if (!courseBatchId) {
-        res.status(400).json({ message: 'Course batch ID is required' });
-        return;
-      }
-
-      // find course batch
-      const existingCourseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
-      if (!existingCourseBatch) {
-        res.status(404).json({ message: `Course batch with Course Batch ID ${courseBatchId} not found` });
-        return;
-      }
-
-      // delete course batch
-      await CourseBatch.deleteOne({ courseBatchId : courseBatchId });
-
-      res.status(200).json({ message: 'Course batch deleted successfully' });
-      return;
-    } catch (err) {
-        console.error(err);
-        const message = err instanceof Error ? err.message : 'An unknown error occurred';
-        res.status(500).json({ error: message });
-      return;
-    }
-  }
-);
-
-
 /**
  * POST /createCourse
  */
 
 app.post(
   '/createCourse',
-  verifyTokenMiddleware,
+  isAdmin,
   async (req: Request, res: Response): Promise<void> => {
     try {
       const validatedData = courseSchema.parse(req.body);
@@ -1104,6 +1125,111 @@ app.post(
   }
 );
 
+
+/**
+ * PUT /updateCourse 
+ */
+app.put(
+  '/updateCourse',
+  isAdmin,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const validatedData = courseUpdateSchema.parse(req.body);
+      const { courseBatchId, courseId, title, level } = validatedData;
+
+      // basic validation
+      if (!courseId) {
+        res.status(400).json({ message: 'Course ID is required' });
+        return;
+      }
+
+      // find course
+      const course = await Course.findOne({courseId: courseId});
+      if (!course) {
+        res.status(404).json({ message: `Course with course ID ${course} not found.` });
+        return;
+      }
+
+      // check if courseBatchId already exists in the database
+      const existingCourseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
+      if (!existingCourseBatch) {
+        res.status(404).json({ message: 'Course batch not found' });
+        return;
+      }
+
+      // create new current date
+      const dateCreated = new Date();
+
+      // update course
+      course.title = title;
+      course.level = level;
+      course.dateCreated = dateCreated;
+      await course.save();
+
+      res.status(200).json({ message: 'Course updated successfully', course });
+      return;
+    } catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
+      return;
+    }
+  }
+);
+
+
+/**
+ * DELETE /deleteCourse
+ */ 
+
+app.delete(
+  '/deleteCourse',
+  isAdmin,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { courseId, courseBatchId } = req.body;
+
+      // basic validation
+      if (!courseId) {
+        res.status(400).json({ message: 'Course ID is required' });
+        return;
+      }
+
+      // find course
+      const existingCourse = await Course.findOne({courseId: courseId});
+      if (!existingCourse) {
+        res.status(404).json({ message: `Course with Course ID ${courseId} not found` });
+        return;
+      }
+
+      const existingCourseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
+      if (!existingCourseBatch) {
+        res.status(404).json({ message: `Course batch with Course Batch ID ${courseBatchId} not found` });
+        return;
+      }
+
+      // delete courseId from courseList in courseBatch
+      existingCourseBatch.courseList = existingCourseBatch.courseList.filter((course) => course !== courseId);
+      if (existingCourseBatch.coursesLength > 0) {
+        existingCourseBatch.coursesLength -= 1;
+      }
+      await existingCourseBatch.save();
+
+      // delete course
+      await Course.deleteOne({ courseId : courseId });
+
+      res.status(200).json({ message: 'Course deleted successfully' });
+      return;
+    } catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
+      return;
+    }
+  }
+)
+
+
 /**
  * GET /getCourses
  */ 
@@ -1172,7 +1298,7 @@ app.get(
   });
 
 /**
- * GET /getCourse/:courseId
+ * GET /getCourses/:courseId
  */
 app.get(
   '/getCourse/:courseId',
@@ -1205,107 +1331,6 @@ app.get(
   })
 
 
-/**
- * PUT /updateCourse 
- */
-app.put(
-  '/updateCourse',
-  verifyTokenMiddleware,
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const validatedData = courseUpdateSchema.parse(req.body);
-      const { courseBatchId, courseId, title, level } = validatedData;
-
-      // basic validation
-      if (!courseId) {
-        res.status(400).json({ message: 'Course ID is required' });
-        return;
-      }
-
-      // find course
-      const course = await Course.findOne({courseId: courseId});
-      if (!course) {
-        res.status(404).json({ message: `Course with course ID ${course} not found.` });
-        return;
-      }
-
-      // check if courseBatchId already exists in the database
-      const existingCourseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
-      if (!existingCourseBatch) {
-        res.status(404).json({ message: 'Course batch not found' });
-        return;
-      }
-
-      // create new current date
-      const dateCreated = new Date();
-
-      // update course
-      course.title = title;
-      course.level = level;
-      course.dateCreated = dateCreated;
-      await course.save();
-
-      res.status(200).json({ message: 'Course updated successfully', course });
-      return;
-    } catch (err) {
-        console.error(err);
-        const message = err instanceof Error ? err.message : 'An unknown error occurred';
-        res.status(500).json({ error: message });
-      return;
-    }
-  }
-);
-
-/**
- * DELETE /deleteCourse
- */ 
-
-app.delete(
-  '/deleteCourse',
-  verifyTokenMiddleware,
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { courseId, courseBatchId } = req.body;
-
-      // basic validation
-      if (!courseId) {
-        res.status(400).json({ message: 'Course ID is required' });
-        return;
-      }
-
-      // find course
-      const existingCourse = await Course.findOne({courseId: courseId});
-      if (!existingCourse) {
-        res.status(404).json({ message: `Course with Course ID ${courseId} not found` });
-        return;
-      }
-
-      const existingCourseBatch = await CourseBatch.findOne({ courseBatchId: courseBatchId });
-      if (!existingCourseBatch) {
-        res.status(404).json({ message: `Course batch with Course Batch ID ${courseBatchId} not found` });
-        return;
-      }
-
-      // delete courseId from courseList in courseBatch
-      existingCourseBatch.courseList = existingCourseBatch.courseList.filter((course) => course !== courseId);
-      if (existingCourseBatch.coursesLength > 0) {
-        existingCourseBatch.coursesLength -= 1;
-      }
-      await existingCourseBatch.save();
-
-      // delete course
-      await Course.deleteOne({ courseId : courseId });
-
-      res.status(200).json({ message: 'Course deleted successfully' });
-      return;
-    } catch (err) {
-        console.error(err);
-        const message = err instanceof Error ? err.message : 'An unknown error occurred';
-        res.status(500).json({ error: message });
-      return;
-    }
-  }
-)
 
 /**
  * POST /createExercise
@@ -1313,7 +1338,7 @@ app.delete(
 
 app.post( 
   '/createExercise', 
-  verifyTokenMiddleware, // Assuming exercise creation requires authentication
+  isAdmin, // Assuming exercise creation requires authentication
   async (req: Request, res: Response): Promise<void> => {
   try {
     const validatedData = createExerciseSchema.parse(req.body);
@@ -1388,86 +1413,11 @@ app.post(
 })
 
 /**
- * GET /getExercise/:exerciseId
- */
-app.get(
-  '/getExercise/:exerciseId',
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { exerciseId } = req.params;
-      // basic validation
-      if (!exerciseId) {
-        res.status(400).json({ message: 'Exercise ID is required' });
-        return;
-      }
-      // find exercise
-      const exercise = await Exercise.findOne({ exerciseId: exerciseId });
-      if (!exercise) {
-        res.status(404).json({ message: `Exercise with Exercise ID ${exerciseId} not found` });
-        return;
-      }
-      res.status(200).json({ message: 'Exercise retrieved successfully', exercise });
-      return;
-    }
-    catch (err) {
-        console.error(err);
-        const message = err instanceof Error ? err.message : 'An unknown error occurred';
-        res.status(500).json({ error: message });
-      return;
-    }
-  }
-)
-
-
-/**
- * GET /getExercises
- */ 
-app.get(
-  '/getExercises',
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const pageSize = Number(req.query.page_size) || 10;
-      const page = Number(req.query.page) || 1;
-      const search = typeof req.query.search === 'string' ? req.query.search : '';
-      const sort = typeof req.query.sort === 'string' ? req.query.sort : '';
-
-      const {
-        exercises,
-        totalExercises,
-        totalPages,
-        nextPage,
-        previousPage,
-      } = await searchExercises(search, sort, page, pageSize);
-      
-      if (!exercises || exercises.length === 0) {
-        res.status(404).json({ message: 'No exercises found' });
-        return;
-      }
-
-      res.status(200).json({ 
-        message: 'Exercises retrieved successfully', 
-        exercises,
-        totalItems: totalExercises,
-        totalPages,
-        currentPage: page,
-        nextPage,
-        previousPage
-      });
-      return;
-    } catch (err) {
-      console.error(err);
-      const message = err instanceof Error ? err.message : 'An unknown error occurred';
-      res.status(500).json({ error: message });
-      return;
-    }
-  });
-
-/**
  * PUT /updateExercise
  */
 app.put(
   '/updateExercise',
-  verifyTokenMiddleware,
+  isAdmin,
   async (req: Request, res: Response): Promise<void> => {
   try {
     const validatedData = updateExerciseSchema.parse(req.body);
@@ -1529,7 +1479,7 @@ app.put(
  * DELETE /deleteExercise
 */
 app.delete(
-  '/deleteExercise', verifyTokenMiddleware, async (req: Request, res: Response): Promise<void> => {
+  '/deleteExercise', isAdmin, async (req: Request, res: Response): Promise<void> => {
   try {
     const { exerciseId, courseId } = req.body;
 
@@ -1573,6 +1523,82 @@ app.delete(
   }
 }
 )
+
+/**
+ * GET /getExercise
+ */
+app.get(
+  '/getExercise/:exerciseId',
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { exerciseId } = req.params;
+      // basic validation
+      if (!exerciseId) {
+        res.status(400).json({ message: 'Exercise ID is required' });
+        return;
+      }
+      // find exercise
+      const exercise = await Exercise.findOne({ exerciseId: exerciseId });
+      if (!exercise) {
+        res.status(404).json({ message: `Exercise with Exercise ID ${exerciseId} not found` });
+        return;
+      }
+      res.status(200).json({ message: 'Exercise retrieved successfully', exercise });
+      return;
+    }
+    catch (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'An unknown error occurred';
+        res.status(500).json({ error: message });
+      return;
+    }
+  }
+)
+
+/**
+ * GET /getExercises
+ */ 
+app.get(
+  '/getExercises',
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const pageSize = Number(req.query.page_size) || 10;
+      const page = Number(req.query.page) || 1;
+      const search = typeof req.query.search === 'string' ? req.query.search : '';
+      const sort = typeof req.query.sort === 'string' ? req.query.sort : '';
+
+      const {
+        exercises,
+        totalExercises,
+        totalPages,
+        nextPage,
+        previousPage,
+      } = await searchExercises(search, sort, page, pageSize);
+      
+      if (!exercises || exercises.length === 0) {
+        res.status(404).json({ message: 'No exercises found' });
+        return;
+      }
+
+      res.status(200).json({ 
+        message: 'Exercises retrieved successfully', 
+        exercises,
+        totalItems: totalExercises,
+        totalPages,
+        currentPage: page,
+        nextPage,
+        previousPage
+      });
+      return;
+    } catch (err) {
+      console.error(err);
+      const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      res.status(500).json({ error: message });
+      return;
+    }
+  });
+
+
 
 // start server
 app.listen(PORT, () => {
