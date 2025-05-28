@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "server": "nodemon --exec vite-node api.ts",
     "host": "vite --host",
-    "seed": "ts-node server/utils/seed.ts"
+    "seed": "vite-node ./server/utils/seed.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.4",
