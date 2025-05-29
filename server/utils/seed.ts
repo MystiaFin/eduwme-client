@@ -24,14 +24,14 @@ mongoose
   });
 
 // this function clears existing data so be sure uncomment this function if you want to clear the database
-// async function clearCollections() {
-//   console.log("Clearing existing collections...");
-//   await User.deleteMany({});
-//   await Exercise.deleteMany({});
-//   await Course.deleteMany({});
-//   await CourseBatch.deleteMany({});
-//   console.log("Collections cleared.");
-// }
+async function clearCollections() {
+  console.log("Clearing existing collections...");
+  await User.deleteMany({});
+  await Exercise.deleteMany({});
+  await Course.deleteMany({});
+  await CourseBatch.deleteMany({});
+  console.log("Collections cleared.");
+}
 
 async function seedUsers() {
   console.log("Seeding users...");
@@ -121,7 +121,7 @@ async function seedCourses(batches) {
 
   for (const batch of batches) {
     const coursesInBatch = courses.filter(
-      (c) => c.courseBatchId === batch.courseBatchId
+      (c) => c.courseBatchId === batch.courseBatchId,
     );
     const courseIds = coursesInBatch.map((c) => c.courseId);
 
@@ -130,7 +130,7 @@ async function seedCourses(batches) {
       {
         courseList: courseIds,
         coursesLength: courseIds.length,
-      }
+      },
     );
   }
 
@@ -307,7 +307,7 @@ async function seedExercises(courses) {
 
   for (const course of courses) {
     const exercisesInCourse = exercises.filter(
-      (e) => e.courseId === course.courseId
+      (e) => e.courseId === course.courseId,
     );
     const exerciseIds = exercisesInCourse.map((e) => e.exerciseId);
 
@@ -316,7 +316,7 @@ async function seedExercises(courses) {
       {
         exerciseBatchList: exerciseIds,
         exercisesLength: exerciseIds.length,
-      }
+      },
     );
   }
 
@@ -326,7 +326,7 @@ async function seedExercises(courses) {
 async function seedDatabase() {
   try {
     // remember to uncomment clearCollections if you want to clear the database
-    // await clearCollections();
+    await clearCollections();
     await seedUsers();
     const batches = await seedCourseBatches();
     const courses = await seedCourses(batches);
