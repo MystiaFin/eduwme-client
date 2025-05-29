@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "server": "nodemon --exec vite-node api.ts",
-    "host": "vite --host"
+    "host": "vite --host",
+    "seed": "vite-node ./server/utils/seed.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.4",
