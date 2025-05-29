@@ -71,7 +71,7 @@ async function seedCourseBatches() {
   ];
 
   await CourseBatch.insertMany(batches);
-  console.log(`✅ ${batches.length} course batches seeded`);
+  console.log(`${batches.length} course batches seeded`);
   return batches;
 }
 
