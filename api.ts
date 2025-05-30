@@ -1,18 +1,18 @@
-import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
+import dotenv from "dotenv";
+import express from "express";
 import mongoose from "mongoose";
 
 // routes imports
-import userRoutes from "./server/routes/userRoutes";
 import courseRoutes from "./server/routes/courseRoutes";
 import exerciseRoutes from "./server/routes/exerciseRoutes";
+import userRoutes from "./server/routes/userRoutes";
 
 // utils imports
-import genericSearch from "./server/utils/genericSearch";
-import searchUsers from "./server/utils/searchUsers";
-import searchCourses from "./server/utils/searchCourses";
-import searchExercises from "./server/utils/searchExercises";
+// import genericSearch from "./server/utils/genericSearch";
+// import searchUsers from "./server/utils/searchUsers";
+// import searchCourses from "./server/utils/searchCourses";
+// import searchExercises from "./server/utils/searchExercises";
 
 dotenv.config();
 
@@ -67,10 +67,10 @@ app.use(express.json());
  * @param pageSize - Number of items per page
  */
 
-genericSearch();
-searchUsers();
-searchCourses();
-searchExercises();
+// genericSearch();
+// searchUsers();
+// searchCourses();
+// searchExercises();
 
 // routes initiation
 app.use("/users", userRoutes);
