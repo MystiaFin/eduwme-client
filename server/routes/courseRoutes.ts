@@ -20,20 +20,24 @@ import { isAdmin, isUser, } from "../middlewares/middleware.ts";
 
 const router = Router();
 
+// User Completion of an exercise
 router.post(
   "/complete/:userId/:courseBatchId/:courseId/:exerciseId",
   isUser,
   completeExercise,
 );
-
+// Course Batches Routes
 router.get("/getCourseBatches", isUser, getCourseBatches);
 router.get("/getCourseBatch/:courseBatchId", isUser, getCourseBatchById);
+
 router.post("/createCourseBatch", isAdmin, createCourseBatch);
 router.put("/updateCourseBatch", isAdmin, updateCourseBatch);
 router.delete("/deleteCourseBatch", isAdmin, deleteCourseBatch);
 
+// Courses Routes
 router.get("/getCourses", getCourses);
 router.get("/getCoursesById/:courseId", isUser, getCoursesById);
+
 router.post("/createCourse", isAdmin, createCourse);
 router.put("/updateCourse", isAdmin, updateCourse);
 router.delete("/deleteCourse", isAdmin, deleteCourse);

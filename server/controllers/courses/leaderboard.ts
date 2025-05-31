@@ -9,6 +9,7 @@ export const leaderboard = async (
     const leaderboard = await User.find().sort({ xp: -1 }).limit(10);
 
     const limitLeaderboard = leaderboard.map((user) => ({
+      username: user.username,
       nickname: user.nickname,
       xp: user.xp,
       profilePicture: user.profilePicture,

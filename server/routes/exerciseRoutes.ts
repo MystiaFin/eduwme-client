@@ -10,7 +10,7 @@ import { isAdmin, isUser, verifyTokenMiddleware } from "../middlewares/middlewar
 
 const router = Router();
 
-
+// Exercises Routes
 router.get("/getExercise/:exerciseId", isUser, getExerciseById);
 router.get("/getExercise", isUser, getExercise);
 router.post("/createExercise", isAdmin, createExercise);
