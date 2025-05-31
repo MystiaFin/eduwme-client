@@ -51,7 +51,7 @@ app.use(
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 app.use(express.json());
 
@@ -67,10 +67,10 @@ app.use(express.json());
  * @param pageSize - Number of items per page
  */
 
-genericSearch();
-searchUsers();
-searchCourses();
-searchExercises();
+app.use(genericSearch);
+app.use(searchUsers);
+app.use(searchCourses);
+app.use(searchExercises);
 
 // routes initiation
 app.use("/users", userRoutes);
