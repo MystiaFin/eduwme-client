@@ -1,3 +1,6 @@
+import genericSearch from "./genericSearch.ts";
+import User from "../models/User.ts";
+
 export default async function searchUsers(
   search: string,
   sort: string,

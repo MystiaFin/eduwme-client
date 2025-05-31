@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import searchUsers from "../../utils/searchUsers.ts";
 
 export const getUsers = async (
   req: Request,

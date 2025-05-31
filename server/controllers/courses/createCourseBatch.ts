@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { CourseBatch } from "../../models/CourseBatch.ts";
+import { courseBatchSchema } from "../../validators/course.validators.ts";
 
 export const createCourseBatch = async (
   req: Request,

@@ -1,7 +1,6 @@
 import { Router } from "express";
 
 import { completeExercise } from "../controllers/courses/completeExercise.ts";
-import { leaderboard } from "../controllers/courses/leaderboard.ts";
 
 // course batches
 import { createCourseBatch } from "../controllers/courses/createCourseBatch.ts";
@@ -26,8 +25,6 @@ router.post(
   verifyTokenMiddleware,
   completeExercise,
 );
-
-router.get("/leaderboard", verifyTokenMiddleware, leaderboard);
 
 router.post("/createCourseBatch", verifyTokenMiddleware, createCourseBatch);
 router.get("/getCourseBatches", getCourseBatches);

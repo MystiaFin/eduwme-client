@@ -12,7 +12,7 @@ const router = Router();
 
 router.post("/createExercise", verifyTokenMiddleware, createExercise);
 router.get("/getExercise/:exerciseId", getExerciseById);
-router.get("getExercise", getExercise);
+router.get("/getExercise", getExercise);
 router.put("/updateExercise", verifyTokenMiddleware, updateExercise);
 router.delete("/deleteExercise", verifyTokenMiddleware, deleteExercise);
 

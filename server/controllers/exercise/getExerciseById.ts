@@ -1,3 +1,5 @@
+import Exercise from "../../models/Exercise.ts";
+
 export const getExerciseById = async (
   req: Request,
   res: Response,

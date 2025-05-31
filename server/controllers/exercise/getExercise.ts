@@ -1,3 +1,5 @@
+import searchExercises from "../../utils/searchExercises.ts";
+
 export const getExercise = async (
   req: Request,
   res: Response,

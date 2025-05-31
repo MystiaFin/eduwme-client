@@ -1,3 +1,7 @@
+import Exercise from "../../models/Exercise.ts";
+import Course from "../../models/Course.ts";
+import CourseBatch from "../../models/CourseBatch.ts";
+
 export const createExercise = async (
   req: Request,
   res: Response,

@@ -1,3 +1,8 @@
+import { Request, Response } from "express";
+import Course from "../../models/Course";
+import CourseBatch from "../../models/CourseBatch";
+import { courseUpdateSchema } from "../../validators/course.validators.ts";
+
 export const updateCourse = async (
   req: Request,
   res: Response,

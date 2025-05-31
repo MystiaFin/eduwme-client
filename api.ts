@@ -14,6 +14,9 @@ import searchUsers from "./server/utils/searchUsers";
 import searchCourses from "./server/utils/searchCourses";
 import searchExercises from "./server/utils/searchExercises";
 
+// api imports
+import { leaderboard } from "./server/controllers/courses/leaderboard.ts";
+
 dotenv.config();
 
 const PORT: number = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -76,6 +79,7 @@ app.use(searchExercises);
 app.use("/users", userRoutes);
 app.use("/courses", courseRoutes);
 app.use("/exercises", exerciseRoutes);
+app.use("/leaderboard", leaderboard);
 
 // start server
 app.listen(PORT, () => {

@@ -1,3 +1,7 @@
+import { Request, Response } from "express";
+import Course from "../../models/Course";
+import { courseSchema } from "../../validators/course.validators.ts";
+
 export const getCoursesById = async (
   req: Request,
   res: Response,

@@ -1,3 +1,6 @@
+import genericSearch from "./genericSearch.ts";
+import Exercise from "../models/Exercise.ts";
+
 export default async function searchExercises(
   search: string,
   sort: string,
