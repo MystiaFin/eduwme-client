@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { searchCourses } from "../../utils/searchCourses.ts";
+import searchCourses from "../../utils/searchCourses.ts";
 import { courseSchema } from "../../validators/course.validators.ts";
 import Course from "../../models/Course.ts";
 import CourseBatch from "../../models/CourseBatch.ts";

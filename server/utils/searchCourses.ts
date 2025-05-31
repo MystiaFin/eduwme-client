@@ -1,3 +1,6 @@
+import genericSearch from "./genericSearch";
+import Course from "../models/Course";
+
 export default async function searchCourses(
   search: string,
   sort: string,
