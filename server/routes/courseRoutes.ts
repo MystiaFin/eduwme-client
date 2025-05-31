@@ -16,26 +16,26 @@ import { createCourse } from "../controllers/courses/createCourse.ts";
 import { updateCourse } from "../controllers/courses/updateCourse.ts";
 import { deleteCourse } from "../controllers/courses/deleteCourse.ts";
 // middleware
-import { verifyTokenMiddleware } from "../middlewares/middleware.ts";
+import { isAdmin, isUser, } from "../middlewares/middleware.ts";
 
 const router = Router();
 
 router.post(
   "/complete/:userId/:courseBatchId/:courseId/:exerciseId",
-  verifyTokenMiddleware,
+  isUser,
   completeExercise,
 );
 
-router.post("/createCourseBatch", verifyTokenMiddleware, createCourseBatch);
-router.get("/getCourseBatches", getCourseBatches);
-router.get("/getCourseBatch/:courseBatchId", getCourseBatchById);
-router.put("/updateCourseBatch", verifyTokenMiddleware, updateCourseBatch);
-router.delete("/deleteCourseBatch", verifyTokenMiddleware, deleteCourseBatch);
+router.get("/getCourseBatches", isUser, getCourseBatches);
+router.get("/getCourseBatch/:courseBatchId", isUser, getCourseBatchById);
+router.post("/createCourseBatch", isAdmin, createCourseBatch);
+router.put("/updateCourseBatch", isAdmin, updateCourseBatch);
+router.delete("/deleteCourseBatch", isAdmin, deleteCourseBatch);
 
 router.get("/getCourses", getCourses);
-router.get("/getCoursesById/:courseId", verifyTokenMiddleware);
-router.post("/createCourse", verifyTokenMiddleware);
-router.put("/updateCourse", updateCourse);
-router.delete("/deleteCourse", verifyTokenMiddleware, deleteCourse);
+router.get("/getCoursesById/:courseId", isUser, getCoursesById);
+router.post("/createCourse", isAdmin, createCourse);
+router.put("/updateCourse", isAdmin, updateCourse);
+router.delete("/deleteCourse", isAdmin, deleteCourse);
 
 export default router;

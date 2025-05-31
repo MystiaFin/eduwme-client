@@ -19,13 +19,13 @@ export const getUsers = async (
       previousPage,
     } = await searchUsers(search, sort, page, pageSize);
 
-    if (users.length === 0) {
+    if (!users || users.length === 0) {
       return res.status(404).json({ message: "No users found" });
     }
 
     return res.status(200).json({
       message: "Users retrieved successfully",
-      users,
+      users: users,
       totalItems,
       totalPages,
       nextPage,

@@ -18,9 +18,11 @@ export const updateProfile = async (
     }
 
     // update user profile
-    user.nickname = nickname;
-    user.biodata = biodata;
-    user.profilePicture = profilePicture;
+    
+    if (nickname !== undefined)  user.nickname = nickname;
+    if (biodata !== undefined)  user.biodata = biodata;
+    if (profilePicture !== undefined) user.profilePicture = profilePicture;
+    
     user.dateUpdated = new Date();
 
     await user.save();

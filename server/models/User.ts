@@ -63,8 +63,12 @@ const userSchema = new mongoose.Schema({
     trim: true,
     match: /^[a-zA-Z0-9_]+$/,
   }, // Alphanumeric and underscores only, trim removes whitespace
-  password: { type: String, required: true, select: false }, // Password should be hashed before saving
-  nickname: { type: String, trim: true },
+  password: { 
+    type: String, 
+    required: true, 
+    select: false,   
+    match: /^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{7,}$/  }, // Password should be hashed before saving
+  nickname: { type: String, trim: true},
   biodata: { type: String },
   profilePicture: { type: String, default: "default-profile.png" }, // Default profile picture
   email: {
@@ -74,6 +78,12 @@ const userSchema = new mongoose.Schema({
     trim: true,
     match: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
   }, // Basic email validation
+  role: {
+    type: String,
+    enum: ["user", "admin", "moderator"],
+    default: "user",
+    required: true,
+  },
   xp: { type: Number, default: 0, required: true }, // User's total experience points
   level: { type: Number, default: 1, required: true }, // User's overall level
   gems: { type: Number, default: 0, required: true }, // User's total gems
@@ -81,6 +91,11 @@ const userSchema = new mongoose.Schema({
   dateCreated: { type: Date, default: Date.now },
   dateUpdated: { type: Date },
   dateLastLogin: { type: Date },
+  inventory: [{
+  itemId: { type: String, required: true },
+  dateAcquired: { type: Date, default: Date.now },
+  isEquipped: { type: Boolean, default: false }
+}],
 });
 
 const User = mongoose.model("User", userSchema);

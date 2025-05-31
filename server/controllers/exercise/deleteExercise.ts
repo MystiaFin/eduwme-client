@@ -5,7 +5,7 @@ import Exercise from "../../models/Exercise.ts";
 export const deleteExercise = async (
   req: Request,
   res: Response,
-): Promise<Response> => {
+): Promise<Response | void> => {
   try {
     const { exerciseId, courseId } = req.body;
 

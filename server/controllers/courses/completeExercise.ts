@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import { completeSchema } from "../../validators/progress.validators.ts";
 import User from "../../models/User.ts";
-import { CourseBatch } from "../../models/CourseBatch.ts";
-import { Course } from "../../models/Course.ts";
-import { Exercise } from "../../models/Exercise.ts";
+import CourseBatch  from "../../models/CourseBatch.ts";
+import Course from "../../models/Course.ts";
+import Exercise from "../../models/Exercise.ts";
 
 export const completeExercise = async (
   req: Request,
@@ -80,12 +80,16 @@ export const completeExercise = async (
 
     // Calculate XP based on difficulty (only if not already completed)
     let awardedXp = 0;
+    let awardedGems = 0;
     if (!alreadyCompleted) {
       // Award XP based on difficulty level
       awardedXp = exercise.difficultyLevel * 10; // Base formula - adjust as needed
+      awardedGems = exercise.difficultyLevel * 5; // Assuming gems are half of XP
 
       // Add XP to user
       user.xp = (user.xp || 0) + awardedXp;
+
+      user.gems = (user.gems || 0) + awardedGems; // Assuming gems are awarded same as XP
 
       // Check if user should level up (simple formula: level = 1 + floor(xp/100))
       const newLevel = Math.floor(1 + user.xp / 100);
@@ -317,6 +321,7 @@ export const completeExercise = async (
     user.markModified("courseBatchesProgress");
     user.markModified("xp");
     user.markModified("level");
+    user.markModified("gems");
     await user.save();
 
     res.status(200).json({

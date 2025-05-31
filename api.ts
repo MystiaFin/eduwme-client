@@ -8,6 +8,9 @@ import userRoutes from "./server/routes/userRoutes";
 import courseRoutes from "./server/routes/courseRoutes";
 import exerciseRoutes from "./server/routes/exerciseRoutes";
 
+// admin routes
+import adminRoutes from "./server/routes/adminRoutes";
+
 // utils imports
 import genericSearch from "./server/utils/genericSearch";
 import searchUsers from "./server/utils/searchUsers";
@@ -16,6 +19,8 @@ import searchExercises from "./server/utils/searchExercises";
 
 // api imports
 import { leaderboard } from "./server/controllers/courses/leaderboard.ts";
+
+
 
 dotenv.config();
 
@@ -80,6 +85,8 @@ app.use("/users", userRoutes);
 app.use("/courses", courseRoutes);
 app.use("/exercises", exerciseRoutes);
 app.use("/leaderboard", leaderboard);
+
+app.use("/admin", adminRoutes)
 
 // start server
 app.listen(PORT, () => {

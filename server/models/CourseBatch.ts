@@ -7,5 +7,6 @@ const courseBatchSchema = new mongoose.Schema({
   coursesLength: { type: Number, required: true },
   stage: { type: Number, required: true }, 
 });
+
 const CourseBatch = mongoose.model('CourseBatch', courseBatchSchema);
 export default CourseBatch;

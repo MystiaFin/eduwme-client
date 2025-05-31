@@ -7,7 +7,7 @@ import { updateExerciseSchema } from "../../validators/exercise.validators.ts";
 export const updateExercise = async (
   req: Request,
   res: Response,
-): Promise<Response> => {
+): Promise<Response | void> => {
   try {
     const validatedData = updateExerciseSchema.parse(req.body);
     const {

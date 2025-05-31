@@ -7,9 +7,15 @@ export const leaderboard = async (
 ): Promise<Response | void> => {
   try {
     const leaderboard = await User.find().sort({ xp: -1 }).limit(10);
+
+    const limitLeaderboard = leaderboard.map((user) => ({
+      nickname: user.nickname,
+      xp: user.xp,
+      profilePicture: user.profilePicture,
+    }));
     res
       .status(200)
-      .json({ message: "Leaderboard retrieved successfully", leaderboard });
+      .json({ message: "Leaderboard retrieved successfully", leaderboard: limitLeaderboard });
     return;
   } catch (err) {
     console.error(err);

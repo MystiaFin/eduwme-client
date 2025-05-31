@@ -17,5 +17,5 @@ export const registerSchema = z
 
 export const loginSchema = z.object({
   username: z.string(),
-  password: z.string().min(8),
+  password: z.string().min(2),
 });

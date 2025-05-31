@@ -1,9 +1,10 @@
 import searchExercises from "../../utils/searchExercises.ts";
+import { Request, Response } from "express";
 
 export const getExercise = async (
   req: Request,
   res: Response,
-): Promise<Response> => {
+): Promise<Response | void> => {
   try {
     const pageSize = Number(req.query.page_size) || 10;
     const page = Number(req.query.page) || 1;

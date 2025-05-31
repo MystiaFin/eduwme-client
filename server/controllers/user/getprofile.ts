@@ -4,7 +4,7 @@ import User from "../../models/User.ts";
 export const getUserById = async (
   req: Request,
   res: Response,
-): Promise<Response> => {
+): Promise<Response | void> => {
   try {
     const { userId } = req.params;
 
