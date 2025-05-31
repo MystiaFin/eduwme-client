@@ -91,11 +91,6 @@ const userSchema = new mongoose.Schema({
   dateCreated: { type: Date, default: Date.now },
   dateUpdated: { type: Date },
   dateLastLogin: { type: Date },
-  inventory: [{
-  itemId: { type: String, required: true },
-  dateAcquired: { type: Date, default: Date.now },
-  isEquipped: { type: Boolean, default: false }
-}],
 });
 
 const User = mongoose.model("User", userSchema);

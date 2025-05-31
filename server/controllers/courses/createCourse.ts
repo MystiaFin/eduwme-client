@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { z } from "zod";
 import Course from "../../models/Course";
 import CourseBatch from "../../models/CourseBatch";
 import { courseSchema } from "../../validators/course.validators.ts";

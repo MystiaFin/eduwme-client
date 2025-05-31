@@ -10,7 +10,7 @@ const EXPIRATION_TIME = process.env.JWT_EXPIRES_IN || "1d";
 export const userLogin = async (
   req: Request,
   res: Response,
-): Promise<void> => {
+): Promise<Response | void > => {
   try {
     const { username, password } = loginSchema.parse(req.body);
 

@@ -5,7 +5,7 @@ import { profileSchema } from "../../validators/profile.validators.ts";
 export const updateProfile = async (
   req: Request,
   res: Response,
-): Promise<Response> => {
+): Promise<Response | void> => {
   try {
     // validate request body with zod
     const validatedData = profileSchema.parse(req.body);

@@ -3,11 +3,12 @@ import Course from "../../models/Course.ts";
 import CourseBatch from "../../models/CourseBatch.ts";
 import { ZodError } from "zod";
 import { createExerciseSchema } from "../../validators/exercise.validators.ts";
+import { Request, Response } from "express";
 
 export const createExercise = async (
   req: Request,
   res: Response,
-): Promise<void> => {
+): Promise<Response | void> => {
   try {
     const validatedData = createExerciseSchema.parse(req.body);
     const {
