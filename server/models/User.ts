@@ -87,6 +87,11 @@ const userSchema = new mongoose.Schema({
   xp: { type: Number, default: 0, required: true }, // User's total experience points
   level: { type: Number, default: 1, required: true }, // User's overall level
   gems: { type: Number, default: 0, required: true }, // User's total gems
+  inventory: [{
+    itemId: { type: String, required: true },
+    dateAcquired: { type: Date, default: Date.now },
+    isEquipped: { type: Boolean, default: false }
+  }], // User's inventory of items
   courseBatchesProgress: [courseBatchProgressSchema], // Array to store progress for all course batches
   dateCreated: { type: Date, default: Date.now },
   dateUpdated: { type: Date },

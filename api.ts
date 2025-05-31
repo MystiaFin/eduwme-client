@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import userRoutes from "./server/routes/userRoutes";
 import courseRoutes from "./server/routes/courseRoutes";
 import exerciseRoutes from "./server/routes/exerciseRoutes";
+import shopItemRoutes from "./server/routes/shopItemRoutes";
 
 // admin routes
 import adminRoutes from "./server/routes/adminRoutes";
@@ -85,6 +86,7 @@ app.use("/users", userRoutes);
 app.use("/courses", courseRoutes);
 app.use("/exercises", exerciseRoutes);
 app.use("/leaderboard", leaderboard);
+app.use("/shop", shopItemRoutes)
 
 app.use("/admin", adminRoutes)
 
