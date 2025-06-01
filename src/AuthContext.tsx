@@ -35,10 +35,12 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!user);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const API_BASE_URL = process.env.VITE_API_BASE_URL || "http://localhost:3000";
+  // Fixed: Use import.meta.env for Vite
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
   const fetchUser = async () => {
     try {
@@ -47,7 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // This ensures cookies are sent
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -55,7 +57,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(userData);
         setIsAuthenticated(true);
       } else if (response.status === 401) {
-        // Token is invalid, expired, or missing
         setUser(null);
         setIsAuthenticated(false);
       } else {
@@ -69,6 +70,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
     fetchUser();
   }, []);
