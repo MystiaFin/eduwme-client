@@ -4,8 +4,9 @@ import { userLogin } from "../controllers/user/login.ts";
 import { updateProfile } from "../controllers/user/updateProfile.ts";
 import { getUserById } from "../controllers/user/getprofile.ts";
 import { getUsers } from "../controllers/user/getusers.ts";
+import { getMe } from "../controllers/user/getme.ts";
 
-import { isAdmin, isUser} from "../middlewares/middleware.ts";
+import { isAdmin, isUser } from "../middlewares/middleware.ts";
 import rateLimit from "express-rate-limit";
 
 // More strict limiter for authentication
@@ -14,8 +15,8 @@ const authLimiter = rateLimit({
   max: 5, // 5 login attempts per hour
   message: {
     status: 429,
-    message: "Too many login attempts, please try again later."
-  }
+    message: "Too many login attempts, please try again later.",
+  },
 });
 
 const router = Router();
@@ -25,7 +26,7 @@ router.post("/register", authLimiter, userRegister);
 router.post("/login", authLimiter, userLogin);
 router.put("/updateProfile", isUser, updateProfile);
 router.get("/getProfile/:userId", isUser, getUserById);
-
+router.get("/getme", isUser, getMe);
 router.get("/getUsers", isAdmin, getUsers);
 
 export default router;

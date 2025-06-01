@@ -10,7 +10,7 @@ const EXPIRATION_TIME = process.env.JWT_EXPIRES_IN || "1d";
 export const userLogin = async (
   req: Request,
   res: Response,
-): Promise<Response | void > => {
+): Promise<Response | void> => {
   try {
     const { username, password } = loginSchema.parse(req.body);
 
@@ -20,7 +20,6 @@ export const userLogin = async (
       return;
     }
 
-    
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
       res.status(401).json({ message: "Invalid username or password" });
