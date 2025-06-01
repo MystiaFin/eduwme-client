@@ -20,7 +20,7 @@
 
   },
   // **Include your backend source files**
-  "include": ["api.ts", "middleware.ts","models/**/*.ts", "validators/**/*.ts"],
+  "include": ["api.ts", "middleware.ts","models/**/*.ts", "validators/**/*.ts", "server/**/*.ts"],
   // Exclude node_modules and frontend source
   "exclude": ["node_modules", "src", "dist"]
 }
