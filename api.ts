@@ -1,8 +1,8 @@
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 
 // routes imports
 import userRoutes from "./server/routes/userRoutes";
@@ -22,30 +22,16 @@ import searchExercises from "./server/utils/searchExercises";
 // api imports
 import { leaderboard } from "./server/controllers/courses/leaderboard.ts";
 
+// Environment variables
+const port: number = process.env.PORT ? Number(process.env.PORT) : 3000;
+const mongoUri: string = process.env.MONGO_URI || "";
+const nodeEnv =  process.env.NODE_ENV === "production" ? "production" : "development";
+const apiUrl = process.env.API_URL || "http://localhost:3000";
+const  corsOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(",") : ["http://localhost:5173", "https://yourdomain.com"];
 
-dotenv.config();
 
-const PORT: number = process.env.PORT ? Number(process.env.PORT) : 3000;
-const MONGO_URI: undefined | string = process.env.MONGO_URI || "";
-const JWT_SECRET: string = process.env.JWT_SECRET;
-const EXPIRATION_TIME: string = process.env.EXPIRATION_TIME;
-
-// .env variables checking
-const requiredEnv = {
-  MONGO_URI,
-  JWT_SECRET,
-  EXPIRATION_TIME,
-};
-
-for (const [key, value] of Object.entries(requiredEnv)) {
-  if (!value) {
-    console.error(`${key} is not set`);
-    process.exit(1);
-  }
-}
-
-// Global rate limiter
-const limiter = rateLimit({
+// Global rate limiter for production
+const prodLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
   standardHeaders: true, 
@@ -59,7 +45,7 @@ const limiter = rateLimit({
 
 // connect to MongoDB
 mongoose
-  .connect(MONGO_URI)
+  .connect(mongoUri)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err);
@@ -68,15 +54,27 @@ mongoose
 
 const app = express();
 
+console.log("CORS configuration:");
+console.log("- Environment:", nodeEnv);
+console.log("Cours Origins:", corsOrigins);
+
+
 app.use(
   cors({
-    origin: "*",
+    origin: corsOrigins, 
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
+
 app.use(express.json());
-app.use(limiter);
+
+// Add basic security in production
+if (nodeEnv === "production") {
+  app.use(helmet());  
+}
+
+app.use(prodLimiter);
 
 /**
  * Generic Search, Sort and Pagination Function
@@ -104,7 +102,6 @@ app.use("/shop", shopItemRoutes)
 
 app.use("/admin", adminRoutes)
 
-// start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+app.listen(port, () => {
+  console.log(`🚀 Server running on ${apiUrl} in ${nodeEnv} mode (to inserted port ${port})`);
 });
