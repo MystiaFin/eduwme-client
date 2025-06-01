@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
+import rateLimit from "express-rate-limit";
 
 // routes imports
 import userRoutes from "./server/routes/userRoutes";
@@ -20,7 +21,6 @@ import searchExercises from "./server/utils/searchExercises";
 
 // api imports
 import { leaderboard } from "./server/controllers/courses/leaderboard.ts";
-
 
 
 dotenv.config();
@@ -44,6 +44,19 @@ for (const [key, value] of Object.entries(requiredEnv)) {
   }
 }
 
+// Global rate limiter
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true, 
+  legacyHeaders: false, 
+  message: {
+    status: 429,
+    error: "Too many requests, please try again later.",
+  },
+});
+
+
 // connect to MongoDB
 mongoose
   .connect(MONGO_URI)
@@ -63,6 +76,7 @@ app.use(
   }),
 );
 app.use(express.json());
+app.use(limiter);
 
 /**
  * Generic Search, Sort and Pagination Function
