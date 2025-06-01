@@ -62,6 +62,7 @@ const Login = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
 
@@ -69,10 +70,6 @@ const Login = () => {
 
       if (!response.ok) {
         throw new Error(data.message || "Login failed");
-      }
-
-      if (data.token) {
-        localStorage.setItem("token", data.token);
       }
 
       navigate("/home");
