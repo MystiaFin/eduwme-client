@@ -27,7 +27,7 @@ interface ApiResponse {
 }
 
 const ButtonStyle: string =
-  "w-34 h-34 p-2 bg-[#CFB6FF] flex flex-col justify-center items-center rounded-2xl border-4 border-[#374DB0] text-white font-bold text-lg gap-1";
+  "w-32 h-32 p-2 bg-[#CFB6FF] flex flex-col justify-center items-center rounded-2xl border-4 border-[#374DB0] text-white font-bold text-lg gap-1";
 
 const getIconForCourse = (courseId: string) => {
   switch (courseId.toLowerCase()) {

@@ -10,17 +10,17 @@ const BottomNavBar = () => {
         <ul className="mx-8 mb-5 p-5 flex flex-row justify-around items-center bg-[#CFB6FF] rounded-2xl border-4 border-[#374DB0]">
           <li>
             <NavLink to="/home">
-              <img src={HomeIcom} className="w-9" />
+              <img src={HomeIcom} className="w-7" />
             </NavLink>
           </li>
           <li>
             <NavLink to="leaderboard">
-              <img src={TrophyIcon} className="w-10" />
+              <img src={TrophyIcon} className="w-8" />
             </NavLink>
           </li>
           <li>
             <NavLink to="profile">
-              <img src={ProfileIcon} className="w-10" />
+              <img src={ProfileIcon} className="w-8" />
             </NavLink>
           </li>
         </ul>
