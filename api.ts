@@ -3,6 +3,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import cookieParser from "cookie-parser";
 
 // routes imports
 import userRoutes from "./server/routes/userRoutes";
@@ -54,6 +55,7 @@ mongoose
   });
 
 const app = express();
+app.use(cookieParser());
 
 console.log("CORS configuration:");
 console.log("- Environment:", nodeEnv);
