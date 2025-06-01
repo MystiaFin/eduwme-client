@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import Course from "../../models/Course";
 import CourseBatch from "../../models/CourseBatch";
-import { courseSchema } from "../../validators/course.validators.ts";
 
 export const deleteCourse = async (
   req: Request,

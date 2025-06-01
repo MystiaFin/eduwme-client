@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import searchCourses from "../../utils/searchCourses.ts";
 import { courseSchema } from "../../validators/course.validators.ts";
 import Course from "../../models/Course.ts";
-import CourseBatch from "../../models/CourseBatch.ts";
 
 export const getCourses = async (
   req: Request,
@@ -30,6 +29,7 @@ export const getCourses = async (
       dateCreated: Date | string;
       exerciseBatchList: string[];
       exercisesLength: number;
+      logo?: string; 
     }
 
     const courseList: CourseItem[] = [];
@@ -43,6 +43,7 @@ export const getCourses = async (
         dateCreated: course.dateCreated,
         exerciseBatchList: course.exerciseBatchList,
         exercisesLength: course.exercisesLength,
+        logo: course.logo || "", 
       });
     });
 

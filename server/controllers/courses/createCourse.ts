@@ -9,7 +9,7 @@ export const createCourse = async (
 ): Promise<Response | void> => {
   try {
     const validatedData = courseSchema.parse(req.body);
-    const { courseBatchId, courseId, title, level } = validatedData;
+    const { courseBatchId, courseId, title, logo, level } = validatedData;
 
     // basic validation
     if (!courseBatchId) {
@@ -65,6 +65,7 @@ export const createCourse = async (
       dateCreated,
       exerciseBatchList,
       exercisesLength,
+      logo, 
     });
     await course.save();
 

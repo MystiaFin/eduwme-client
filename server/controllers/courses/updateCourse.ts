@@ -9,7 +9,7 @@ export const updateCourse = async (
 ): Promise<Response | void> => {
   try {
     const validatedData = courseUpdateSchema.parse(req.body);
-    const { courseBatchId, courseId, title, level } = validatedData;
+    const { courseBatchId, courseId, title, level, logo } = validatedData;
 
     // basic validation
     if (!courseId) {
@@ -41,6 +41,7 @@ export const updateCourse = async (
     // update course
     course.title = title;
     course.level = level;
+    course.logo = logo;
     course.dateCreated = dateCreated;
     await course.save();
 
