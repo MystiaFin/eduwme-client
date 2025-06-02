@@ -35,7 +35,7 @@ createRoot(document.getElementById("root")!).render(
             <Route element={<MainLayout />}>
               <Route path="/home" element={<HomePage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/profile/:userId" element={<ProfilePage />} />
               <Route path="/courses/:categoryId" element={<Courses />} />
             </Route>
 
@@ -50,4 +50,3 @@ createRoot(document.getElementById("root")!).render(
     </AuthProvider>
   </StrictMode>,
 );
-
