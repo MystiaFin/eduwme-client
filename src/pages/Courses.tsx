@@ -4,7 +4,7 @@ const Courses = () => {
   const { categoryId } = useParams();
 
   // Dynamic content based on categoryId
-  const getCategoryData = (category) => {
+  const getCategoryData = (category: string) => {
     const categoryMap = {
       addition: { title: "Addition", color: "#FF6B6B" },
       subtraction: { title: "Subtraction", color: "#4ECDC4" },

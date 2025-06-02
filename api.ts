@@ -3,6 +3,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import cookieParser from "cookie-parser";
 
 // routes imports
 import userRoutes from "./server/routes/userRoutes";
@@ -25,23 +26,24 @@ import { leaderboard } from "./server/controllers/courses/leaderboard.ts";
 // Environment variables
 const port: number = process.env.PORT ? Number(process.env.PORT) : 3000;
 const mongoUri: string = process.env.MONGO_URI || "";
-const nodeEnv =  process.env.NODE_ENV === "production" ? "production" : "development";
-const apiUrl = process.env.API_URL || "http://localhost:3000";
-const  corsOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(",") : ["http://localhost:5173", "https://yourdomain.com"];
-
+const nodeEnv =
+  process.env.NODE_ENV === "production" ? "production" : "development";
+const apiUrl = process.env.API_URL || `http://localhost:${port}`;
+const corsOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(",")
+  : ["http://localhost:5173", "https://yourdomain.com"];
 
 // Global rate limiter for production
 const prodLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
-  standardHeaders: true, 
-  legacyHeaders: false, 
+  standardHeaders: true,
+  legacyHeaders: false,
   message: {
     status: 429,
     error: "Too many requests, please try again later.",
   },
 });
-
 
 // connect to MongoDB
 mongoose
@@ -53,15 +55,15 @@ mongoose
   });
 
 const app = express();
+app.use(cookieParser());
 
 console.log("CORS configuration:");
 console.log("- Environment:", nodeEnv);
 console.log("Cours Origins:", corsOrigins);
 
-
 app.use(
   cors({
-    origin: corsOrigins, 
+    origin: corsOrigins,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
@@ -71,7 +73,7 @@ app.use(express.json());
 
 // Add basic security in production
 if (nodeEnv === "production") {
-  app.use(helmet());  
+  app.use(helmet());
 }
 
 app.use(prodLimiter);
@@ -98,10 +100,12 @@ app.use("/users", userRoutes);
 app.use("/courses", courseRoutes);
 app.use("/exercises", exerciseRoutes);
 app.use("/leaderboard", leaderboard);
-app.use("/shop", shopItemRoutes)
+app.use("/shop", shopItemRoutes);
 
-app.use("/admin", adminRoutes)
+app.use("/admin", adminRoutes);
 
 app.listen(port, () => {
-  console.log(`🚀 Server running on ${apiUrl} in ${nodeEnv} mode (to inserted port ${port})`);
+  console.log(
+    `🚀 Server running on ${apiUrl} in ${nodeEnv} mode (to inserted port ${port})`,
+  );
 });

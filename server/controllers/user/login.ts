@@ -32,6 +32,10 @@ export const userLogin = async (
       { expiresIn: EXPIRATION_TIME },
     );
 
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    });
     res.status(200).json({ message: "Login successful", token });
   } catch (err) {
     console.error(err);

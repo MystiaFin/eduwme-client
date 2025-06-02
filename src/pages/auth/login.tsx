@@ -57,11 +57,12 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("http://localhost:3000/login", {
+      const response = await fetch("http://localhost:3000/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
 
@@ -71,11 +72,7 @@ const Login = () => {
         throw new Error(data.message || "Login failed");
       }
 
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-      }
-
-      navigate("/dashboard");
+      navigate("/home");
     } catch (error) {
       setSubmitError(
         error instanceof Error ? error.message : "An unknown error occurred",
