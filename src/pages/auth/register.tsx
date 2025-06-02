@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -75,7 +75,7 @@ const Register = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("http://localhost:3000/register", {
+      const response = await fetch("http://localhost:3000/users/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -219,6 +219,12 @@ const Register = () => {
       >
         {isSubmitting ? "Creating account..." : "Sign up"}
       </button>
+      <Link to="/login">
+       <h1 className="text-sm text-gray-500">
+        Already have an account?{" "}
+        <span className="text-blue-500 hover:underline">Login</span>
+        </h1>
+      </Link>
     </form>
   );
 };

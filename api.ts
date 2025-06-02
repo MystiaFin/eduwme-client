@@ -21,7 +21,7 @@ import searchCourses from "./server/utils/searchCourses";
 import searchExercises from "./server/utils/searchExercises";
 
 // api imports
-import { leaderboard } from "./server/controllers/courses/leaderboard.ts";
+import { leaderboard } from "./server/controllers/courses/leaderboard.js";
 
 // Environment variables
 const port: number = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -63,10 +63,11 @@ console.log("Cours Origins:", corsOrigins);
 
 app.use(
   cors({
-    origin: corsOrigins,
+    origin: corsOrigins, // List specific origins
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  }),
+    credentials: true // This is critical for requests with credentials
+  })
 );
 
 app.use(express.json());

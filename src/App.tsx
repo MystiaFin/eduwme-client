@@ -12,7 +12,7 @@ const LandingPage: React.FC = () => {
           EduWMe <br className="block md:hidden" /> Project
         </h2>
         <img src={Logo} alt="GoGo Math" className="mb-10 w-40 mt-10 md:w-64" />
-        <Link to="/home">
+        <Link to="/register">
           <button className="w-36 py-2 bg-confirm-blue text-white rounded-full text-lg">
             Get Started
           </button>

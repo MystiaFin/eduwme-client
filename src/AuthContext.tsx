@@ -10,6 +10,16 @@ interface User {
   _id: string;
   username: string;
   role: string;
+  gems?: number; // Make optional with ?
+  inventory?: Array<{
+    itemId: string;
+    dateAcquired: Date;
+    isEquipped: boolean;
+  }>;
+}
+
+interface UserResponse {
+  user: User;
 }
 
 interface AuthContextType {
@@ -17,6 +27,8 @@ interface AuthContextType {
   setUser: (user: User | null) => void;
   isAuthenticated: boolean;
   isLoading: boolean;
+  logout: () => Promise<void>;
+  login: (username: string, password: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -53,8 +65,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
+        const userData: UserResponse = await response.json();
+        setUser(userData.user);
         setIsAuthenticated(true);
       } else if (response.status === 401) {
         setUser(null);
@@ -75,11 +87,64 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     fetchUser();
   }, []);
 
+   const logout = async () => {
+    try {
+      // Call your logout API endpoint
+      await fetch("http://localhost:3000/users/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      
+      setUser(null);
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error("Logout error:", error);
+      throw error;
+    }
+  };
+
+  const login = async (username: string, password: string) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || "Login failed");
+    }
+    
+    // After successful login, fetch the user data
+    const userResponse = await fetch(`${API_BASE_URL}/users/getme`, {
+      credentials: "include",
+    });
+    
+    if (userResponse.ok) {
+      const userData = await userResponse.json();
+      setUser(userData.user);
+      setIsAuthenticated(true);
+      return true;
+    } else {
+      throw new Error("Failed to get user data after login");
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+    throw error;
+  }
+};
+
   const value: AuthContextType = {
     user,
     setUser,
     isAuthenticated,
     isLoading,
+    logout,
+    login,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

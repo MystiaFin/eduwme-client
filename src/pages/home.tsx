@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import AdditionIcon from "@src/assets/additionIcon.svg";
 import SubtractionIcon from "@src/assets/subtractionIcon.svg";
 import MultiplicationIcon from "@src/assets/multiplicationIcon.svg";
 import DivisionIcon from "@src/assets/divisionIcon.svg";
+import { useAuth } from "../AuthContext";
+import ExitButton from "../components/exitbutton";
 
 interface Course {
   courseBatchId: string;
@@ -26,8 +28,18 @@ interface ApiResponse {
   previousPage: number | null;
 }
 
-const ButtonStyle: string =
-  "w-32 h-32 p-2 bg-[#CFB6FF] flex flex-col justify-center items-center rounded-2xl border-4 border-[#374DB0] text-white font-bold text-lg gap-1";
+const ButtonStyle = `
+  w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24
+  p-2 md:p-3 
+  bg-white/20 
+  flex flex-col justify-center items-center 
+  rounded-2xl 
+  border-2 md:border-3 lg:border-4 border-[#374DB0] 
+  text-lg md:text-xl lg:text-2xl 
+  gap-1
+  transition-all duration-200
+  hover:scale-105 hover:shadow-lg
+`;
 
 const getIconForCourse = (courseId: string) => {
   switch (courseId.toLowerCase()) {
@@ -40,7 +52,7 @@ const getIconForCourse = (courseId: string) => {
     case "division":
       return DivisionIcon;
     default:
-      return AdditionIcon; // Default fallback
+      return "📚"; // Default fallback
   }
 };
 
@@ -48,6 +60,7 @@ const Home = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -96,38 +109,52 @@ const Home = () => {
     );
   }
 
-  // Group courses into rows of 2
+  // Group courses into rows of 3
   const courseRows = [];
-  for (let i = 0; i < courses.length; i += 2) {
-    courseRows.push(courses.slice(i, i + 2));
+  for (let i = 0; i < courses.length; i += 3) {
+    courseRows.push(courses.slice(i, i + 3));
   }
 
   return (
-    <div className="gap-5 flex flex-col mt-20">
-      {courseRows.map((row, rowIndex) => (
-        <section
-          key={rowIndex}
-          className="flex items-center justify-center gap-5"
-        >
-          {row.map((course) => (
+  <div className="container mx-auto">
+      
+      
+      {/* Responsive grid layout */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8">
+        {courses.map((course) => (
+          <div key={course.courseId} className="flex flex-col items-center">
             <NavLink
-              key={course.courseId}
               to={`/courses/${course.courseId}`}
               className={ButtonStyle}
             >
-              <img
-                src={getIconForCourse(course.courseId)}
-                alt={`${course.title} icon`}
-              />
-              <p className={course.title.length > 10 ? "text-md" : ""}>
-                {course.title}
-              </p>
+              {typeof getIconForCourse(course.courseId) === 'string' ? (
+                <span 
+                  role="img" 
+                  aria-label={`${course.title} icon`}
+                  className="text-3xl sm:text-4xl md:text-5xl"
+                >
+                  {getIconForCourse(course.courseId)}
+                </span>
+              ) : (
+                <img 
+                  src={getIconForCourse(course.courseId)} 
+                  alt={`${course.title} icon`}
+                  className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14"
+                />
+              )}
             </NavLink>
-          ))}
-        </section>
-      ))}
+            
+            <p className="mt-2 text-center font-medium text-xs sm:text-sm md:text-base">
+              {course.title}
+            </p>
+          </div>
+        ))}
+      </div>
+      <ExitButton />
     </div>
   );
 };
 
 export default Home;
+
+
