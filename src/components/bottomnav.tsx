@@ -14,43 +14,37 @@ const BottomNavBar = () => {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 w-full bg-transparent z-50">
-      {" "}
-      <div className="mx-auto max-w-md px-4">
-        {" "}
-        <ul className="mb-5 p-4 flex flex-row justify-around items-center bg-[#CFB6FF] rounded-2xl border-4 border-[#374DB0] shadow-xl">
+   <nav className="fixed bottom-0 w-full z-10">
+      <div className="px-4 py-2">
+        <ul className="mx-auto max-w-md mb-2 p-3 flex flex-row justify-around items-center bg-[#8bc3ff]/20 rounded-2xl border-2 border-[#374DB0]">
           <li>
             <NavLink
               to="/home"
               className={({ isActive }) =>
-                isActive
-                  ? "opacity-100"
-                  : "opacity-70 hover:opacity-100 transition-opacity"
+                isActive ? "scale-110" : "opacity-70 hover:opacity-100 transition-transform"
               }
             >
-              <img src={HomeIcon} alt="Home" className="w-7 h-7" />
+              <img src={HomeIcon} className="w-7 h-7" alt="Home" />
             </NavLink>
           </li>
           <li>
             <NavLink
               to="/leaderboard"
               className={({ isActive }) =>
-                isActive
-                  ? "opacity-100"
-                  : "opacity-70 hover:opacity-100 transition-opacity"
+                isActive ? "scale-110" : "opacity-70 hover:opacity-100 transition-transform"
               }
             >
-              <img src={TrophyIcon} alt="Leaderboard" className="w-8 h-8" />
+              <img src={TrophyIcon} className="w-8 h-8" alt="Leaderboard" />
             </NavLink>
           </li>
           <li>
             <NavLink
               to={profileLink}
               className={({ isActive }) =>
-                `transition-opacity ${isActive ? "opacity-100" : "opacity-70 hover:opacity-100"}`
+                isActive ? "scale-110" : "opacity-70 hover:opacity-100 transition-transform"
               }
             >
-              <img src={ProfileIcon} alt="Profile" className="w-8 h-8" />
+              <img src={ProfileIcon} className="w-8 h-8" alt="Profile" />
             </NavLink>
           </li>
         </ul>

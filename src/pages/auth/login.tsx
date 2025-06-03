@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
+import { useAuth } from "../../AuthContext";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,9 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
+  const { login } = useAuth();
+
+  const location = useLocation();
   const navigate = useNavigate();
 
   const formContainerClass =
@@ -72,7 +76,11 @@ const Login = () => {
         throw new Error(data.message || "Login failed");
       }
 
-      navigate("/home");
+      // Then update auth context with the login info
+      await login(formData.username, formData.password);
+
+      const from = location.state?.from?.pathname || "/home";
+      navigate(from, { replace: true });
     } catch (error) {
       setSubmitError(
         error instanceof Error ? error.message : "An unknown error occurred",
@@ -141,6 +149,15 @@ const Login = () => {
       >
         {isSubmitting ? "Signing in..." : "Sign in"}
       </button>
+
+      <Link to="/register" className="text-sm text-blue-500">
+      <div className="text-sm text-gray-500">
+        Don't have an account?{" "}
+        <span className="text-amber-300 hover:underline">
+          Register
+        </span>
+       </div>
+      </Link> 
     </form>
   );
 };
