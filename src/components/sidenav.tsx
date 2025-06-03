@@ -2,8 +2,13 @@ import { NavLink } from "react-router-dom";
 import TrophyIcon from "@src/assets/trophy.svg";
 import HomeIcon from "@src/assets/home.svg";
 import ProfileIcon from "@src/assets/profile.svg";
+import { useAuth } from "@src/AuthContext";
 
 const SideNavBar = () => {
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  const profileLink = `/profile/${user?._id}`;
+
   return (
     <nav className="fixed left-0 top-0 h-full pt-20 pb-8 w-24 md:w-28 border-r border-[#374DB0]/20 bg-[#8bc3ff] shadow-lg z-10">
       <div className="h-full flex flex-col justify-start">
@@ -57,7 +62,7 @@ const SideNavBar = () => {
           
           {/* Profile Link */}
           <li className="w-full flex justify-center">
-            <NavLink to="/profile">
+            <NavLink to={profileLink}>
               {({ isActive }) => (
                 <div className={`relative flex flex-col items-center w-16 py-3 px-2 rounded-xl transition-all duration-200 ${
                   isActive 

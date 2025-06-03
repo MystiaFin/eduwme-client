@@ -32,7 +32,7 @@ const ProfilePage = () => {
 
       try {
         const response = await fetch(
-          `http://localhost:3000/users/getprofile/${userId}`,
+          `${API_BASE_URL}/users/getprofile/${userId}`,
           {
             method: "GET",
             headers: {

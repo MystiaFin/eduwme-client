@@ -19,10 +19,12 @@ const LeaderboardPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
 
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await fetch("http://localhost:3000/leaderboard", {
+        const response = await fetch(`${API_BASE_URL}/leaderboard`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -48,7 +50,7 @@ const LeaderboardPage = () => {
         
         // Get current user
         try {
-          const meResponse = await fetch("http://localhost:3000/users/getme", {
+          const meResponse = await fetch(`${API_BASE_URL}/users/getme`, {
             credentials: "include"
           });
           

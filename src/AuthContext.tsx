@@ -19,9 +19,6 @@ interface User {
   }>;
 }
 
-interface UserResponse {
-  user: User;
-}
 
 interface AuthContextType {
   user: User | null;
@@ -55,6 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
+  // ...existing code...
   const fetchUser = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/users/getme`, {
@@ -66,8 +64,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       if (response.ok) {
-        const userData: UserResponse = await response.json();
-        setUser(userData.user);
+        const userData = await response.json();
+        setUser(userData);
         setIsAuthenticated(true);
       } else if (response.status === 401) {
         setUser(null);
@@ -83,6 +81,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchUser();
@@ -127,7 +126,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     if (userResponse.ok) {
       const userData = await userResponse.json();
-      setUser(userData.user);
+      setUser(userData);
       setIsAuthenticated(true);
       return true;
     } else {

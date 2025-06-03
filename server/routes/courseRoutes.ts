@@ -1,22 +1,22 @@
 import { Router } from "express";
 
-import { completeExercise } from "../controllers/courses/completeExercise.ts";
+import { completeExercise } from "../controllers/courses/completeExercise.js";
 
 // course batches
-import { createCourseBatch } from "../controllers/courses/createCourseBatch.ts";
-import { getCourseBatches } from "../controllers/courses/getCourseBatches.ts";
-import { getCourseBatchById } from "../controllers/courses/getCourseBatchById.ts";
-import { updateCourseBatch } from "../controllers/courses/updateCourseBatch.ts";
-import { deleteCourseBatch } from "../controllers/courses/deleteCourseBatch.ts";
+import { createCourseBatch } from "../controllers/courses/createCourseBatch.js";
+import { getCourseBatches } from "../controllers/courses/getCourseBatches.js";
+import { getCourseBatchById } from "../controllers/courses/getCourseBatchById.js";
+import { updateCourseBatch } from "../controllers/courses/updateCourseBatch.js";
+import { deleteCourseBatch } from "../controllers/courses/deleteCourseBatch.js";
 
 // courses
-import { getCourses } from "../controllers/courses/getCourses.ts";
-import { getCoursesById } from "../controllers/courses/getCoursesById.ts";
-import { createCourse } from "../controllers/courses/createCourse.ts";
-import { updateCourse } from "../controllers/courses/updateCourse.ts";
-import { deleteCourse } from "../controllers/courses/deleteCourse.ts";
+import { getCourses } from "../controllers/courses/getCourses.js";
+import { getCoursesById } from "../controllers/courses/getCoursesById.js";
+import { createCourse } from "../controllers/courses/createCourse.js";
+import { updateCourse } from "../controllers/courses/updateCourse.js";
+import { deleteCourse } from "../controllers/courses/deleteCourse.js";
 // middleware
-import { isAdmin, isUser, } from "../middlewares/middleware.ts";
+import { isAdmin, isUser, } from "../middlewares/middleware.js";
 
 const router = Router();
 
@@ -24,7 +24,7 @@ const router = Router();
 router.post(
   "/complete/:userId/:courseBatchId/:courseId/:exerciseId",
   isUser,
-  completeExercise,
+  completeExercise
 );
 // Course Batches Routes
 router.get("/getCourseBatches", isUser, getCourseBatches);

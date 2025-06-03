@@ -12,8 +12,8 @@ import rateLimit from "express-rate-limit";
 
 // More strict limiter for authentication
 const authLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 10, // 10 login attempts per hour
+  windowMs: 10 * 60 * 1000, // 1 minute
+  max: 100, // 100 login attempts per 1 minute
   message: {
     status: 429,
     message: "Too many login attempts, please try again later.",

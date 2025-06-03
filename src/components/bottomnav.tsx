@@ -6,12 +6,9 @@ import ProfileIcon from "@src/assets/profile.svg";
 import { useAuth } from "@src/AuthContext.tsx";
 
 const BottomNavBar = () => {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user } = useAuth();
 
-  let profileLink = "/login";
-  if (isAuthenticated && user && user._id) {
-    profileLink = `/profile/${user._id}`;
-  }
+  const profileLink = `/profile/${user?._id}`;
 
   return (
    <nav className="fixed bottom-0 w-full z-10">

@@ -74,8 +74,6 @@ const ButtonStyle = `
   hover:scale-105 hover:shadow-lg
 `;
 
-// const LockedButtonStyle = ` ... ` (assuming this is defined elsewhere or not strictly needed for this snippet)
-
 const getIconForCourse = (courseId: string) => {
   switch (courseId.toLowerCase()) {
     case "addition":
@@ -99,20 +97,25 @@ const Home = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+
   useEffect(() => {
     const fetchAllData = async () => {
       setLoading(true);
       setError(null);
       try {
         let currentUserProgress: UserProgress[] = [];
+        console.log("User data fetched successfully:", user);
+
         if (user) {
-          const userResponse = await fetch("http://localhost:3000/users/getme", {
+          const userResponse = await fetch(`${API_BASE_URL}/users/getme`, {
             credentials: "include"
           });
           if (userResponse.ok) {
-            const userData = await userResponse.json(); // Use userResponse here
-            if (userData.user.courseBatchesProgress) {
-              currentUserProgress = userData.user.courseBatchesProgress;
+            const userData = await userResponse.json();
+            // Fixed: userData directly contains the user object, not nested under a "user" property
+            if (userData.courseBatchesProgress) {
+              currentUserProgress = userData.courseBatchesProgress;
               setUserProgress(currentUserProgress);
             }
           } else {
@@ -122,7 +125,7 @@ const Home = () => {
         }
 
         const courseBatchesResponse = await fetch(
-          "http://localhost:3000/courses/getCourseBatches",
+          `${API_BASE_URL}/courses/getCourseBatches`,
           {
             credentials: "include"
           }
@@ -163,7 +166,7 @@ const Home = () => {
           // This example assumes /getCourses without params fetches ALL courses.
           // Adjust if your API behaves differently.
           const allCoursesResponse = await fetch(
-            `http://localhost:3000/courses/getCourses`, // Potentially add query params if API supports fetching specific IDs
+            `${API_BASE_URL}/courses/getCourses`, // Potentially add query params if API supports fetching specific IDs
             { credentials: "include" }
           );
           if (!allCoursesResponse.ok) {

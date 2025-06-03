@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
+import compression from "compression";
 
 // routes imports
 import userRoutes from "./server/routes/userRoutes";
@@ -36,7 +37,7 @@ const corsOrigins = process.env.CORS_ORIGINS
 // Global rate limiter for production
 const prodLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 500, // Limit each IP to 500 requests per windowMs
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -56,6 +57,7 @@ mongoose
 
 const app = express();
 app.use(cookieParser());
+app.use(compression());
 
 console.log("CORS configuration:");
 console.log("- Environment:", nodeEnv);

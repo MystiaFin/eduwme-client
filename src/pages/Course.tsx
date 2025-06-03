@@ -47,6 +47,8 @@ const Course = () => {
   const [error, setError] = useState<string | null>(null);
   const [courseProgress, setCourseProgress] = useState<CourseProgress[]>([]);
 
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+
   // Fetch course details and then exercises
   useEffect(() => {
     const fetchCourseAndExercises = async () => {
@@ -55,7 +57,7 @@ const Course = () => {
       try {
         // Step 1: Fetch course details
         const courseResponse = await fetch(
-          `http://localhost:3000/courses/getCoursesById/${courseId}`,
+          `${API_BASE_URL}/courses/getCoursesById/${courseId}`,
           { credentials: "include" }
         );
 
@@ -69,14 +71,14 @@ const Course = () => {
 
         // Step 2: Fetch user progress for this course
         if (user) {
-          const userResponse = await fetch("http://localhost:3000/users/getme", {
+          const userResponse = await fetch(`${API_BASE_URL}/users/getme`, {
             credentials: "include"
           });
           
           if (userResponse.ok) {
             const userData = await userResponse.json();
-            // Find progress for this specific course
-            const batchProgress = userData.user.courseBatchesProgress?.find(
+            // Fixed: userData directly contains the user object, not nested under a "user" property
+            const batchProgress = userData.courseBatchesProgress?.find(
               (batch: any) => batch.courseBatchId === fetchedCourse.courseBatchId
             );
             
@@ -94,7 +96,7 @@ const Course = () => {
         const exercisePromises = fetchedCourse.exerciseBatchList.map(
           async (exerciseId: string) => {
             const exerciseResponse = await fetch(
-              `http://localhost:3000/exercises/getExercise/${exerciseId}`,
+              `${API_BASE_URL}/exercises/getExercise/${exerciseId}`,
               { credentials: "include" }
             );
 
@@ -179,7 +181,7 @@ const Course = () => {
     <div className="container mx-auto p-4">
       <div className="mb-8">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/home")}
           className="mb-4 flex items-center text-blue-600 hover:text-blue-800"
         >
           <span className="mr-2">←</span> Back to Courses
