@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router";
 import "./index.css";
 import App from "./App.tsx";
 
@@ -16,13 +16,15 @@ import AuthLayout from "./pages/auth/layout.tsx";
 import HomePage from "./pages/Home.tsx";
 import LeaderboardPage from "./pages/Leaderboard.tsx";
 import ProfilePage from "./pages/Profile.tsx";
-import Courses from "./pages/Courses.tsx";
+import Courses from "./pages/Course.tsx";
 
 // Auth Pages Import
 import Register from "./pages/auth/register.tsx";
 import Login from "./pages/auth/login.tsx";
 import { AuthGuard } from "./AuthGuard.tsx";
 import { RequireAuth } from "./RequireAuth.tsx";
+import ExercisePage from "./pages/Exercise.tsx";
+
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -42,8 +44,8 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/home" element={<HomePage />} />
               <Route path="/dashboard" element={<HomePage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
-              <Route path="/profile/:userId" element={<ProfilePage />} />
-              <Route path="/courses/:categoryId" element={<Courses />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/courses/:courseId" element={<Courses />} />
             </Route>
 
             {/* Dengan layout auth */}

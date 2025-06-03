@@ -10,6 +10,7 @@ interface User {
   _id: string;
   username: string;
   role: string;
+  xp?: number; // Make optional with ?
   gems?: number; // Make optional with ?
   inventory?: Array<{
     itemId: string;

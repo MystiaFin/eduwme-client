@@ -1,14 +1,25 @@
 import { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router";
+import { NavLink } from "react-router-dom";
 import AdditionIcon from "@src/assets/additionIcon.svg";
 import SubtractionIcon from "@src/assets/subtractionIcon.svg";
 import MultiplicationIcon from "@src/assets/multiplicationIcon.svg";
 import DivisionIcon from "@src/assets/divisionIcon.svg";
-import { useAuth } from "../AuthContext";
 import ExitButton from "../components/exitbutton";
+import { useAuth } from "../AuthContext";
 
-interface Course {
+// Define types for course batches
+interface CourseBatch {
   courseBatchId: string;
+  dateCreated: string;
+  courseList: string[]; // Array of courseId strings
+  stage: number;
+  coursesLength: number; // Total number of courses defined in this batch's courseList
+  isUnlocked?: boolean;
+}
+
+// Define types for courses
+interface Course {
+  courseBatchId: string; // The batch this course primarily belongs to (can be in multiple)
   courseId: string;
   title: string;
   level: number;
@@ -18,7 +29,13 @@ interface Course {
   logo: string;
 }
 
-interface ApiResponse {
+// Define types for API responses
+interface CourseBatchResponse {
+  message: string;
+  courseBatchList: CourseBatch[];
+}
+
+interface CourseResponse {
   message: string;
   courseList: Course[];
   totalItems: number;
@@ -26,6 +43,22 @@ interface ApiResponse {
   currentPage: number;
   nextPage: number | null;
   previousPage: number | null;
+}
+
+// Define types for user progress
+// This interface should match the structure of your user's progress data
+interface CourseProgressDetail {
+  courseId: string;
+  status: "not_started" | "in_progress" | "completed";
+  // Add other course-specific progress details if needed
+}
+
+interface UserProgress {
+  courseBatchId: string;
+  status: "not_started" | "in_progress" | "completed";
+  completedCoursesCount: number;
+  totalCoursesInBatch: number; // This should ideally match batch.coursesLength
+  courses?: CourseProgressDetail[]; // Array of progress for individual courses within the batch
 }
 
 const ButtonStyle = `
@@ -40,6 +73,8 @@ const ButtonStyle = `
   transition-all duration-200
   hover:scale-105 hover:shadow-lg
 `;
+
+// const LockedButtonStyle = ` ... ` (assuming this is defined elsewhere or not strictly needed for this snippet)
 
 const getIconForCourse = (courseId: string) => {
   switch (courseId.toLowerCase()) {
@@ -57,35 +92,102 @@ const getIconForCourse = (courseId: string) => {
 };
 
 const Home = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [courseBatches, setCourseBatches] = useState<CourseBatch[]>([]);
+  const [courses, setCourses] = useState<{ [courseId: string]: Course }>({}); // Store all fetched courses by their ID for easy lookup
+  const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
+  const { user } = useAuth();
 
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchAllData = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const response = await fetch(
-          "http://localhost:3000/courses/getcourses",
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        let currentUserProgress: UserProgress[] = [];
+        if (user) {
+          const userResponse = await fetch("http://localhost:3000/users/getme", {
+            credentials: "include"
+          });
+          if (userResponse.ok) {
+            const userData = await userResponse.json(); // Use userResponse here
+            if (userData.user.courseBatchesProgress) {
+              currentUserProgress = userData.user.courseBatchesProgress;
+              setUserProgress(currentUserProgress);
+            }
+          } else {
+            console.error("Failed to fetch user data, status:", userResponse.status);
+            // Potentially set an error or handle anonymous users differently
+          }
         }
 
-        const data: ApiResponse = await response.json();
-        setCourses(data.courseList);
+        const courseBatchesResponse = await fetch(
+          "http://localhost:3000/courses/getCourseBatches",
+          {
+            credentials: "include"
+          }
+        );
+
+        if (!courseBatchesResponse.ok) {
+          throw new Error(`HTTP error fetching course batches! status: ${courseBatchesResponse.status}`);
+        }
+
+        const courseBatchesData: CourseBatchResponse = await courseBatchesResponse.json();
+        const sortedBatches = courseBatchesData.courseBatchList.sort((a, b) => a.stage - b.stage);
+
+        const batchesWithUnlockState = sortedBatches.map((batch, index) => {
+          if (index === 0) {
+            return { ...batch, isUnlocked: true };
+          }
+          const previousBatch = sortedBatches[index - 1];
+          const previousBatchProgress = currentUserProgress.find(
+            p => p.courseBatchId === previousBatch.courseBatchId
+          );
+          const isUnlocked = previousBatchProgress?.status === "completed";
+          return { ...batch, isUnlocked };
+        });
+
+        setCourseBatches(batchesWithUnlockState);
+
+        // Fetch all courses referenced in any batch's courseList
+        const allReferencedCourseIds = new Set<string>();
+        batchesWithUnlockState.forEach(batch => {
+          batch.courseList.forEach(courseId => allReferencedCourseIds.add(courseId));
+        });
+
+        const fetchedCoursesMap: { [courseId: string]: Course } = {};
+        if (allReferencedCourseIds.size > 0) {
+          // Assuming an endpoint that can fetch multiple courses by IDs,
+          // or fetching them one by one if necessary.
+          // For simplicity, if /getCourses can take a list of IDs or if we fetch all and filter:
+          // This example assumes /getCourses without params fetches ALL courses.
+          // Adjust if your API behaves differently.
+          const allCoursesResponse = await fetch(
+            `http://localhost:3000/courses/getCourses`, // Potentially add query params if API supports fetching specific IDs
+            { credentials: "include" }
+          );
+          if (!allCoursesResponse.ok) {
+            throw new Error(`Failed to fetch all courses: ${allCoursesResponse.status}`);
+          }
+          const allCoursesData: CourseResponse = await allCoursesResponse.json();
+          allCoursesData.courseList.forEach(course => {
+            fetchedCoursesMap[course.courseId] = course;
+          });
+        }
+        setCourses(fetchedCoursesMap);
+
       } catch (err) {
+        console.error("Error in fetchAllData:", err);
         setError(
-          err instanceof Error ? err.message : "Failed to fetch courses",
+          err instanceof Error ? err.message : "Failed to fetch data"
         );
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCourses();
-  }, []);
+    fetchAllData();
+  }, [user]);
 
   if (loading) {
     return (
@@ -109,52 +211,145 @@ const Home = () => {
     );
   }
 
-  // Group courses into rows of 3
-  const courseRows = [];
-  for (let i = 0; i < courses.length; i += 3) {
-    courseRows.push(courses.slice(i, i + 3));
-  }
-
   return (
-  <div className="container mx-auto">
-      
-      
-      {/* Responsive grid layout */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8">
-        {courses.map((course) => (
-          <div key={course.courseId} className="flex flex-col items-center">
-            <NavLink
-              to={`/courses/${course.courseId}`}
-              className={ButtonStyle}
-            >
-              {typeof getIconForCourse(course.courseId) === 'string' ? (
-                <span 
-                  role="img" 
-                  aria-label={`${course.title} icon`}
-                  className="text-3xl sm:text-4xl md:text-5xl"
-                >
-                  {getIconForCourse(course.courseId)}
-                </span>
-              ) : (
-                <img 
-                  src={getIconForCourse(course.courseId)} 
-                  alt={`${course.title} icon`}
-                  className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14"
-                />
-              )}
-            </NavLink>
-            
-            <p className="mt-2 text-center font-medium text-xs sm:text-sm md:text-base">
-              {course.title}
-            </p>
+    <div className="container mx-auto px-4 py-8">
+      {/* User stats */}
+      <div className="flex justify-between items-center mb-10">
+        <h1 className="text-3xl font-bold text-gray-800">Learning Areas</h1>
+        <div className="flex gap-4 items-center">
+          <div className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full flex items-center shadow">
+            <span className="mr-2 text-xl">💎</span>
+            <span className="font-semibold text-lg">{user?.gems || 0}</span>
           </div>
-        ))}
+          <div className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full flex items-center shadow">
+            <span className="mr-2 text-xl">🏅</span>
+            <span className="font-semibold text-lg">{user?.xp || 0} XP</span>
+          </div>
+        </div>
       </div>
+      
+      {courseBatches.map((batch) => {
+        const batchProgress = userProgress.find(p => p.courseBatchId === batch.courseBatchId);
+        
+        const orderedCoursesToShow = batch.courseList
+          .map(courseIdFromList => courses[courseIdFromList]) // Get Course object from the map
+          .filter(course => course !== undefined); // Filter out undefined if a courseId wasn't found
+
+        return (
+          <div key={batch.courseBatchId} className="mb-12 bg-white shadow-lg rounded-xl p-6">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+              <div className="flex items-center">
+                <h2 className="text-2xl font-semibold text-gray-700">
+                  Stage {batch.stage}
+                </h2>
+                {!batch.isUnlocked && (
+                  <span className="ml-4 px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm font-medium">
+                    🔒 Locked
+                  </span>
+                )}
+                {batch.isUnlocked && (
+                  <span className="ml-4 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                    🔓 Unlocked
+                  </span>
+                )}
+              </div>
+              
+              {batchProgress && batch.isUnlocked && (
+                <div className="flex items-center">
+                  <div className="w-32 bg-gray-200 rounded-full h-3 mr-3">
+                    <div 
+                      className="bg-[#374DB0] h-3 rounded-full transition-all duration-500 ease-out"
+                      style={{ 
+                        width: `${batchProgress.totalCoursesInBatch > 0 ? (batchProgress.completedCoursesCount / batchProgress.totalCoursesInBatch) * 100 : 0}%` 
+                      }}
+                    ></div>
+                  </div>
+                  <span className="text-sm text-gray-600 font-medium">
+                    {batchProgress.completedCoursesCount}/{batchProgress.totalCoursesInBatch}
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            {!batch.isUnlocked && (
+              <div className="bg-gray-50 rounded-lg p-6 text-center">
+                <p className="text-gray-600 text-lg">
+                  Complete previous stages to unlock this learning area.
+                </p>
+              </div>
+            )}
+            
+            {batch.isUnlocked && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                {orderedCoursesToShow.map((course) => {
+                  const courseSpecificProgress = batchProgress?.courses?.find(c => c.courseId === course.courseId);
+                  const isCompleted = courseSpecificProgress?.status === "completed";
+                  const isInProgress = courseSpecificProgress?.status === "in_progress" && !isCompleted;
+                  
+                  return (
+                    <div key={course.courseId} className="flex flex-col items-center text-center">
+                      <NavLink
+                        to={`/courses/${course.courseId}`}
+                        className={`${ButtonStyle} relative`} // Added relative for potential badge positioning
+                      >
+                        {typeof getIconForCourse(course.courseId) === 'string' ? (
+                          <span 
+                            role="img" 
+                            aria-label={`${course.title} icon`}
+                            className="text-4xl sm:text-5xl md:text-6xl" // Increased icon size
+                          >
+                            {getIconForCourse(course.courseId)}
+                          </span>
+                        ) : (
+                          <img 
+                            src={getIconForCourse(course.courseId)} 
+                            alt={`${course.title} icon`}
+                            className="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16" // Increased icon size
+                          />
+                        )}
+                         {isCompleted && (
+                          <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs rounded-full p-1 leading-none">
+                            ✓
+                          </span>
+                        )}
+                      </NavLink>
+                      
+                      <p className="mt-3 font-medium text-sm md:text-base text-gray-700">
+                        {course.title}
+                      </p>
+                      {isInProgress && (
+                        <span className="mt-1 inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                          In Progress
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            
+            {batch.isUnlocked && orderedCoursesToShow.length === 0 && (
+              <div className="bg-yellow-50 rounded-lg p-6 text-center">
+                <p className="text-yellow-700 text-lg">
+                  No courses available in this learning area yet.
+                </p>
+              </div>
+            )}
+          </div>
+        );
+      })}
+      
+      {courseBatches.length === 0 && !loading && (
+        <div className="bg-blue-50 rounded-lg p-10 text-center">
+          <p className="text-blue-700 text-xl">
+            No learning areas available yet. Check back soon!
+          </p>
+        </div>
+      )}
+      
       <ExitButton />
     </div>
   );
 };
 
 export default Home;
-
-
