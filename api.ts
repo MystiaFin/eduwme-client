@@ -23,6 +23,7 @@ import searchExercises from "./server/utils/searchExercises";
 
 // api imports
 import { leaderboard } from "./server/controllers/courses/leaderboard.js";
+import path from "path";
 
 // Environment variables
 const port: number = process.env.PORT ? Number(process.env.PORT) : 3000;
