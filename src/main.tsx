@@ -1,11 +1,14 @@
+
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router";
-import "./index.css";
+import "./styles/index.css";
 import App from "./App.tsx";
 
 // AuthContext import
 import { AuthProvider } from "./AuthContext.tsx";
+// Theme Provider import
+import { ThemeProvider } from "./ThemeContext.tsx";
 
 // Layout Import
 import RootLayout from "./rootlayout.tsx";
@@ -24,39 +27,43 @@ import Login from "./pages/auth/login.tsx";
 import { AuthGuard } from "./AuthGuard.tsx";
 import { RequireAuth } from "./RequireAuth.tsx";
 import ExercisePage from "./pages/Exercise.tsx";
+import Settings from "./pages/settings.tsx";
 
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<RootLayout />}>
-            {/* Tanpa layout, standalone */}
-            <Route path="/" element={<App />} />
+      <ThemeProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<RootLayout />}>
+              {/* Tanpa layout, standalone */}
+              <Route path="/" element={<App />} />
 
-              {/* Protected routes - Require authentication */}
-            <Route element={
-              <RequireAuth>
-                <MainLayout />
-              </RequireAuth>
-            }>
-              <Route path="/home" element={<HomePage />} />
-              <Route path="/dashboard" element={<HomePage />} />
-              <Route path="/leaderboard" element={<LeaderboardPage />} />
-              <Route path="/profile/:userId" element={<ProfilePage />} />
-              <Route path="/courses/:courseId" element={<Courses />} />
-              <Route path="/exercise/:exerciseId" element={<ExercisePage />} />
-            </Route>
+                {/* Protected routes - Require authentication */}
+              <Route element={
+                <RequireAuth>
+                  <MainLayout />
+                </RequireAuth>
+              }>
+                <Route path="/home" element={<HomePage />} />
+                <Route path="/dashboard" element={<HomePage />} />
+                <Route path="/leaderboard" element={<LeaderboardPage />} />
+                <Route path="/profile/:userId" element={<ProfilePage />} />
+                <Route path="/courses/:courseId" element={<Courses />} />
+                <Route path="/exercise/:exerciseId" element={<ExercisePage />} />
+                <Route path="/settings" element={<Settings />} />
+              </Route>
 
-            {/* Dengan layout auth */}
-              <Route element={<AuthGuard><AuthLayout /></AuthGuard>}>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
+              {/* Dengan layout auth */}
+                <Route element={<AuthGuard><AuthLayout /></AuthGuard>}>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </BrowserRouter>
+          </Routes>
+        </BrowserRouter>
+      </ThemeProvider>
     </AuthProvider>
   </StrictMode>,
 );

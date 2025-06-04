@@ -15,13 +15,19 @@ const Register = () => {
 
   const navigate = useNavigate();
 
+  // Responsive form container
   const formContainerClass =
-    "flex flex-col items-center justify-center w-86 p-5 gap-5";
+    "flex flex-col items-center justify-center w-full p-5 gap-4 md:gap-5";
+    
+  // Responsive input with larger width on laptop
   const inputBaseClass =
-    "appearance-none bg-[#A7B5E7] w-64 px-3 py-2 rounded-full text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm placeholder-[#E0E7FF]";
+    "appearance-none bg-[#A7B5E7] w-full max-w-sm px-3 py-2 md:py-3 rounded-full text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm md:text-base placeholder-[#E0E7FF]";
+    
   const inputErrorBorderClass = "border border-red-300";
   const inputNormalBorderClass = "border border-[#7895FC]";
-  const submitButtonClass = `w-26 flex justify-center py-2 px-4 rounded-full text-sm font-medium text-white ${
+  
+  // Responsive button with better sizing for laptop
+  const submitButtonClass = `w-full max-w-[160px] md:max-w-[180px] flex justify-center py-2 px-4 md:py-2.5 md:px-5 rounded-full text-sm md:text-base font-medium text-white ${
     isSubmitting
       ? "bg-[#303442] cursor-not-allowed"
       : "bg-[#303442] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#303442]"
@@ -110,7 +116,7 @@ const Register = () => {
 
   return (
     <form className={formContainerClass} onSubmit={handleSubmit}>
-      <div>
+      <div className="w-full max-w-sm">
         <label htmlFor="username" className="sr-only">
           Username
         </label>
@@ -132,7 +138,7 @@ const Register = () => {
         )}
       </div>
 
-      <div>
+      <div className="w-full max-w-sm">
         <label htmlFor="email" className="sr-only">
           Email address
         </label>
@@ -154,7 +160,7 @@ const Register = () => {
         )}
       </div>
 
-      <div>
+      <div className="w-full max-w-sm">
         <label htmlFor="password" className="sr-only">
           Password
         </label>
@@ -176,7 +182,7 @@ const Register = () => {
         )}
       </div>
 
-      <div>
+      <div className="w-full max-w-sm">
         <label htmlFor="confirmPassword" className="sr-only">
           Confirm Password
         </label>
@@ -201,13 +207,13 @@ const Register = () => {
       </div>
 
       {submitError && (
-        <div className="p-2 text-sm bg-red-100 text-red-700 rounded-md">
+        <div className="p-2 text-sm md:text-base bg-red-100 text-red-700 rounded-md w-full max-w-sm">
           {submitError}
         </div>
       )}
 
       {submitSuccess && (
-        <div className="p-2 text-sm bg-green-100 text-green-700 rounded-md">
+        <div className="p-2 text-sm md:text-base bg-green-100 text-green-700 rounded-md w-full max-w-sm">
           {submitSuccess}
         </div>
       )}
@@ -219,15 +225,15 @@ const Register = () => {
       >
         {isSubmitting ? "Creating account..." : "Sign up"}
       </button>
+      
       <Link to="/login">
-       <h1 className="text-sm text-gray-500">
-        Already have an account?{" "}
-        <span className="text-blue-500 hover:underline">Login</span>
-        </h1>
+        <div className="text-sm md:text-base text-gray-500 mt-2">
+          Already have an account?{" "}
+          <span className="text-blue-500 hover:underline">Login</span>
+        </div>
       </Link>
     </form>
   );
 };
 
 export default Register;
-

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useAuth } from "../AuthContext";
-import ExitButton from "../components/exitbutton";
 
 // Define interfaces for type safety
 interface Exercise {
@@ -141,21 +140,23 @@ const Course = () => {
     navigate(`/exercise/${exerciseId}`);
   };
 
+  // Updated loading state with responsive styling and dark mode
   if (loading) {
     return (
-      <div className="container mx-auto p-4 flex justify-center items-center min-h-screen">
-        <p className="text-lg text-gray-600">Loading course content...</p>
+      <div className="flex justify-center items-center min-h-[70vh]">
+        <p className="text-base md:text-lg text-gray-600 dark:text-gray-300">Loading course content...</p>
       </div>
     );
   }
 
+  // Updated error state with responsive styling and dark mode
   if (error) {
     return (
-      <div className="container mx-auto p-4 flex flex-col items-center justify-center min-h-screen">
-        <p className="text-lg text-red-600 mb-4">Error: {error}</p>
+      <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
+        <p className="text-base md:text-lg text-red-600 dark:text-red-400 mb-4">Error: {error}</p>
         <button
           onClick={() => navigate(-1)}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+          className="px-3 py-1.5 md:px-4 md:py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg dark:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
         >
           Go Back
         </button>
@@ -163,13 +164,14 @@ const Course = () => {
     );
   }
 
+  // Updated course not found state with responsive styling and dark mode
   if (!course) {
     return (
-      <div className="container mx-auto p-4 flex flex-col items-center justify-center min-h-screen">
-        <p className="text-lg text-yellow-600 mb-4">Course not found</p>
+      <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
+        <p className="text-base md:text-lg text-yellow-600 dark:text-yellow-400 mb-4">Course not found</p>
         <button
           onClick={() => navigate("/")}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+          className="px-3 py-1.5 md:px-4 md:py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg dark:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
         >
           Return to Home
         </button>
@@ -178,26 +180,47 @@ const Course = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="mb-8">
+    // Container with width constraints and proper spacing for mobile navigation
+    <div className="max-w-full md:max-w-4xl lg:max-w-5xl mx-auto px-3 sm:px-4 py-4 md:py-6 pb-24 md:pb-16 transition-colors duration-300 dark:bg-gray-900">
+      <div className="mb-4 md:mb-6">
+        {/* Responsive back button with dark mode support */}
         <button
-          onClick={() => navigate("/home")}
-          className="mb-4 flex items-center text-blue-600 hover:text-blue-800"
+        onClick={() => navigate("/home")}
+        className="group flex items-center gap-1 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-lg
+          bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/30
+          border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600
+          shadow-sm hover:shadow transition-all duration-200
+          text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300
+          font-medium text-sm md:text-base mb-3 md:mb-4"
+        aria-label="Return to home page"
+      >
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 20 20" 
+          fill="currentColor" 
+          className="w-4 h-4 md:w-5 md:h-5 transform group-hover:-translate-x-1 transition-transform duration-200"
         >
-          <span className="mr-2">←</span> Back to Courses
-        </button>
+          <path 
+            fillRule="evenodd" 
+            d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" 
+            clipRule="evenodd" 
+          />
+        </svg>
+        Back to Home
+      </button>
         
-        <div className="flex items-center gap-4 mb-6">
+        {/* Responsive course header with proper spacing and dark mode */}
+        <div className="flex items-center gap-2 md:gap-4 mb-4 md:mb-6">
           {course.logo && (
             <img 
               src={course.logo} 
               alt={`${course.title} logo`} 
-              className="w-16 h-16 rounded-full bg-blue-100 p-2"
+              className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 p-2"
             />
           )}
           <div>
-            <h1 className="text-2xl font-bold">{course.title}</h1>
-            <p className="text-gray-600">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">{course.title}</h1>
+            <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
               Level {course.level} • {exercises.length} Exercises
             </p>
           </div>
@@ -206,8 +229,8 @@ const Course = () => {
 
       {/* Display exercises by difficulty level */}
       {Object.keys(exercisesByLevel).length === 0 ? (
-        <div className="bg-yellow-100 rounded-xl p-6 text-center">
-          <p className="text-yellow-700">
+        <div className="bg-yellow-100 dark:bg-yellow-900/20 rounded-lg md:rounded-xl p-4 md:p-6 text-center">
+          <p className="text-yellow-700 dark:text-yellow-400 text-sm md:text-base">
             No exercises available for this course yet.
           </p>
         </div>
@@ -215,12 +238,14 @@ const Course = () => {
         Object.entries(exercisesByLevel)
           .sort(([levelA], [levelB]) => Number(levelA) - Number(levelB))
           .map(([level, levelExercises]) => (
-            <div key={level} className="mb-10">
-              <h2 className="text-xl font-bold mb-4">
+            <div key={level} className="mb-6 md:mb-10">
+              {/* Level heading with dark mode support */}
+              <h2 className="text-lg md:text-xl font-bold mb-3 md:mb-4 text-gray-800 dark:text-white">
                 Level {level} Exercises
               </h2>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {/* Responsive grid with fewer columns on mobile */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                 {levelExercises.map(exercise => {
                   // Find exercise progress
                   const exerciseProgress = courseProgress.find(
@@ -234,26 +259,29 @@ const Course = () => {
                       key={exercise.exerciseId}
                       onClick={() => handleExerciseClick(exercise.exerciseId)}
                       className={`
-                        p-4 rounded-lg border-2 cursor-pointer
+                        p-3 md:p-4 rounded-lg border-2 cursor-pointer
                         ${isCompleted 
-                          ? "border-green-400 bg-green-50" 
-                          : "border-blue-300 bg-white hover:border-blue-500"}
+                          ? "border-green-400 bg-green-50 dark:border-green-600 dark:bg-green-900/20" 
+                          : "border-blue-300 dark:border-blue-700 bg-white dark:bg-gray-800 hover:border-blue-500 dark:hover:border-blue-500"}
                         transition-all duration-200
                       `}
                     >
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-medium">{exercise.title}</h3>
+                      {/* Exercise header with completion status */}
+                      <div className="flex justify-between items-start mb-1 md:mb-2">
+                        <h3 className="font-medium text-sm md:text-base text-gray-800 dark:text-white">{exercise.title}</h3>
                         {isCompleted && (
-                          <span className="text-green-500 text-xl">✓</span>
+                          <span className="text-green-500 dark:text-green-400 text-lg md:text-xl">✓</span>
                         )}
                       </div>
                       
-                      <p className="text-sm text-gray-600 mb-2">
+                      {/* Exercise metadata with responsive text */}
+                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1 md:mb-2">
                         {exercise.type} • {exercise.animType}
                       </p>
                       
-                      <div className="text-xs bg-gray-100 p-2 rounded">
-                        <p className="line-clamp-2">{exercise.question}</p>
+                      {/* Question preview with responsive sizing and dark mode */}
+                      <div className="text-xs bg-gray-100 dark:bg-gray-700 p-1.5 md:p-2 rounded">
+                        <p className="line-clamp-2 text-gray-800 dark:text-gray-200">{exercise.question}</p>
                       </div>
                     </div>
                   );
@@ -262,7 +290,6 @@ const Course = () => {
             </div>
           ))
       )}
-      <ExitButton />
     </div>
   );
 };
