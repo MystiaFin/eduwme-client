@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant light (&:where(.light, .light *));
+
 @theme {
   --color-confirm-blue: #303442;
   --color-header-blue: #444444;

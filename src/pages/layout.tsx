@@ -3,9 +3,11 @@ import BottomNavbar from "../components/bottomnav";
 import SideNavbar from "../components/sidenav";
 import { Outlet } from "react-router";
 
+
 const MainLayout = () => {
+
   return (
-     <div className="min-h-screen bg-gradient-to-b from-[#E0E7FF] to-[#EAEAFF]">
+    <div className='min-h-screen transition-colors duration-300 dark:bg-gradient-to-b dark:from-gray-900 dark:to-gray-800 bg-gradient-to-b from-[#E0E7FF] to-[#EAEAFF]'>
       <TopNavbar />
       
       {/* Side navigation - only visible on md screens and up */}

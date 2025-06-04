@@ -1,4 +1,4 @@
-import { useTheme } from "@src/ThemeContext";
+import { useTheme } from "../ThemeContext";
 import ExitButton from "@src/components/exitbutton";
 
 const Settings = () => {

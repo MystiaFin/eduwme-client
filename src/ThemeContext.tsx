@@ -5,35 +5,55 @@ type Theme = 'light' | 'dark';
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
+  getThemedClass?: (lightClass: string, darkClass: string) => string;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Check for stored preference
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark' || savedTheme === 'light') {
-      return savedTheme;
+    // For environments that support localStorage, check saved theme
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme && (savedTheme === 'dark' || savedTheme === 'light')) {
+          return savedTheme;
+        }
+      }
+    } catch (error) {
+      console.warn('localStorage not available, using system preference');
     }
+    
     // Use system preference as fallback
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    
+    // Default fallback
+    return 'light';
   });
 
   useEffect(() => {
-    // Update localStorage when theme changes
-    localStorage.setItem('theme', theme);
-    
-    // Apply dark class to html element for dark mode
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    if (typeof document !== 'undefined') {
+       if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+
+    // Save to localStorage if available
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('theme', theme);
+      }
+    } catch (error) {
+      console.warn('Unable to save theme preference:', error);
     }
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+    setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
   };
 
   return (
@@ -48,5 +68,14 @@ export const useTheme = (): ThemeContextType => {
   if (context === undefined) {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
-  return context;
+  
+  // Add utility functions
+  const getThemedClass = (lightClass: string, darkClass: string): string => {
+    return context.theme === 'dark' ? darkClass : lightClass;
+  };
+  
+  return {
+    ...context,
+    getThemedClass,
+  };
 };
