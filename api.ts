@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Router } from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import rateLimit from "express-rate-limit";

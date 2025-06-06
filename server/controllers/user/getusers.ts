@@ -23,9 +23,24 @@ export const getUsers = async (
       return res.status(404).json({ message: "No users found" });
     }
 
+    // compress user profile picture strings
+    const compressedUsers = users.map((user: any) => ({
+      userId: user._id,
+      username: user.username,
+      nickname: user.nickname,
+      email: user.email,
+      biodata: user.biodata,
+      xp: user.xp,
+      userGems: user.gems,
+      level: user.level,
+      userRole: user.role,
+      inventory: user.inventory,
+      userProgress: user.courseBatchesProgress,
+    }));
+
     return res.status(200).json({
       message: "Users retrieved successfully",
-      users: users,
+      users: compressedUsers,
       totalItems,
       totalPages,
       nextPage,

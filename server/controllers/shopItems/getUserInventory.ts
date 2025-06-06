@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import User from '../../models/User';
-import ShopItem from '../../models/ShopItem';
-
+import User from '../../models/User.js';
+import ShopItem from '../../models/ShopItem.js';
 
 export const getUserInventory = async (req: Request, res: Response): Promise<Response | void> => {
     try {
@@ -22,17 +21,35 @@ export const getUserInventory = async (req: Request, res: Response): Promise<Res
       
       // Get detailed information about each item in the inventory
       const inventoryDetails = await Promise.all(
-        user.inventory.map(async (item) => {
-          const shopItem = await ShopItem.findOne({ itemId: item.itemId }).lean();
-          const filteredItem = shopItem ? {
-            itemId: shopItem.itemId,
-            name: shopItem.name,
-            description: shopItem.description,
-            imageUrl: shopItem.imageUrl,
-            price: shopItem.price,
-            category: shopItem.category,
-            isAvailable: shopItem.isAvailable
-        } : {name: 'Unknown Item', description: 'Item details not found'};
+        user.inventory.map(async (item: any) => {
+          const shopItem = await ShopItem.findOne({ itemId: item.itemId });
+          
+          if (!shopItem) {
+            return {
+              ...item.toObject(),
+              details: { name: 'Unknown Item', description: 'Item details not found' }
+            };
+          }
+          
+          // Convert item to plain object
+          const shopItemObj = shopItem.toObject();
+          
+          // Convert binary image to base64 if it exists
+          let imageUrlStr = null;
+          if (shopItemObj.imageUrl && shopItemObj.imageUrl.data) {
+            imageUrlStr = `data:${shopItemObj.imageUrl.contentType};base64,${shopItemObj.imageUrl.data.toString('base64')}`;
+          }
+          
+          // Create filtered item with processed image
+          const filteredItem = {
+            itemId: shopItemObj.itemId,
+            name: shopItemObj.name,
+            description: shopItemObj.description,
+            imageUrl: imageUrlStr,
+            price: shopItemObj.price,
+            category: shopItemObj.category,
+            isAvailable: shopItemObj.isAvailable
+          };
 
           return {
             ...item.toObject(),
@@ -50,4 +67,4 @@ export const getUserInventory = async (req: Request, res: Response): Promise<Res
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
       res.status(500).json({ error: message });
     }
-  }
+}

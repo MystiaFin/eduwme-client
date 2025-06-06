@@ -28,6 +28,16 @@ interface Course {
   logo: string;
 }
 
+interface CourseIcon {
+  icon: string | typeof AdditionIcon; // Can be string emoji or imported SVG
+  size?: {
+    xs?: string; // Custom size for extra small screens
+    sm?: string; // Custom size for small screens
+    md?: string; // Custom size for medium screens
+    lg?: string; // Custom size for large screens
+  };
+}
+
 // Define types for API responses
 interface CourseBatchResponse {
   message: string;
@@ -79,18 +89,62 @@ const ButtonStyle = `
   dark:bg-gray-800/20 dark:border-[#5a6fd1]
 `;
 
-const getIconForCourse = (courseId: string) => {
-  switch (courseId.toLowerCase()) {
-    case "addition":
-      return AdditionIcon;
-    case "subtraction":
-      return SubtractionIcon;
-    case "multiplication":
-      return MultiplicationIcon;
-    case "division":
-      return DivisionIcon;
-    default:
-      return "📚"; // Default fallback
+
+
+const getIconForCourse = (title: string): CourseIcon => {
+  // Normalize the title to lowercase for more reliable matching
+  const normalizedTitle = title.toLowerCase().trim();
+  
+  if (normalizedTitle.includes('addition')) {
+    return { 
+      icon: "➕",
+      size: { xs: "text-3xl", sm: "text-4xl", md: "text-5xl", lg: "text-6xl" }
+    };
+  } else if (normalizedTitle.includes('subtraction')) {
+    return { 
+      icon: "➖",
+      size: { xs: "text-3xl", sm: "text-4xl", md: "text-5xl", lg: "text-6xl" }
+    };
+  } else if (normalizedTitle.includes('multiplication')) {
+    return { 
+      icon: "✖️",
+      size: { xs: "text-2xl", sm: "text-3xl", md: "text-4xl", lg: "text-5xl" }
+    };
+  } else if (normalizedTitle.includes('division')) {
+    return { 
+      icon: "➗",
+      size: { xs: "text-2xl", sm: "text-3xl", md: "text-4xl", lg: "text-5xl" }
+    };
+  } else if (normalizedTitle.includes('fraction')) {
+    return { 
+      icon: "🧮",
+      size: { xs: "text-xl", sm: "text-2xl", md: "text-3xl", lg: "text-4xl" }
+    };
+  } else if (normalizedTitle.includes('number') || normalizedTitle.includes('counting')) {
+    return { 
+      icon: "🔢",
+      size: { xs: "text-2xl", sm: "text-3xl", md: "text-3xl", lg: "text-4xl" }
+    };
+  } else if (normalizedTitle.includes('geometry')) {
+    return { 
+      icon: "📐",
+      size: { xs: "text-2xl", sm: "text-3xl", md: "text-3xl", lg: "text-4xl" }
+    };
+  } else if (normalizedTitle.includes('graph')) {
+    return { 
+      icon: "📊",
+      size: { xs: "text-xl", sm: "text-2xl", md: "text-3xl", lg: "text-4xl" }
+    };
+  } else if (normalizedTitle.includes('algebra')) {
+    return { 
+      icon: "🔣",
+      size: { xs: "text-2xl", sm: "text-3xl", md: "text-4xl", lg: "text-5xl" }
+    };
+  } else {
+    return { 
+      icon: "📚", 
+      size: { xs: "text-2xl", sm: "text-3xl", md: "text-4xl", lg: "text-5xl" }
+    };
   }
 };
 
@@ -227,7 +281,7 @@ const Home = () => {
     // Main container with bottom padding for mobile navigation bar
     // Added responsive horizontal and vertical padding
     // Added bottom padding to account for mobile nav bar
-    <div className="max-w-full md:max-w-5xl lg:max-w-6xl mx-auto px-3 sm:px-4 py-4 md:py-8 pb-24 md:pb-16">
+    <div className="max-w-[85%] md:max-w-5xl lg:max-w-6xl mx-auto px-2 sm:px-4 py-3 md:py-8 pb-20 md:pb-16">
       {/* User stats section with responsive layout */}
       {/* Changed from row to column on mobile for better space usage */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 md:mb-8">
@@ -326,17 +380,23 @@ const Home = () => {
                         className={`${ButtonStyle} relative`}
                       >
                         {/* Conditionally render text emoji or SVG icon with responsive sizing */}
-                        {typeof getIconForCourse(course.courseId) === 'string' ? (
+                        {typeof getIconForCourse(course.title).icon === 'string' ? (
                           <span 
                             role="img" 
                             aria-label={`${course.title} icon`}
-                            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl dark:text-white"
+                            className={`
+                              ${getIconForCourse(course.title).size?.xs || 'text-2xl'} 
+                              sm:${getIconForCourse(course.title).size?.sm || 'text-3xl'} 
+                              md:${getIconForCourse(course.title).size?.md || 'text-4xl'} 
+                              lg:${getIconForCourse(course.title).size?.lg || 'text-5xl'} 
+                              dark:text-white
+                            `}
                           >
-                            {getIconForCourse(course.courseId)}
+                            {getIconForCourse(course.title).icon}
                           </span>
                         ) : (
                           <img 
-                            src={getIconForCourse(course.courseId)} 
+                            src={getIconForCourse(course.title).icon} 
                             alt={`${course.title} icon`}
                             className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14"
                           />

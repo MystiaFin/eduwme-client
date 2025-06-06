@@ -3,26 +3,38 @@ import User from "../../models/User.js";
 
 export const leaderboard = async (
   req: Request,
-  res: Response,
+  res: Response
 ): Promise<Response | void> => {
   try {
-    const leaderboard = await User.find().sort({ xp: -1 }).limit(10);
+    // Get the top users by XP
+    const users = await User.find({})
+      .select("username nickname xp level gems dateLastLogin profilePicture")
+      .sort({ xp: -1 })
+      .limit(50); // Limit to top 50 users
 
-    const limitLeaderboard = leaderboard.map((user) => ({
-      username: user.username,
-      nickname: user.nickname,
-      xp: user.xp,
-      profilePicture: user.profilePicture,
-    }));
-    res
-      .status(200)
-      .json({ message: "Leaderboard retrieved successfully", leaderboard: limitLeaderboard });
-    return;
+    // Convert the binary profile pictures to base64 strings
+    const leaderboard = users.map(user => {
+      const userObj = user.toObject();
+      
+      // Create a new object with all properties except profilePicture
+      const transformedUser = {
+        ...userObj,
+        // Convert binary profile picture data to base64 string
+        profilePicture: userObj.profilePicture && userObj.profilePicture.data 
+          ? `data:${userObj.profilePicture.contentType};base64,${userObj.profilePicture.data.toString('base64')}`
+          : null
+      };
+      
+      return transformedUser;
+    });
+
+    return res.status(200).json({
+      message: "Leaderboard retrieved successfully",
+      leaderboard
+    });
   } catch (err) {
     console.error(err);
-    const message =
-      err instanceof Error ? err.message : "An unknown error occurred";
-    res.status(500).json({ error: message });
-    return;
+    const message = err instanceof Error ? err.message : "An unknown error occurred";
+    return res.status(500).json({ error: message });
   }
 };

@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import Course from "../../models/Course";
-import CourseBatch from "../../models/CourseBatch";
-import { courseSchema } from "../../validators/course.validators.ts";
+import Course from "../../models/Course.js";
+import CourseBatch from "../../models/CourseBatch.js";
+import { courseSchema } from "../../validators/course.validators.js";
+import sharp from "sharp"; // Add this import
 
 export const createCourse = async (
   req: Request,
@@ -56,6 +57,38 @@ export const createCourse = async (
     // check how many exercises are in the exercise database
     const exercisesLength = exerciseBatchList.length;
 
+    // Process logo if it exists
+    let logoData = null;
+    if (logo) {
+      try {
+        // Extract the base64 data and content type
+        const matches = logo.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+        
+        if (matches && matches.length === 3) {
+          const base64Data = matches[2];
+          const buffer = Buffer.from(base64Data, 'base64');
+          
+          // Resize and optimize the logo using sharp
+          const resizedImageBuffer = await sharp(buffer)
+            .resize(400, 400, { 
+              fit: 'contain',
+              background: { r: 0, g: 0, b: 0, alpha: 0 } // Transparent background
+            })
+            .png({ quality: 90 })
+            .toBuffer();
+          
+          // Prepare logo data
+          logoData = {
+            data: resizedImageBuffer,
+            contentType: 'image/png'
+          };
+        }
+      } catch (error) {
+        console.error("Error processing logo image:", error);
+        return res.status(400).json({ error: "Invalid logo image data" });
+      }
+    }
+
     // create course
     const course = new Course({
       courseBatchId,
@@ -65,11 +98,20 @@ export const createCourse = async (
       dateCreated,
       exerciseBatchList,
       exercisesLength,
-      logo, 
+      logo: logoData, 
     });
     await course.save();
 
-    res.status(200).json({ message: "Course created.", course });
+    // Format response - convert binary logo back to base64 for response
+    const courseObject = course.toObject();
+    const courseResponse = {
+    ...courseObject,
+    logo: courseObject.logo && courseObject.logo.data 
+      ? `data:${courseObject.logo.contentType};base64,${courseObject.logo.data.toString('base64')}`
+      : null
+    };
+
+    res.status(200).json({ message: "Course created.", course: courseResponse });
     return;
   } catch (err) {
     console.error(err);

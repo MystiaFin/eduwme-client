@@ -137,71 +137,81 @@ const LeaderboardPage = () => {
           {/* Silver - 2nd place (left) */}
           <div className="col-span-1 flex flex-col items-center bg-gray-100 dark:bg-gray-800 rounded-xl sm:rounded-2xl p-1 sm:p-2 md:p-4 border border-gray-300 dark:border-gray-700 shadow-md">
             <div className="relative mb-1 sm:mb-2">
-              <div className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-xs sm:text-base md:text-lg font-bold">
-                {users[1]?.profilePicture ? (
-                  <img src={users[1].profilePicture} alt={users[1].username} className="w-full h-full rounded-full object-cover" />
+              <div className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-xs sm:text-base md:text-lg font-bold overflow-hidden">
+                {users[1] && users[1].profilePicture ? (
+                  <img src={users[1].profilePicture} alt={users[1].username} className="w-full h-full object-cover" />
                 ) : (
-                  getInitials(users[1]?.username || "")
+                  <span>{getInitials(users[1]?.username || "")}</span>
                 )}
               </div>
               <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-4 h-4 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full bg-gray-400 text-white font-bold text-[10px] sm:text-xs md:text-sm flex items-center justify-center border-2 border-white dark:border-gray-800">
                 2
               </div>
             </div>
-            <p className="font-bold text-[10px] sm:text-xs md:text-sm text-center truncate w-full text-gray-800 dark:text-gray-200">{users[1]?.nickname || users[1]?.username}</p>
-            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">{users[1]?.xp} XP</p>
-            <div className="mt-1 hidden sm:flex items-center gap-1">
-              <span className="text-[10px] sm:text-xs text-[#374DB0] dark:text-[#6d7edd]">Lvl {users[1]?.level || 1}</span>
+            <p className="font-bold text-[10px] sm:text-xs md:text-sm text-center truncate w-full text-gray-800 dark:text-gray-200">
+              {users[1]?.nickname || users[1]?.username || ""}
+            </p>
+            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">
+              {users[1]?.xp || 0} XP
+            </p>
+            <div className="mt-1 flex items-center gap-1">
+              <span className="text-[10px] sm:text-xs text-[#374DB0] dark:text-[#6d7edd]">
+                Lvl {users[1]?.level || 1}
+              </span>
             </div>
           </div>
           
-          {/* Gold - 1st place (center) - Enhanced for different screen sizes */}
+          {/* Gold - 1st place (center) */}
           <div className="col-span-1 flex flex-col items-center bg-yellow-100 dark:bg-yellow-900/40 rounded-xl sm:rounded-2xl p-1 sm:p-2 md:p-4 border-2 border-yellow-300 dark:border-yellow-600 shadow-md transform scale-105 sm:scale-110 -mt-2 sm:-mt-4 z-10">
             <div className="relative mb-1 sm:mb-2">
-              <div className="w-10 h-10 sm:w-14 sm:h-14 md:w-20 md:h-20 rounded-full bg-yellow-300 dark:bg-yellow-600 flex items-center justify-center text-sm sm:text-lg md:text-xl font-bold">
-                {users[0]?.profilePicture ? (
-                  <img src={users[0].profilePicture} alt={users[0].username} className="w-full h-full rounded-full object-cover" />
+              <div className="w-10 h-10 sm:w-14 sm:h-14 md:w-20 md:h-20 rounded-full bg-yellow-300 dark:bg-yellow-600 flex items-center justify-center text-sm sm:text-lg md:text-xl font-bold overflow-hidden">
+                {users[0] && users[0].profilePicture ? (
+                  <img src={users[0].profilePicture} alt={users[0].username} className="w-full h-full object-cover" />
                 ) : (
-                  getInitials(users[0]?.username || "")
+                  <span>{getInitials(users[0]?.username || "")}</span>
                 )}
               </div>
               <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-5 h-5 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full bg-yellow-500 text-white font-bold text-[10px] sm:text-xs md:text-sm flex items-center justify-center border-2 border-white dark:border-yellow-900">
                 1
               </div>
             </div>
-            <p className="font-bold text-[10px] sm:text-xs md:text-sm lg:text-base text-center truncate w-full text-gray-800 dark:text-gray-200">{users[0]?.nickname || users[0]?.username}</p>
-            <p className="text-[10px] sm:text-xs md:text-sm text-gray-600 dark:text-gray-400">{users[0]?.xp} XP</p>
+            <p className="font-bold text-[10px] sm:text-xs md:text-sm lg:text-base text-center truncate w-full text-gray-800 dark:text-gray-200">
+              {users[0]?.nickname || users[0]?.username || ""}
+            </p>
+            <p className="text-[10px] sm:text-xs md:text-sm text-gray-600 dark:text-gray-400">
+              {users[0]?.xp || 0} XP
+            </p>
             <div className="mt-1 flex items-center gap-1">
-              <span className="text-[10px] sm:text-xs text-[#374DB0] dark:text-[#6d7edd]">Lvl {users[0]?.level || 1}</span>
-              {users[0]?.gems && (
-                <span className="text-[10px] sm:text-xs text-green-600 dark:text-green-400 ml-1 hidden sm:inline">💎 {users[0].gems}</span>
-              )}
+              <span className="text-[10px] sm:text-xs text-[#374DB0] dark:text-[#6d7edd]">
+                Lvl {users[0]?.level || 1}
+              </span>
             </div>
-            {getStreakDays(users[0]) && (
-              <div className="mt-1 hidden sm:block">
-                <span className="text-[10px] sm:text-xs text-yellow-600 dark:text-yellow-400">🔥 {getStreakDays(users[0])} days</span>
-              </div>
-            )}
           </div>
           
           {/* Bronze - 3rd place (right) */}
           <div className="col-span-1 flex flex-col items-center bg-amber-50 dark:bg-amber-900/30 rounded-xl sm:rounded-2xl p-1 sm:p-2 md:p-4 border border-amber-300 dark:border-amber-700 shadow-md">
             <div className="relative mb-1 sm:mb-2">
-              <div className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full bg-amber-300 dark:bg-amber-600 flex items-center justify-center text-xs sm:text-base md:text-lg font-bold">
-                {users[2]?.profilePicture ? (
-                  <img src={users[2].profilePicture} alt={users[2].username} className="w-full h-full rounded-full object-cover" />
+              <div className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full bg-amber-300 dark:bg-amber-600 flex items-center justify-center text-xs sm:text-base md:text-lg font-bold overflow-hidden">
+                {users[2] && users[2].profilePicture ? (
+                  <img src={users[2].profilePicture} alt={users[2].username} className="w-full h-full object-cover" />
                 ) : (
-                  getInitials(users[2]?.username || "")
+                  <span>{getInitials(users[2]?.username || "")}</span>
                 )}
               </div>
               <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-4 h-4 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full bg-amber-600 text-white font-bold text-[10px] sm:text-xs md:text-sm flex items-center justify-center border-2 border-white dark:border-amber-900">
                 3
               </div>
             </div>
-            <p className="font-bold text-[10px] sm:text-xs md:text-sm text-center truncate w-full text-gray-800 dark:text-gray-200">{users[2]?.nickname || users[2]?.username}</p>
-            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 hidden sm:block">{users[2]?.xp} XP</p>
-            <div className="mt-1 hidden sm:flex items-center gap-1">
-              <span className="text-[10px] sm:text-xs text-[#374DB0] dark:text-[#6d7edd]">Lvl {users[2]?.level || 1}</span>
+            <p className="font-bold text-[10px] sm:text-xs md:text-sm text-center truncate w-full text-gray-800 dark:text-gray-200">
+              {users[2]?.nickname || users[2]?.username || ""}
+            </p>
+            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">
+              {users[2]?.xp || 0} XP
+            </p>
+            <div className="mt-1 flex items-center gap-1">
+              <span className="text-[10px] sm:text-xs text-[#374DB0] dark:text-[#6d7edd]">
+                Lvl {users[2]?.level || 1}
+              </span>
             </div>
           </div>
         </div>

@@ -67,10 +67,14 @@ const userSchema = new mongoose.Schema({
     type: String, 
     required: true, 
     select: false,   
-    match: /^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{7,}$/  }, // Password should be hashed before saving
+    match: /^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{7,}$/  
+  }, // Password should be hashed before saving
   nickname: { type: String, trim: true},
   biodata: { type: String },
-  profilePicture: { type: String, default: "default-profile.png" }, // Default profile picture
+  profilePicture: { 
+      data: Buffer, 
+      contentType: { type: String, default: null }
+  },   // Default profile picture
   email: {
     type: String,
     required: true,

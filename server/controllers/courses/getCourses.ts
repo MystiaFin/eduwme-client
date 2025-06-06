@@ -35,6 +35,12 @@ export const getCourses = async (
     const courseList: CourseItem[] = [];
 
     courses.forEach((course: any) => {
+      // Convert binary logo data to base64 string if it exists
+      let logoString = "";
+      if (course.logo && course.logo.data) {
+        logoString = `data:${course.logo.contentType};base64,${course.logo.data.toString('base64')}`;
+      }
+      
       courseList.push({
         courseBatchId: course.courseBatchId,
         courseId: course.courseId,
@@ -43,7 +49,7 @@ export const getCourses = async (
         dateCreated: course.dateCreated,
         exerciseBatchList: course.exerciseBatchList,
         exercisesLength: course.exercisesLength,
-        logo: course.logo || "", 
+        logo: logoString, 
       });
     });
 
