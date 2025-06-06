@@ -4,7 +4,7 @@ const shopItemSchema = new mongoose.Schema({
   itemId: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   description: { type: String, required: true },
-  imageUrl: { type: String },
+  imageUrl: {  data: Buffer, contentType: String }, // Store image as binary data
   price: { type: Number, required: true, min: 1 },
   category: { 
     type: String, 

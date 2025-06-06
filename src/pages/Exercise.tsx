@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useAuth } from "../AuthContext";
+import ExerciseAnimation from "@src/components/ExerciseAnimation";
 
 // Debounce utility function - define it before using it
 const debounce = <T extends (...args: any[]) => any>(fn: T, ms = 300) => {
@@ -368,11 +369,17 @@ const Exercise = () => {
           </p>
         </div>
         
-        <div className="bg-gray-100 dark:bg-gray-800/50 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-2 sm:p-3 h-24 sm:h-32 md:h-40 flex flex-col items-center justify-center">
-          <p className="text-gray-500 dark:text-gray-400 text-sm">Animation Area</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500">Type: {exercise.animType}</p>
+        <div className="bg-gray-100 dark:bg-gray-800/50 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-2 sm:p-3 min-h-[8rem] sm:min-h-[10rem] md:min-h-[12rem] flex flex-col items-center justify-center overflow-auto">
+        {exercise.animType ? (
+          <ExerciseAnimation 
+            animType={exercise.animType} 
+            question={exercise.question} 
+          />
+        ) : (
+          <p className="text-gray-500 dark:text-gray-400 text-sm">No animation for this exercise</p>
+        )}
         </div>
-        
+          
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {exercise.options.map((option, index) => (
             <button

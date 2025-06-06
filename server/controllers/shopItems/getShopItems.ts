@@ -1,8 +1,7 @@
 import {Request, Response} from 'express';
-import ShopItem from '../../models/ShopItem';
+import ShopItem from '../../models/ShopItem.js';
 
-  
-export const getShopItems =  async (req: Request, res: Response): Promise<void> => {
+export const getShopItems = async (req: Request, res: Response): Promise<void> => {
     try {
       // Filter only available items unless an admin query parameter is provided
       const isAdmin = req.query.admin === 'true';
@@ -20,17 +19,24 @@ export const getShopItems =  async (req: Request, res: Response): Promise<void> 
         return;
       }
 
-      const formattedShopItems = shopItems.map(item => ({
-        itemId: item.itemId,
-        name: item.name,
-        description: item.description,
-        imageUrl: item.imageUrl,
-        price: item.price,
-        category: item.category,
-        isAvailable: item.isAvailable,
-      }));
+      const formattedShopItems = shopItems.map((item: any) => {
+        const itemObj = item.toObject();
+        
+        // Convert binary image data to base64 string if it exists
+        if (itemObj.imageUrl && itemObj.imageUrl.data) {
+          return {
+            ...itemObj,
+            imageUrl: `data:${itemObj.imageUrl.contentType};base64,${itemObj.imageUrl.data.toString('base64')}`
+          };
+        }
+        
+        return itemObj;
+      });
       
-      res.status(200).json({ message: 'Shop items retrieved successfully', shopItems: formattedShopItems });
+      res.status(200).json({ 
+        message: 'Shop items retrieved successfully', 
+        shopItems: formattedShopItems 
+      });
     } catch (err) {
       console.error(err);
       const message = err instanceof Error ? err.message : 'An unknown error occurred';

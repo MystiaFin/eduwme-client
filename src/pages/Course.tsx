@@ -181,7 +181,7 @@ const Course = () => {
 
   return (
     // Container with width constraints and proper spacing for mobile navigation
-    <div className="max-w-full md:max-w-4xl lg:max-w-5xl mx-auto px-3 sm:px-4 py-4 md:py-6 pb-24 md:pb-16 transition-colors duration-300 dark:bg-gray-900">
+    <div className="max-w-[85%] md:max-w-4xl lg:max-w-5xl mx-auto px-3 sm:px-4 py-4 md:py-6 pb-24 md:pb-16 transition-colors duration-300 dark:bg-gray-900">
       <div className="mb-4 md:mb-6">
         {/* Responsive back button with dark mode support */}
         <button
@@ -259,29 +259,29 @@ const Course = () => {
                       key={exercise.exerciseId}
                       onClick={() => handleExerciseClick(exercise.exerciseId)}
                       className={`
-                        p-3 md:p-4 rounded-lg border-2 cursor-pointer
+                        p-2 md:p-3 rounded-lg border cursor-pointer flex flex-col
                         ${isCompleted 
                           ? "border-green-400 bg-green-50 dark:border-green-600 dark:bg-green-900/20" 
                           : "border-blue-300 dark:border-blue-700 bg-white dark:bg-gray-800 hover:border-blue-500 dark:hover:border-blue-500"}
-                        transition-all duration-200
+                        transition-all duration-200 hover:shadow-sm
                       `}
                     >
                       {/* Exercise header with completion status */}
-                      <div className="flex justify-between items-start mb-1 md:mb-2">
+                      <div className="flex justify-between items-center">
                         <h3 className="font-medium text-sm md:text-base text-gray-800 dark:text-white">{exercise.title}</h3>
                         {isCompleted && (
-                          <span className="text-green-500 dark:text-green-400 text-lg md:text-xl">✓</span>
+                          <span className="text-green-500 dark:text-green-400 text-sm md:text-base ml-1">✓</span>
                         )}
                       </div>
                       
                       {/* Exercise metadata with responsive text */}
-                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1 md:mb-2">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
                         {exercise.type} • {exercise.animType}
                       </p>
                       
-                      {/* Question preview with responsive sizing and dark mode */}
-                      <div className="text-xs bg-gray-100 dark:bg-gray-700 p-1.5 md:p-2 rounded">
-                        <p className="line-clamp-2 text-gray-800 dark:text-gray-200">{exercise.question}</p>
+                      {/* Simplified question preview */}
+                      <div className="text-xs bg-gray-100 dark:bg-gray-700 p-1 mt-1 rounded">
+                        <p className="line-clamp-1 text-gray-800 dark:text-gray-200">{exercise.question}</p>
                       </div>
                     </div>
                   );

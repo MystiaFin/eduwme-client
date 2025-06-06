@@ -4,7 +4,10 @@ const courseSchema = new mongoose.Schema({
   courseBatchId: { type: String, required: true },
   courseId: { type: String, required: true, unique: true },
   title: { type: String, required: true, unique: true },  
-  logo: { type: String },
+  logo: { 
+    data: Buffer,
+    contentType: String 
+  },
   level: { type: Number, required: true },
   dateCreated: { type: Date, required: true },
   exerciseBatchList: { type: [String], required: true },

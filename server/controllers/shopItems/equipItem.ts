@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import User from '../../models/User';
-import ShopItem from '../../models/ShopItem';
-import { equipItemSchema } from '../../validators/shopItem.validators';
+import User from '../../models/User.js';
+import ShopItem from '../../models/ShopItem.js';
+import { equipItemSchema } from '../../validators/shopItem.validators.js';
 
 export const equipItem = async (req: Request, res: Response): Promise<void | Response> => {
     try {
@@ -44,7 +44,7 @@ export const equipItem = async (req: Request, res: Response): Promise<void | Res
             }
           }
         }
-    }
+      }
       
       // Update the equipped status
       user.inventory[itemIndex].isEquipped = equip;
@@ -53,13 +53,28 @@ export const equipItem = async (req: Request, res: Response): Promise<void | Res
       user.markModified('inventory');
       await user.save();
       
+      // Get detailed item info for response
+      const shopItemObj = shopItem.toObject();
+
+      // Create a new object with transformed imageUrl
+      const transformedShopItem = {
+        ...shopItemObj,
+        imageUrl: shopItemObj.imageUrl && shopItemObj.imageUrl.data 
+          ? `data:${shopItemObj.imageUrl.contentType};base64,${shopItemObj.imageUrl.data.toString('base64')}`
+          : null
+      };
+
+      
       res.status(200).json({ 
         message: equip ? 'Item equipped successfully' : 'Item unequipped successfully',
-        inventoryItem: user.inventory[itemIndex]
+        inventoryItem: {
+          ...user.inventory[itemIndex].toObject(),
+          details: transformedShopItem
+        }
       });
     } catch (err) {
       console.error(err);
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
       res.status(500).json({ error: message });
     }
-  }
+}

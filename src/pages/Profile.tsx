@@ -148,8 +148,8 @@ const ProfilePage = () => {
     });
   };
 
-  // Function to compress images before uploading
-  const compressImage = (file: File, maxWidth = 800, quality = 0.8): Promise<Blob> => {
+  // Improved compressImage function with better quality and size control
+  const compressImage = (file: File, maxWidth = 1200, quality = 0.9): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -164,15 +164,22 @@ const ProfilePage = () => {
           
           // Calculate new dimensions while maintaining aspect ratio
           if (width > maxWidth) {
-            height = (height * maxWidth) / width;
+            height = Math.round((height * maxWidth) / width);
             width = maxWidth;
           }
+          
+          // Ensure minimum dimensions
+          width = Math.max(width, 200);
+          height = Math.max(height, 200);
           
           canvas.width = width;
           canvas.height = height;
           
           const ctx = canvas.getContext('2d');
           ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Use better quality for smaller images, lower quality for larger ones
+          const finalQuality = file.size > 2 * 1024 * 1024 ? 0.7 : quality;
           
           canvas.toBlob(
             (blob) => {
@@ -182,8 +189,8 @@ const ProfilePage = () => {
                 reject(new Error('Canvas to Blob conversion failed'));
               }
             },
-            file.type,
-            quality
+            'image/jpeg', // Always convert to JPEG for consistent handling
+            finalQuality
           );
         };
         
@@ -208,7 +215,7 @@ const ProfilePage = () => {
     });
   };
 
-    // Updated handleImageChange function
+  // Update handleImageChange function
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -221,10 +228,10 @@ const ProfilePage = () => {
         return;
       }
       
-      // Validate file size (5MB max before compression)
-      const maxSize = 5 * 1024 * 1024; // 5MB
+      // Increased max size to 10MB since we'll be handling the resizing properly
+      const maxSize = 10 * 1024 * 1024; 
       if (file.size > maxSize) {
-        setUpdateError("Image size should be less than 5MB");
+        setUpdateError("Image size should be less than 10MB");
         if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
@@ -242,32 +249,26 @@ const ProfilePage = () => {
         const previewURL = URL.createObjectURL(file);
         setPreviewImage(previewURL);
         
-        // Use more aggressive compression for larger images
-        let quality = 0.8;
-        let maxWidth = 800;
+        // Determine compression parameters based on file size
+        let quality = 0.9;
+        let maxWidth = 1200;
         
-        if (file.size > 1 * 1024 * 1024) { // > 1MB
-          quality = 0.6;
-          maxWidth = 600;
+        if (file.size > 2 * 1024 * 1024) { // > 2MB
+          quality = 0.8;
+          maxWidth = 1000;
         }
         
-        if (file.size > 3 * 1024 * 1024) { // > 3MB
-          quality = 0.4;
-          maxWidth = 400;
+        if (file.size > 5 * 1024 * 1024) { // > 5MB
+          quality = 0.7;
+          maxWidth = 800;
         }
         
-        // Compress the image before converting to base64
+        // Compress the image
         const compressedBlob = await compressImage(file, maxWidth, quality);
         console.log(`Original size: ${file.size / 1024}KB, Compressed size: ${compressedBlob.size / 1024}KB`);
         
         // Convert compressed image to base64 for sending to the server
         const base64 = await blobToBase64(compressedBlob);
-        
-        // Ensure the base64 string is not too large (3MB max)
-        if (base64.length > 3 * 1024 * 1024) {
-          throw new Error("Image is still too large after compression. Please select a smaller image.");
-        }
-        
         setBase64Image(base64);
         
         // Clear any previous errors
@@ -415,7 +416,7 @@ const ProfilePage = () => {
 
   return (
     // Container with width constraints and proper spacing for mobile navigation
-    <div className="max-w-full sm:max-w-xl md:max-w-2xl mx-auto px-4 py-6 md:py-8 pb-24 md:pb-16 shadow-md md:shadow-lg rounded-lg mt-4 sm:mt-6 md:mt-10 dark:bg-gray-800/40">
+    <div className="w-[85%] max-w-xs sm:max-w-lg md:max-w-xl mx-auto px-2 py-4 md:py-6 pb-20 md:pb-12 shadow-md md:shadow-lg rounded-lg mt-2 sm:mt-4 md:mt-6 dark:bg-gray-800/40">
       {/* Success message with responsive text and dark mode */}
       {updateSuccess && (
         <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-md text-center text-sm sm:text-base">
