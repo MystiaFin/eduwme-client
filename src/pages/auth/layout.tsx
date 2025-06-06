@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom"; // ini diperbaiki
 import Register from "./register.tsx";
 import Login from "./login.tsx";
 import ellipseBg from "../../assets/ellipse-bg.svg";
@@ -10,12 +10,12 @@ const AuthLayout = () => {
   const isLogin = location.pathname === "/login";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-[#8FE1FF] py-12 px-4 sm:px-6 lg:px-8 relative">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-[#8FE1FF] py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="max-w-md w-full space-y-8">
         <img
           src={ellipseBg}
           alt="ellipse"
-          className="absolute bottom-0 left-0 w-[50vw] md:w-[30vw] opacity-50 translate-x-[-60%] translate-y-[50%]"
+          className="absolute bottom-[-40vw] left-0 w-[50vw] md:w-[30vw] opacity-50 translate-x-[-60%]"
         />
 
         <img

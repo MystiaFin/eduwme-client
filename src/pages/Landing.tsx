@@ -1,34 +1,49 @@
 import { Link } from "react-router-dom";
-import Logo from "../assets/logo.svg";
+import Icon from "./../assets/Icon.svg";
 import ellipseBg from "../assets/ellipse-bg.svg";
 
 const LandingPage: React.FC = () => {
   return (
-     <div className="relative flex flex-col items-start md:items-center justify-center h-screen overflow-hidden bg-white">
+    <div className="relative min-h-screen flex flex-col items-start md:items-center justify-center bg-gradient-to-b from-white to-[#8FE1FF] font-poppins overflow-hidden">
       {/* Ellipse Background Top Right */}
       <img
         src={ellipseBg}
         alt="ellipse"
-        className="absolute top-0 right-0 w-[50vw] md:w-[30vw] opacity-80"
+        className="absolute top-[-30vw] right-[-30vw] w-[80vw] md:w-[30vw] opacity-80 z-10"
       />
 
       {/* Ellipse Background Bottom Left */}
       <img
         src={ellipseBg}
         alt="ellipse"
-        className="absolute bottom-0 left-0 w-[50vw] md:w-[30vw] rotate-180 opacity-80"
+        className="absolute bottom-[-20vw] left-[-30vw] w-[50vw] md:w-[30vw] rotate-180 opacity-100"
       />
 
-      <div className="z-10 flex flex-col px-6 md:px-0 md:items-center text-left md:text-center">
-        <h3 className="text-[5vw] md:text-xl text-[#888D27] font-normal">
+      <div className="relative z-50 flex flex-col px-10 md:px-0 md:items-center text-left md:text-center -mt-20">
+        <h3
+          className="text-20 md:text-xl font-bold text-[#444444]"
+          style={{
+            WebkitTextStroke: "1px white",
+          }}
+        >
           Welcome to
         </h3>
-        <h2 className="text-[7vw] md:text-4xl font-bold text-[#888D27] leading-tight">
+        <h2
+          className="text-[25px] md:text-4xl font-extrabold text-[#444444] leading-tight"
+          style={{
+            WebkitTextStroke: "1px white",
+          }}
+        >
           EduWMe <br className="block md:hidden" /> Project
         </h2>
-        <img src={Logo} alt="GoGo Math" className="w-32 mt-10 md:w-40" />
+        <img src={Icon} alt="GoGo Math" className="w-28 mt-10 md:w-40" />
         <Link to="/home">
-          <button className="px-6 py-2 mt-10 font-semibold text-white rounded-full shadow-md bg-[#A6B91A]">
+          <button
+            className="p-2 mt-10 font-extrabold text-white rounded-full shadow-md bg-[#303442] text-20 md:text-lg"
+            style={{
+              WebkitTextStroke: ".5px black",
+            }}
+          >
             Get Started
           </button>
         </Link>
