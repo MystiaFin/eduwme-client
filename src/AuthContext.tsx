@@ -4,7 +4,9 @@ import {
   useState,
   useEffect,
   ReactNode,
+  useCallback,
 } from "react";
+import streakService from "./StreakService";
 
 interface User {
   _id: string;
@@ -17,6 +19,8 @@ interface User {
     dateAcquired: Date;
     isEquipped: boolean;
   }>;
+  streak?: number; // Optional streak property
+  lastLoginDate?: Date; // Optional last login date
 }
 
 
@@ -27,6 +31,7 @@ interface AuthContextType {
   isLoading: boolean;
   logout: () => Promise<void>;
   login: (username: string, password: string) => Promise<boolean>;
+  updateUserStreak: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -121,22 +126,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     // After successful login, fetch the user data
     const userResponse = await fetch(`${API_BASE_URL}/users/getme`, {
-      credentials: "include",
-    });
-    
-    if (userResponse.ok) {
-      const userData = await userResponse.json();
-      setUser(userData);
-      setIsAuthenticated(true);
-      return true;
-    } else {
-      throw new Error("Failed to get user data after login");
+        credentials: "include",
+      });
+      
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        setUser(userData);
+        setIsAuthenticated(true);
+        return true;
+      } else {
+        throw new Error("Failed to get user data after login");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      throw error;
     }
-  } catch (error) {
-    console.error("Login error:", error);
-    throw error;
-  }
-};
+  };
+
+   const updateUserStreak = useCallback(async () => {
+    if (user && isAuthenticated) {
+      const streakInfo = await streakService.updateStreak();
+      
+      if (streakInfo) {
+        // Update user with new streak information
+        setUser(prev => prev ? {
+          ...prev,
+          streak: streakInfo.streak,
+          lastLoginDate: new Date(streakInfo.currentDate)
+        } : null);
+        
+        // If streak milestone reached, show notification
+        if (streakInfo.streakUpdated && streakInfo.streak > 0 && streakInfo.streak % 5 === 0) {
+          // You can implement a notification system here
+          console.log(`Congratulations! You've reached a ${streakInfo.streak} day streak!`);
+        }
+      }
+    }
+  }, [user, isAuthenticated]);
+  
 
   const value: AuthContextType = {
     user,
@@ -145,6 +172,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     logout,
     login,
+    updateUserStreak
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

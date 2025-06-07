@@ -1,6 +1,8 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 
+// unused page
+
 const CourseDetail = () => {
   // Get the courseId from the URL parameters
   const { courseId } = useParams<{ courseId: string }>();

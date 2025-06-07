@@ -1,14 +1,16 @@
 import { Router } from "express";
-import { userRegister } from "../controllers/user/register.ts";
-import { userLogin } from "../controllers/user/login.ts";
-import { updateProfile } from "../controllers/user/updateProfile.ts";
-import { getUserById } from "../controllers/user/getprofile.ts";
-import { getUsers } from "../controllers/user/getusers.ts";
-import { getMe } from "../controllers/user/getme.ts";
-import { userLogout } from "../controllers/user/logout.ts";
+import { userRegister } from "../controllers/user/register.js";
+import { userLogin } from "../controllers/user/login.js";
+import { updateProfile } from "../controllers/user/updateprofile.js";
+import { getUserById } from "../controllers/user/getprofile.js";
+import { getUsers } from "../controllers/user/getusers.js";
+import { getMe } from "../controllers/user/getMe.js";
+import { userLogout } from "../controllers/user/logout.js";
 
-import { isAdmin, isUser } from "../middlewares/middleware.ts";
+import { isAdmin, isUser } from "../middlewares/middleware.js";
 import rateLimit from "express-rate-limit";
+import { updateStreak } from "../controllers/user/updatestreak.js";
+import { streakInfo } from "../controllers/user/streakInfo.js";
 
 // More strict limiter for authentication
 const authLimiter = rateLimit({
@@ -30,5 +32,7 @@ router.put("/updateProfile", isUser, updateProfile);
 router.get("/getProfile/:userId", isUser, getUserById);
 router.get("/getme", isUser, getMe);
 router.get("/getUsers", isAdmin, getUsers);
+router.post("/updateStreak", isUser, updateStreak);
+router.get("/streakInfo", isUser, streakInfo);
 
 export default router;

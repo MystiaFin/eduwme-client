@@ -99,7 +99,14 @@ const userSchema = new mongoose.Schema({
   courseBatchesProgress: [courseBatchProgressSchema], // Array to store progress for all course batches
   dateCreated: { type: Date, default: Date.now },
   dateUpdated: { type: Date },
-  dateLastLogin: { type: Date },
+  streak: {
+    type: Number,
+    default: 0
+  },
+  lastLoginDate: {
+    type: Date,
+    default: null
+  }
 });
 
 const User = mongoose.model("User", userSchema);

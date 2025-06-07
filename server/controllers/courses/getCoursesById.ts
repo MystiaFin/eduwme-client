@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Course from "../../models/Course";
+import Course from "../../models/Course.js";
 
 export const getCoursesById = async (
   req: Request,
@@ -23,7 +23,18 @@ export const getCoursesById = async (
       return;
     }
 
-    res.status(200).json({ message: "Course retrieved successfully", course });
+    // Convert course to plain object
+    const courseObject = course.toObject();
+    
+    // Convert binary logo data to base64 string if it exists
+    const courseResponse = {
+      ...courseObject,
+      logo: courseObject.logo && courseObject.logo.data 
+        ? `data:${courseObject.logo.contentType};base64,${courseObject.logo.data.toString('base64')}`
+        : null
+    };
+
+    res.status(200).json({ message: "Course retrieved successfully", course: courseResponse });
     return;
   } catch (err) {
     console.error(err);

@@ -48,7 +48,6 @@ const Shop = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ShopTab>("shop");
-  const [activeCategory, setActiveCategory] = useState<string>("all");
   const [purchaseStatus, setPurchaseStatus] = useState<{
     status: "idle" | "loading" | "success" | "error";
     message: string;
@@ -64,7 +63,7 @@ const Shop = () => {
       
       try {
         // Fetch shop items
-        const shopResponse = await fetch(`${API_BASE_URL}/shopItems/getShopItems`, {
+        const shopResponse = await fetch(`${API_BASE_URL}/shop/getShopItems`, {
           credentials: "include"
         });
         
@@ -78,7 +77,7 @@ const Shop = () => {
         // Fetch user inventory if user is logged in
         if (user?._id) {
           const inventoryResponse = await fetch(
-            `${API_BASE_URL}/shopItems/userInventory/${user._id}`,
+            `${API_BASE_URL}/shop/userInventory/${user._id}`,
             { credentials: "include" }
           );
           
@@ -142,7 +141,7 @@ const Shop = () => {
     setPurchaseStatus({ status: "loading", message: "Processing purchase..." });
     
     try {
-      const purchaseResponse = await fetch(`${API_BASE_URL}/shopItems/purchaseItem`, {
+      const purchaseResponse = await fetch(`${API_BASE_URL}/shop/purchaseItem`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -203,7 +202,7 @@ const Shop = () => {
     if (!user?._id) return;
     
     try {
-      const equipResponse = await fetch(`${API_BASE_URL}/shopItems/equipItem`, {
+      const equipResponse = await fetch(`${API_BASE_URL}/shop/equipItem`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -249,14 +248,15 @@ const Shop = () => {
       console.error("Failed to equip/unequip item:", err);
     }
   };
-
-  // Get unique categories from shop items
-  const categories = ["all", ...new Set(shopItems.map(item => item.category))];
   
-  // Filter items by active category
-  const filteredShopItems = activeCategory === "all"
-    ? shopItems
-    : shopItems.filter(item => item.category === activeCategory);
+  // Group shop items by category
+  const shopItemsByCategory = shopItems.reduce((acc, item) => {
+    if (!acc[item.category]) {
+      acc[item.category] = [];
+    }
+    acc[item.category].push(item);
+    return acc;
+  }, {} as Record<string, ShopItem[]>);
   
   // Group inventory items by category
   const inventoryByCategory = inventory.reduce((acc, item) => {
@@ -272,7 +272,7 @@ const Shop = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[70vh]">
-        <p className="text-base md:text-lg text-gray-600 dark:text-gray-300">Loading shop items...</p>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Loading shop items...</p>
       </div>
     );
   }
@@ -280,11 +280,11 @@ const Shop = () => {
   // Error state
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
-        <p className="text-base md:text-lg text-red-600 dark:text-red-400 mb-4">Error: {error}</p>
+      <div className="flex flex-col items-center justify-center min-h-[70vh] px-3 sm:px-4">
+        <p className="text-sm sm:text-base text-red-600 dark:text-red-400 mb-3 sm:mb-4">Error: {error}</p>
         <button
           onClick={() => navigate(-1)}
-          className="px-3 py-1.5 md:px-4 md:py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg dark:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
+          className="px-2 py-1 sm:px-3 sm:py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg dark:bg-blue-600 dark:hover:bg-blue-700 transition-colors text-sm"
         >
           Go Back
         </button>
@@ -293,23 +293,23 @@ const Shop = () => {
   }
 
   return (
-    <div className="max-w-full md:max-w-5xl lg:max-w-6xl mx-auto px-3 sm:px-4 py-4 md:py-8 pb-24 md:pb-16">
+    <div className="max-w-full md:max-w-5xl lg:max-w-6xl mx-auto px-2 sm:px-3 py-2 sm:py-4 pb-20 sm:pb-16">
       {/* Header section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 md:mb-8">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Shop</h1>
+      <div className="flex justify-between items-center gap-2 mb-3 sm:mb-5">
+        <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 dark:text-white">Shop</h1>
         
         {/* User gems badge */}
-        <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 md:px-4 md:py-2 rounded-full flex items-center shadow">
-          <span className="mr-1 md:mr-2 text-base md:text-lg">💎</span>
-          <span className="font-semibold text-sm md:text-base">{user?.gems || 0}</span>
+        <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full flex items-center shadow text-xs sm:text-sm">
+          <span className="mr-1 text-sm sm:text-base">💎</span>
+          <span className="font-semibold">{user?.gems || 0}</span>
         </div>
       </div>
 
       {/* Tab navigation */}
-      <div className="flex border-b border-gray-200 dark:border-gray-700 mb-4 md:mb-8">
+      <div className="flex border-b border-gray-200 dark:border-gray-700 mb-3 sm:mb-4">
         <button
           onClick={() => setActiveTab("shop")}
-          className={`py-2 md:py-3 px-4 md:px-6 text-sm md:text-base font-medium border-b-2 ${
+          className={`py-1.5 sm:py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium border-b-2 ${
             activeTab === "shop"
               ? "border-[#374DB0] dark:border-[#5a6fd1] text-[#374DB0] dark:text-[#5a6fd1]"
               : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
@@ -319,7 +319,7 @@ const Shop = () => {
         </button>
         <button
           onClick={() => setActiveTab("inventory")}
-          className={`py-2 md:py-3 px-4 md:px-6 text-sm md:text-base font-medium border-b-2 ${
+          className={`py-1.5 sm:py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium border-b-2 ${
             activeTab === "inventory"
               ? "border-[#374DB0] dark:border-[#5a6fd1] text-[#374DB0] dark:text-[#5a6fd1]"
               : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
@@ -332,7 +332,7 @@ const Shop = () => {
       {/* Purchase status message */}
       {purchaseStatus.status !== "idle" && (
         <div 
-          className={`mb-4 p-3 md:p-4 rounded-lg text-sm md:text-base ${
+          className={`mb-3 p-2 sm:p-3 rounded-lg text-xs sm:text-sm ${
             purchaseStatus.status === "success" 
               ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300" 
               : purchaseStatus.status === "error"
@@ -346,97 +346,89 @@ const Shop = () => {
 
       {/* Shop tab content */}
       {activeTab === "shop" && (
-        <div>
-          {/* Category filter */}
-          <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
-            {categories.map(category => (
-              <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`px-3 py-1 md:px-4 md:py-2 text-xs md:text-sm rounded-full capitalize 
-                  ${activeCategory === category
-                    ? "bg-[#374DB0] dark:bg-[#5a6fd1] text-white"
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                  }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-
-          {/* Shop items grid */}
-          {filteredShopItems.length === 0 ? (
-            <div className="bg-yellow-50 dark:bg-yellow-800/20 rounded-md md:rounded-lg p-4 md:p-6 text-center">
-              <p className="text-yellow-700 dark:text-yellow-300 text-base md:text-lg">
-                No items available in this category yet.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {filteredShopItems.map(item => {
-                const isOwned = inventory.some(i => i.itemId === item.itemId);
+        <div className="space-y-4 sm:space-y-6">
+          {/* Organize shop items by category */}
+          {["avatar", "background", "badge", "theme", "powerup"].map(category => {
+            const categoryItems = shopItemsByCategory[category] || [];
+            const categoryLabel = category === "background" ? "Banners" : 
+                                  category.charAt(0).toUpperCase() + category.slice(1) + "s";
+            
+            return (
+              <div key={category} className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-2 sm:p-3">
+                <h2 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-white capitalize mb-2 pb-1 border-b border-gray-200 dark:border-gray-700">
+                  {categoryLabel}
+                </h2>
                 
-                return (
-                  <div 
-                    key={item.itemId}
-                    className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col"
-                  >
-                    {/* Item image */}
-                    <div className="h-32 md:h-40 bg-gray-100 dark:bg-gray-700 flex items-center justify-center p-4">
-                      {item.imageUrl ? (
-                        <img 
-                          src={item.imageUrl} 
-                          alt={item.name} 
-                          className="max-h-full max-w-full object-contain" 
-                        />
-                      ) : (
-                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#374DB0]/20 dark:bg-[#5a6fd1]/20 flex items-center justify-center text-2xl md:text-3xl">
-                          {item.category === "avatar" && "👤"}
-                          {item.category === "background" && "🏞️"}
-                          {item.category === "badge" && "🏅"}
-                          {item.category === "theme" && "🎨"}
-                          {item.category === "powerup" && "⚡"}
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Item details */}
-                    <div className="p-3 md:p-4 flex-grow">
-                      <div className="flex justify-between items-start mb-1 md:mb-2">
-                        <h3 className="font-medium text-sm md:text-base text-gray-800 dark:text-white">{item.name}</h3>
-                        <span className="text-xs md:text-sm bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full capitalize">
-                          {item.category}
-                        </span>
-                      </div>
-                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-2 md:mb-3">{item.description}</p>
-                    </div>
-                    
-                    {/* Price and purchase button */}
-                    <div className="p-3 md:p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
-                      <div className="flex items-center">
-                        <span className="text-base md:text-lg mr-1 md:mr-2">💎</span>
-                        <span className="font-medium text-sm md:text-base text-gray-800 dark:text-white">{item.price}</span>
-                      </div>
-                      
-                      <button
-                        onClick={() => !isOwned && handlePurchase(item.itemId)}
-                        disabled={isOwned || (user?.gems || 0) < item.price || purchaseStatus.status === "loading"}
-                        className={`px-3 py-1 md:px-4 md:py-1.5 text-xs md:text-sm font-medium rounded-lg ${
-                          isOwned 
-                            ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 cursor-default"
-                            : (user?.gems || 0) < item.price
-                            ? "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                            : "bg-[#374DB0] dark:bg-[#5a6fd1] text-white hover:bg-[#293a8c] dark:hover:bg-[#4a5eb3] transition-colors"
-                        }`}
-                      >
-                        {isOwned ? "Owned" : (user?.gems || 0) < item.price ? "Not enough gems" : "Purchase"}
-                      </button>
-                    </div>
+                {categoryItems.length === 0 ? (
+                  <div className="bg-yellow-50 dark:bg-yellow-800/20 rounded-md p-3 text-center">
+                    <p className="text-yellow-700 dark:text-yellow-300 text-xs sm:text-sm">
+                      No {category} items available yet.
+                    </p>
                   </div>
-                );
-              })}
-            </div>
-          )}
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+                    {categoryItems.map(item => {
+                      const isOwned = inventory.some(i => i.itemId === item.itemId);
+                      
+                      return (
+                        <div 
+                          key={item.itemId}
+                          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col"
+                        >
+                          {/* Item image */}
+                          <div className="h-20 sm:h-28 bg-gray-100 dark:bg-gray-700 flex items-center justify-center p-2 sm:p-3">
+                            {item.imageUrl ? (
+                              <img 
+                                src={item.imageUrl} 
+                                alt={item.name} 
+                                className="max-h-full max-w-full object-contain" 
+                              />
+                            ) : (
+                              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-[#374DB0]/20 dark:bg-[#5a6fd1]/20 flex items-center justify-center text-xl sm:text-2xl">
+                                {item.category === "avatar" && "👤"}
+                                {item.category === "background" && "🏞️"}
+                                {item.category === "badge" && "🏅"}
+                                {item.category === "theme" && "🎨"}
+                                {item.category === "powerup" && "⚡"}
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Item details */}
+                          <div className="p-2 sm:p-3 flex-grow">
+                            <h3 className="font-medium text-xs sm:text-sm text-gray-800 dark:text-white line-clamp-1 mb-1">{item.name}</h3>
+                            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 mb-1 sm:mb-2 line-clamp-2">{item.description}</p>
+                          </div>
+                          
+                          {/* Price and purchase button */}
+                          <div className="p-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
+                            <div className="flex items-center">
+                              <span className="text-sm sm:text-base mr-1">💎</span>
+                              <span className="font-medium text-xs sm:text-sm text-gray-800 dark:text-white">{item.price}</span>
+                            </div>
+                            
+                            <button
+                              onClick={() => !isOwned && handlePurchase(item.itemId)}
+                              disabled={isOwned || (user?.gems || 0) < item.price || purchaseStatus.status === "loading"}
+                              className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md ${
+                                isOwned 
+                                  ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 cursor-default"
+                                  : (user?.gems || 0) < item.price
+                                  ? "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                  : "bg-[#374DB0] dark:bg-[#5a6fd1] text-white hover:bg-[#293a8c] dark:hover:bg-[#4a5eb3] transition-colors"
+                              }`}
+                            >
+                              {isOwned ? "Owned" : (user?.gems || 0) < item.price ? "Not enough" : "Buy"}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -445,45 +437,46 @@ const Shop = () => {
         <div>
           {/* No items message */}
           {inventory.length === 0 ? (
-            <div className="bg-blue-50 dark:bg-blue-800/20 rounded-md md:rounded-lg p-4 md:p-6 text-center">
-              <p className="text-blue-700 dark:text-blue-300 text-base md:text-lg mb-3 md:mb-4">
+            <div className="bg-blue-50 dark:bg-blue-800/20 rounded-md p-3 text-center">
+              <p className="text-blue-700 dark:text-blue-300 text-xs sm:text-sm mb-2 sm:mb-3">
                 You don't have any items yet.
               </p>
               <button
                 onClick={() => setActiveTab("shop")}
-                className="px-3 py-1.5 md:px-4 md:py-2 bg-[#374DB0] dark:bg-[#5a6fd1] text-white rounded-lg hover:bg-[#293a8c] dark:hover:bg-[#4a5eb3] transition-colors text-sm md:text-base"
+                className="px-2 py-0.5 sm:px-3 sm:py-1 bg-[#374DB0] dark:bg-[#5a6fd1] text-white rounded-md hover:bg-[#293a8c] dark:hover:bg-[#4a5eb3] transition-colors text-xs sm:text-sm"
               >
                 Go to Shop
               </button>
             </div>
           ) : (
-            <div className="space-y-6 md:space-y-8">
+            <div className="space-y-4 sm:space-y-6">
               {Object.entries(inventoryByCategory).map(([category, items]) => (
-                <div key={category} className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-3 md:p-5">
-                  <h2 className="text-lg md:text-xl font-semibold text-gray-700 dark:text-white capitalize mb-3 md:mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
-                    {category}
+                <div key={category} className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-2 sm:p-3">
+                  <h2 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-white capitalize mb-2 pb-1 border-b border-gray-200 dark:border-gray-700">
+                    {category === "background" ? "Banners" : 
+                     category.charAt(0).toUpperCase() + category.slice(1) + "s"}
                   </h2>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                     {items.map(item => (
                       <div 
                         key={item.itemId}
-                        className={`p-3 md:p-4 rounded-lg border-2 ${
+                        className={`p-2 rounded-md border ${
                           item.isEquipped 
                             ? "border-green-400 bg-green-50 dark:border-green-600 dark:bg-green-900/20" 
                             : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
                         }`}
                       >
                         {/* Item header with equip status */}
-                        <div className="flex justify-between items-start mb-2 md:mb-3">
-                          <h3 className="font-medium text-sm md:text-base text-gray-800 dark:text-white">{item.details.name}</h3>
+                        <div className="flex justify-between items-start mb-1">
+                          <h3 className="font-medium text-xs text-gray-800 dark:text-white line-clamp-1">{item.details.name}</h3>
                           {item.isEquipped && (
-                            <span className="text-green-500 dark:text-green-400 text-lg md:text-xl">✓</span>
+                            <span className="text-green-500 dark:text-green-400 text-sm sm:text-base">✓</span>
                           )}
                         </div>
                         
                         {/* Item image */}
-                        <div className="h-20 md:h-24 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center mb-2 md:mb-3">
+                        <div className="h-14 sm:h-16 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center mb-1 sm:mb-2">
                           {item.details.imageUrl ? (
                             <img 
                               src={item.details.imageUrl} 
@@ -491,7 +484,7 @@ const Shop = () => {
                               className="max-h-full max-w-full object-contain" 
                             />
                           ) : (
-                            <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#374DB0]/20 dark:bg-[#5a6fd1]/20 flex items-center justify-center text-xl md:text-2xl">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#374DB0]/20 dark:bg-[#5a6fd1]/20 flex items-center justify-center text-lg sm:text-xl">
                               {item.details.category === "avatar" && "👤"}
                               {item.details.category === "background" && "🏞️"}
                               {item.details.category === "badge" && "🏅"}
@@ -502,12 +495,12 @@ const Shop = () => {
                         </div>
                         
                         {/* Item description */}
-                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-3 md:mb-4">{item.details.description}</p>
+                        <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 mb-1.5 sm:mb-2 line-clamp-2">{item.details.description}</p>
                         
                         {/* Equip/unequip button */}
                         <button
                           onClick={() => handleEquipToggle(item.itemId, item.isEquipped)}
-                          className={`w-full px-3 py-1 md:px-4 md:py-1.5 text-xs md:text-sm font-medium rounded-lg ${
+                          className={`w-full px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md ${
                             item.isEquipped 
                               ? "bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-700"
                               : "bg-[#374DB0] dark:bg-[#5a6fd1] text-white hover:bg-[#293a8c] dark:hover:bg-[#4a5eb3]"
