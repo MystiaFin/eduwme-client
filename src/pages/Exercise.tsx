@@ -260,73 +260,73 @@ const Exercise = () => {
   }, [showResult, handleReturn]);
 
     // Loading state with responsive sizing and dark mode
-    if (loading) {
+     if (loading) {
       return (
-        <div className="flex justify-center items-center min-h-[70vh]">
-          <p className="text-base md:text-lg text-gray-600 dark:text-gray-300">Loading exercise...</p>
+        <div className="flex justify-center items-center min-h-[60vh]">
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">Loading exercise...</p>
         </div>
       );
     }
 
- // Error state with responsive styling and dark mode
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
-        <p className="text-base md:text-lg text-red-600 dark:text-red-400 mb-3 md:mb-4 text-center">
-          Error: {error}
-        </p>
-        
-        {error.includes("Too many requests") && (
+    // Error state with more compact styling
+    if (error) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] px-3">
+          <p className="text-sm md:text-base text-red-600 dark:text-red-400 mb-2 md:mb-3 text-center">
+            Error: {error}
+          </p>
+          
+          {error.includes("Too many requests") && (
+            <button
+              onClick={handleRetry}
+              className="px-2 py-1 md:px-3 md:py-1.5 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg mb-2 md:mb-3 text-xs md:text-sm transition-colors"
+            >
+              Retry in a moment
+            </button>
+          )}
+          
           <button
-            onClick={handleRetry}
-            className="px-3 py-1.5 md:px-4 md:py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg mb-3 md:mb-4 text-sm md:text-base transition-colors"
+            onClick={() => navigate(-1)}
+            className="px-2 py-1 md:px-3 md:py-1.5 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg text-xs md:text-sm transition-colors"
           >
-            Retry in a moment
+            Go Back
           </button>
-        )}
-        
-        <button
-          onClick={() => navigate(-1)}
-          className="px-3 py-1.5 md:px-4 md:py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg text-sm md:text-base transition-colors"
-        >
-          Go Back
-        </button>
-      </div>
-    );
-  }
+        </div>
+      );
+    }
 
-  // Exercise not found state with responsive styling and dark mode
-  if (!exercise) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
-        <p className="text-base md:text-lg text-yellow-600 dark:text-yellow-400 mb-3 md:mb-4 text-center">
-          Exercise not found
-        </p>
-        <button
-          onClick={() => navigate("/")}
-          className="px-3 py-1.5 md:px-4 md:py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg text-sm md:text-base transition-colors"
-        >
-          Return to Home
-        </button>
-      </div>
-    );
-  }
+    // Exercise not found state with more compact styling
+    if (!exercise) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] px-3">
+          <p className="text-sm md:text-base text-yellow-600 dark:text-yellow-400 mb-2 md:mb-3 text-center">
+            Exercise not found
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="px-2 py-1 md:px-3 md:py-1.5 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg text-xs md:text-sm transition-colors"
+          >
+            Return to Home
+          </button>
+        </div>
+      );
+    }
 
   return (
-      // Main container with centered content
-    <div className="max-w-full md:max-w-4xl mx-auto px-3 sm:px-4 py-2 md:py-4 transition-colors duration-300 dark:bg-gray-900">
-      {/* Use flex with gap instead of justify-between */}
-      <div className="flex flex-col gap-2 min-h-[calc(100vh-120px)]">
-        {/* Header remains the same */}
+    // Main container with centered content
+    <div className="max-w-full md:max-w-3xl mx-auto px-2 sm:px-3 py-1 md:py-3 transition-colors duration-300 dark:bg-gray-900">
+      {/* Reduced gap and min-height */}
+      <div className="flex flex-col gap-1 sm:gap-2 min-h-[calc(100vh-100px)]">
+        {/* Header with smaller buttons */}
         <div className="flex justify-between items-center">
          <button
           onClick={() => navigate(`/courses/${exercise.courseId}`)}
-          className="group flex items-center gap-1 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-lg
+          className="group flex items-center gap-1 px-2 py-1 md:px-4 md:py-2 rounded-lg
             bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/30
             border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600
             shadow-sm hover:shadow transition-all duration-200
             text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300
-            font-medium text-sm md:text-base"
+            font-medium text-xs md:text-base"
           aria-label="Return to course page"
         >
           <svg 
@@ -353,9 +353,9 @@ const Exercise = () => {
           </div>
         </div>
         
-        {/* Main content with consistent spacing */}
+        {/* Main content with reduced spacing */}
         <div className="text-center">
-          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
+          <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-800 dark:text-white">
             {exercise.title}
           </h1>
           <p className="text-xs text-gray-600 dark:text-gray-400">
@@ -363,31 +363,31 @@ const Exercise = () => {
           </p>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-2 sm:p-3 transition-colors">
-          <p className="text-sm sm:text-base md:text-lg text-gray-800 dark:text-white">
+        <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-1.5 sm:p-3 transition-colors">
+          <p className="text-xs sm:text-sm md:text-base text-gray-800 dark:text-white">
             {exercise.question}
           </p>
         </div>
         
-        <div className="bg-gray-100 dark:bg-gray-800/50 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-2 sm:p-3 min-h-[8rem] sm:min-h-[10rem] md:min-h-[12rem] flex flex-col items-center justify-center overflow-auto">
+         <div className="bg-gray-100 dark:bg-gray-800/50 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-1.5 sm:p-3 min-h-[6rem] sm:min-h-[8rem] md:min-h-[10rem] flex flex-col items-center justify-center overflow-auto">
         {exercise.animType ? (
           <ExerciseAnimation 
             animType={exercise.animType} 
             question={exercise.question} 
           />
         ) : (
-          <p className="text-gray-500 dark:text-gray-400 text-sm">No animation for this exercise</p>
+          <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">No animation for this exercise</p>
         )}
         </div>
           
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
           {exercise.options.map((option, index) => (
             <button
               key={index}
               onClick={() => handleOptionSelect(option)}
               disabled={!isTimerRunning || showResult}
               className={`
-                p-2 sm:p-3 rounded-lg border-2 text-left transition-all duration-150 text-sm
+                p-1.5 sm:p-2.5 rounded-lg border text-left transition-all duration-150 text-xs sm:text-sm
                 ${selectedOption === option 
                   ? 'bg-blue-500 text-white border-blue-600 dark:bg-blue-600 dark:border-blue-700' 
                   : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500'}
@@ -405,7 +405,7 @@ const Exercise = () => {
             onClick={handleSubmitAnswer}
             disabled={!selectedOption || !isTimerRunning || showResult}
             className={`
-              w-full py-2 text-sm md:text-base font-medium sm:font-bold rounded-lg transition-colors mt-2
+              w-full py-1.5 sm:py-2 text-xs sm:text-sm md:text-base font-medium rounded-lg transition-colors mt-1.5 sm:mt-2
               ${(!selectedOption || !isTimerRunning || showResult)
                 ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed text-white dark:text-gray-300'
                 : 'bg-green-500 dark:bg-green-600 text-white hover:bg-green-600 dark:hover:bg-green-700'}
@@ -414,19 +414,19 @@ const Exercise = () => {
             Submit Answer
           </button>
         ) : (
-          <div className={`p-2 sm:p-3 text-center rounded-lg mt-2 ${
+          <div className={`p-1.5 sm:p-2.5 text-center rounded-lg mt-1.5 sm:mt-2 ${
             result?.correct 
               ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
               : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
           }`}>
-            <p className="font-bold text-sm sm:text-base">
+            <p className="font-bold text-xs sm:text-sm">
               {result?.correct ? '✓ Correct!' : '✗ Incorrect!'}
             </p>
-            <p className="text-xs sm:text-sm">{result?.message}</p>
+            <p className="text-[10px] sm:text-xs">{result?.message}</p>
             
-            {/* XP and rewards - compact display */}
+            {/* XP and rewards - even more compact */}
             {completionData && !completionData.alreadyCompleted && (
-              <div className="mt-1 font-semibold text-xs flex flex-wrap justify-center gap-2">
+              <div className="mt-0.5 sm:mt-1 font-semibold text-[10px] sm:text-xs flex flex-wrap justify-center gap-1 sm:gap-2">
                 <span>XP: +{completionData.awardedXp}</span>
                 {completionData.gems && <span>Gems: +{completionData.gems}</span>}
                 <span>Total: {completionData.currentXp} XP</span>
@@ -434,7 +434,7 @@ const Exercise = () => {
               </div>
             )}
             
-            <p className="text-xs mt-1 text-gray-600 dark:text-gray-400">
+            <p className="text-[10px] mt-0.5 sm:mt-1 text-gray-600 dark:text-gray-400">
               Returning to course page...
             </p>
           </div>

@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
 
 interface ExerciseAnimationProps {
   animType: string;
@@ -17,88 +19,90 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
     currentStep: 0,
     answer: null
   });
+  const hasInitialized = useRef(false);
 
-  // Animation trigger effect
-  useEffect(() => {
-  if ((animType === 'blocks' || animType === 'numbers') && question) {
-    // Small delay to ensure component is mounted
-    const timer = setTimeout(() => {
-      setAnimationState({ isAnimating: true, currentStep: 0, answer: null });
-      startAnimation();
-    }, 500);
-    return () => clearTimeout(timer);
-  }
-}, [animType, question]);
+    // Update useEffect to only run once
+    useEffect(() => {
+      if (!hasInitialized.current && (animType === 'blocks' || animType === 'numbers' || animType === 'numLine') && question) {
+        hasInitialized.current = true;
+        // Small delay to ensure component is mounted
+        const timer = setTimeout(() => {
+          setAnimationState({ isAnimating: true, currentStep: 0, answer: null });
+          startAnimation();
+        }, 500);
+        return () => clearTimeout(timer);
+      }
+    }, [animType, question]);
 
-const startAnimation = useCallback(() => {
-  if (animType === 'blocks') {
-    const questionLower = question.toLowerCase().trim();
-
-    if (questionLower.includes('value of') && questionLower.includes('digit')) {
-      animatePlaceValue(questionLower);
-    } else if (questionLower.includes('show') && questionLower.includes('number')) {
-      const match = questionLower.match(/\d+/);
-        if (match) {
-            animateNumber(parseInt(match[0]));
-        }
-        } else if (questionLower.includes('+')) {
-        animateAddition(questionLower);
-        } else if (questionLower.includes('-')) {
-        animateSubtraction(questionLower);
-        } else {
-        // Try to extract any number and show it
-        const match = questionLower.match(/\d+/);
-        if (match) {
-            animateNumber(parseInt(match[0]));
-        }
-        }
-    } else if (animType === 'numbers') {
-        // For numbers animation type, we just need to set that we're ready to animate
-        setAnimationState(prev => ({
+  const startAnimation = useCallback(() => {
+    // For numbers/numLine animation type, just set that we're ready to animate
+    if (animType === 'numbers' || animType === 'numLine') {
+      setAnimationState(prev => ({
         ...prev,
         isAnimating: true
-        }));
-    }
-    }, [animType, question]);
-// Add a new component for digit animation
-const DigitAnimation: React.FC<{ digit: string, index: number }> = ({ digit, index }) => {
-  return (
-    <div 
-      className="inline-flex items-center justify-center text-4xl font-bold rounded-lg 
-                 bg-gradient-to-r from-blue-500 to-purple-600 text-white 
-                 shadow-lg w-14 h-14 mx-1 animate-pop"
-      style={{ 
-        animationDelay: `${index * 200}ms`,
-        opacity: 0, // Start hidden, animation will show it
-      }}
-    >
-      {digit}
-    </div>
-  );
-};
-
-    // Function to extract all digits from a question
-    const extractDigitsFromQuestion = (question: string): string[] => {
-    // Match all individual digits in the question
-    const digits = question.match(/\d/g) || [];
-    return [...new Set(digits)]; // Remove duplicates
-    };
-
-  const animatePlaceValue = (problem: string) => {
-    const matches = problem.match(/digit (\d) in (\d+)/);
-    if (!matches) return;
-    
-    const digit = parseInt(matches[1]);
-    const number = matches[2];
-    const digitIndex = number.indexOf(digit.toString());
-    
-    if (digitIndex === -1) {
-      setAnimationState(prev => ({ ...prev, answer: `The digit ${digit} is not in ${number}` }));
+      }));
       return;
     }
     
-    const position = number.length - digitIndex - 1;
-    const placeValue = digit * Math.pow(10, position);
+    // Below here is only for 'blocks' animation
+    const questionLower = question.toLowerCase().trim();
+    
+    // Handle addition and subtraction
+    if (questionLower.includes('+')) {
+      animateAddition(questionLower);
+      return;
+    }
+    
+    if (questionLower.includes('-')) {
+      animateSubtraction(questionLower);
+      return;
+    }
+    
+    // Handle "show number" commands
+    if (questionLower.includes('show') && questionLower.includes('number')) {
+      const match = questionLower.match(/\d+/);
+      if (match) {
+        animateNumber(parseInt(match[0]));
+        return;
+      }
+    }
+    
+    // Handle place value as default for other cases
+    animatePlaceValue(questionLower);
+    
+  }, [animType, question]);
+
+  const animatePlaceValue = (problem: string) => {
+    // More flexible regex that captures a single digit and any number
+    // This will work with various phrasings like:
+    // - "digit 5 in 123"
+    // - "5 is the tens digit of 123"
+    // - "what is the value of 5 in 123"
+    const matches = problem.match(/(\d).*?(\d{2,})/);
+    if (!matches) return;
+
+    const digit: number = parseInt(matches[1]);
+    const number = matches[2];
+    
+    // Check all occurrences of the digit in the number
+    let digitFound = false;
+    let position = -1;
+    let placeValue = 0;
+    
+    // Loop through the number to find the digit
+    for (let i = 0; i < number.length; i++) {
+      if (number[i] === digit.toString()) {
+        digitFound = true;
+        position = number.length - i - 1;
+        placeValue = digit * Math.pow(10, position);
+        break; // Use the first occurrence by default
+      }
+    }
+    
+    if (!digitFound) {
+      setAnimationState(prev => ({ ...prev, answer: `The digit ${digit} is not in ${number}` }));
+      return;
+    }
     
     setAnimationState(prev => ({ 
       ...prev, 
@@ -147,11 +151,29 @@ const DigitAnimation: React.FC<{ digit: string, index: number }> = ({ digit, ind
   };
 
   const createPlaceValueBlocks = (question: string) => {
-    const matches = question.match(/digit (\d) in (\d+)/);
+    // Simplified regex that finds any two numbers in the question
+    const matches = question.match(/(\d+).*?(\d+)/);
     if (!matches) return null;
     
-    const targetDigit = parseInt(matches[1]);
-    const number = matches[2];
+    // Extract the two numbers
+    const firstNum = matches[1];
+    const secondNum = matches[2];
+    
+    // Determine which is the digit and which is the full number
+    let targetDigit: number;
+    let number: string;
+    
+    if (firstNum.length === 1 && secondNum.length > 1) {
+      targetDigit = parseInt(firstNum);
+      number = secondNum;
+    } else if (secondNum.length === 1 && firstNum.length > 1) {
+      targetDigit = parseInt(secondNum);
+      number = firstNum;
+    } else {
+      targetDigit = parseInt(firstNum);
+      number = secondNum;
+    }
+    
     const digits = number.split('').reverse();
     
     return (
@@ -218,40 +240,8 @@ const DigitAnimation: React.FC<{ digit: string, index: number }> = ({ digit, ind
     );
   };
 
-  const createArithmeticBlocks = (question: string, operation: '+' | '-') => {
-    const regex = operation === '+' ? /(\d+)\s*\+\s*(\d+)/ : /(\d+)\s*-\s*(\d+)/;
-    const match = question.match(regex);
-    if (!match) return null;
-    
-    const num1 = parseInt(match[1]);
-    const num2 = parseInt(match[2]);
-    const result = operation === '+' ? num1 + num2 : num1 - num2;
-    
-    return (
-      <div className="flex flex-col items-center gap-4">
-        <div className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
-          {num1} {operation} {num2} = ?
-        </div>
-        
-        <div className="flex gap-8 items-center">
-          <BlockGroup count={num1} color="bg-blue-500" label={num1.toString()} />
-          <div className="text-2xl font-bold text-gray-600 dark:text-gray-300">
-            {operation}
-          </div>
-          <BlockGroup count={num2} color="bg-green-500" label={num2.toString()} />
-        </div>
-        
-        {animationState.answer && (
-          <div className="mt-4 text-2xl font-bold text-purple-600 dark:text-purple-400 animate-bounce">
-            = {result}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // Don't render anything if not blocks animation type
-  if (animType !== 'blocks' && animType !== 'numbers') {
+  
+  if (animType !== 'blocks' && animType !== 'numbers' && animType !== 'numLine') {
     return (
       <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
         Animation type "{animType}" not implemented
@@ -261,41 +251,73 @@ const DigitAnimation: React.FC<{ digit: string, index: number }> = ({ digit, ind
 
   const questionLower = question.toLowerCase().trim();
   
+  function extractDigitsFromQuestion(question: string): string[] {
+    // Extract all digit characters from the question
+    const allDigits = question.match(/\d+/g)?.join('') || '';
+    
+    // If we found digits, convert to array of individual characters
+    if (allDigits) {
+      return allDigits.split('');
+    }
+    
+    // If no digits found, try to extract spelled-out numbers
+    const spelledOutNumbers: Record<string, string> = {
+      'zero': '0', 'one': '1', 'two': '2', 'three': '3', 'four': '4', 
+      'five': '5', 'six': '6', 'seven': '7', 'eight': '8', 'nine': '9'
+    };
+    
+    const result: string[] = [];
+    const lowerQuestion = question.toLowerCase();
+    
+    // Check for spelled-out numbers
+    Object.entries(spelledOutNumbers).forEach(([word, digit]) => {
+      if (lowerQuestion.includes(word)) {
+        result.push(digit);
+      }
+    });
+    
+    return result.length > 0 ? result : ['0']; // Default to '0' if nothing found
+  }
+
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 rounded-lg">
-       {animType === 'numbers' && (
-        <div className="flex flex-col items-center gap-6">
-          <div className="text-xl md:text-2xl font-medium text-gray-700 dark:text-gray-200 mb-4 text-center">
-            {question}
-          </div>
-          <div className="flex flex-wrap justify-center gap-3">
-            {extractDigitsFromQuestion(question).map((digit, index) => (
-              <DigitAnimation key={index} digit={digit} index={index} />
-            ))}
-          </div>
-        </div>
-      )}
-      <div className="w-full max-w-4xl">
-        {animType === 'blocks' && questionLower.includes('value of') && questionLower.includes('digit') && 
-            createPlaceValueBlocks(questionLower)}
-        
+      <div className="w-full h-full flex flex-col items-center justify-center p-2 sm:p-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 rounded-lg">
+        <div className="w-full max-w-4xl">
+          {animType === 'numbers' && (
+  <div className="flex flex-col items-center gap-2 sm:gap-6">
+              <div className="text-lg sm:text-xl md:text-2xl font-medium text-gray-700 dark:text-gray-200 mb-2 sm:mb-4 text-center">
+                {question}
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                {extractDigitsFromQuestion(question).map((digit, index) => (
+                  <StaticDigit key={`digit-${index}`} digit={digit} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {animType === 'numLine' && (
+          <NumberLineAnimation question={questionLower} />
+          )}
+
+          {animType === 'blocks' && questionLower.match(/\d+.*?\d+/)&& 
+          !questionLower.includes('+') && 
+          !questionLower.includes('-') && 
+          !questionLower.includes('*') && 
+          !questionLower.includes('/') && 
+          !questionLower.includes('×') && 
+          !questionLower.includes('÷') && 
+          createPlaceValueBlocks(questionLower)}
+
         {animType === 'blocks' && questionLower.includes('show') && questionLower.includes('number') && 
             createNumberBlocks(questionLower)}
         
-        {animType === 'blocks' && questionLower.includes('+') && 
-            createArithmeticBlocks(questionLower, '+')}
-        
-        {animType === 'blocks' && questionLower.includes('-') && 
-            createArithmeticBlocks(questionLower, '-')}
-        
-        {animType === 'blocks' && !questionLower.includes('value of') && 
-        !questionLower.includes('show') && 
-        !questionLower.includes('+') && 
-        !questionLower.includes('-') && 
-        questionLower.match(/\d+/) &&
-            createNumberBlocks(questionLower)}
+       {animType === 'blocks' && questionLower.includes('+') && 
+      <ArithmeticBlocks question={questionLower} operation="+" />}
+
+      {animType === 'blocks' && questionLower.includes('-') && 
+      <ArithmeticBlocks question={questionLower} operation="-" />}
     </div>
-    </div>
+  </div>
   );
 };
 
@@ -337,24 +359,38 @@ const PlaceValueSection: React.FC<PlaceValueSectionProps> = ({
     return colors[pos] || 'bg-gray-500 dark:bg-gray-600';
   };
   
+  // For place value, arrange horizontally to save vertical space
+  const getLayoutStyle = (pos: number, index: number) => {
+    if (pos === 0) {
+      return {
+        display: 'inline-block',
+        marginRight: index < digit - 1 ? '2px' : '0'
+      };
+    }
+    return {};
+  };
+  
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="font-semibold text-sm text-gray-700 dark:text-gray-300">
+    <div className="flex flex-col items-center gap-1 sm:gap-2">
+      <div className="font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300">
         {getPlaceName(position)}
       </div>
-      <div className="flex flex-col gap-1">
+      <div className={`flex ${position === 0 ? 'flex-row flex-wrap' : 'flex-col'} gap-1`}>
         {Array.from({ length: digit }, (_, i) => (
           <div
             key={i}
             className={`
               ${getBlockColor(position)}
-              ${isHighlighted ? 'ring-4 ring-yellow-400 ring-opacity-75' : ''}
+              ${isHighlighted ? 'ring-2 sm:ring-4 ring-yellow-400 ring-opacity-75' : ''}
               ${isVisible ? 'animate-drop-in' : 'opacity-0'}
               transition-all duration-500 rounded-md shadow-lg
               flex items-center justify-center text-white font-bold text-xs
-              ${position === 0 ? 'w-6 h-6' : position === 1 ? 'w-16 h-6' : 'w-16 h-16'}
+              ${position === 0 ? 'w-4 h-4 sm:w-6 sm:h-6' : position === 1 ? 'w-10 h-4 sm:w-16 sm:h-6' : 'w-10 h-10 sm:w-16 sm:h-16'}
             `}
-            style={{ animationDelay: `${i * 100}ms` }}
+            style={{ 
+              animationDelay: `${i * 100}ms`,
+              ...getLayoutStyle(position, i)
+            }}
           >
             {position === 0 ? '' : position === 1 ? '10' : '100'}
           </div>
@@ -364,32 +400,461 @@ const PlaceValueSection: React.FC<PlaceValueSectionProps> = ({
   );
 };
 
+const StaticDigit: React.FC<{ digit: string }> = ({ digit }) => {
+  return (
+    <div 
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 'clamp(1.25rem, 3vw, 2.5rem)',
+        fontWeight: 'bold',
+        borderRadius: '0.5rem',
+        background: 'linear-gradient(to right, #3b82f6, #8b5cf6)',
+        color: 'white',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        width: 'clamp(2.5rem, 5vw, 3.5rem)',
+        height: 'clamp(2.5rem, 5vw, 3.5rem)',
+        margin: '0 0.25rem',
+        animation: 'pop 1s ease-in forwards',
+      }}
+    >
+      {digit}
+    </div>
+  );
+};
+
+const NumberLineAnimation: React.FC<{ question: string }> = ({ question }) => {
+  const [currentPosition, setCurrentPosition] = useState<number | null>(null);
+  const [initialPosition, setInitialPosition] = useState<number | null>(null);
+  const [targetPosition, setTargetPosition] = useState<number | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [stepCounter, setStepCounter] = useState(0);
+  
+  // Parse the question to determine what operation to perform
+  useEffect(() => {
+    // Reset state when question changes
+    setShowResult(false);
+    setIsAnimating(false);
+    setStepCounter(0);
+    
+    // Addition: find pattern like "1+2" or "1 + 2"
+    const addMatch = question.match(/(\d+)\s*\+\s*(\d+)/);
+    if (addMatch) {
+      const num1 = parseInt(addMatch[1]);
+      const num2 = parseInt(addMatch[2]);
+      
+      // Set initial position
+      setInitialPosition(num1);
+      setCurrentPosition(num1);
+      
+      // Set the target position
+      setTargetPosition(num1 + num2);
+      
+      // Start animation after a delay
+      setTimeout(() => {
+        setIsAnimating(true);
+      }, 1000);
+      
+      return;
+    }
+    
+    // Subtraction: find pattern like "5-3" or "5 - 3"
+    const subMatch = question.match(/(\d+)\s*-\s*(\d+)/);
+    if (subMatch) {
+      const num1 = parseInt(subMatch[1]);
+      const num2 = parseInt(subMatch[2]);
+      
+      // Set initial position
+      setInitialPosition(num1);
+      setCurrentPosition(num1);
+      
+      // Set the target position
+      setTargetPosition(num1 - num2);
+      
+      // Start animation after a delay
+      setTimeout(() => {
+        setIsAnimating(true);
+      }, 1000);
+      
+      return;
+    }
+    
+    // If no operation found, just show the number
+    const numMatch = question.match(/\d+/);
+    if (numMatch) {
+      const num = parseInt(numMatch[0]);
+      setCurrentPosition(num);
+      setShowResult(true);
+    }
+  }, [question]);
+  
+  // Step-by-step animation effect
+  useEffect(() => {
+    if (!isAnimating || currentPosition === null || targetPosition === null) return;
+    
+    // If we've reached the target, stop animating and show result
+    if (currentPosition === targetPosition) {
+      setIsAnimating(false);
+      setShowResult(true);
+      return;
+    }
+    
+    // For addition, increment by 1
+    if (targetPosition > currentPosition) {
+      const timer = setTimeout(() => {
+        setCurrentPosition(prev => (prev !== null ? prev + 1 : null));
+        setStepCounter(prev => prev + 1);
+      }, 500); // 500ms delay between jumps
+      
+      return () => clearTimeout(timer);
+    }
+    
+    // For subtraction, decrement by 1
+    if (targetPosition < currentPosition) {
+      const timer = setTimeout(() => {
+        setCurrentPosition(prev => (prev !== null ? prev - 1 : null));
+        setStepCounter(prev => prev + 1);
+      }, 500); // 500ms delay between jumps
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isAnimating, currentPosition, targetPosition, stepCounter]);
+  
+  // Determine range of number line to show
+  const getNumberLineRange = () => {
+    if (initialPosition === null && targetPosition === null) {
+      return { min: 0, max: 10 }; // Default range
+    }
+    
+    const start = initialPosition ?? 0;
+    const end = targetPosition ?? start;
+    
+    // Create a range that includes both positions plus some padding
+    const min = Math.min(start, end) - 2;
+    const max = Math.max(start, end) + 2;
+    
+    return { min: Math.max(0, min), max: Math.max(10, max) };
+  };
+  
+  const { min, max } = getNumberLineRange();
+  
+  // Determine if we're adding or subtracting
+  const isAddition = question.includes('+');
+  const isSubtraction = question.includes('-');
+  
+  // Operation text description
+  const getOperationText = () => {
+    if (!isAnimating && !showResult) return '';
+    
+    if (isAddition && initialPosition !== null && targetPosition !== null) {
+      if (currentPosition === targetPosition) {
+        return `Result: ${targetPosition}`;
+      }
+      return `Moving right: ${initialPosition} → ${currentPosition}`;
+    }
+    
+    if (isSubtraction && initialPosition !== null && targetPosition !== null) {
+      if (currentPosition === targetPosition) {
+        return `Result: ${targetPosition}`;
+      }
+      return `Moving left: ${initialPosition} → ${currentPosition}`;
+    }
+    
+    return '';
+  };
+  
+  return (
+    <div className="flex flex-col items-center gap-4 p-4 w-full">
+      <motion.div 
+        className="text-lg sm:text-xl md:text-2xl font-medium text-gray-700 dark:text-gray-200 text-center"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        {question}
+      </motion.div>
+      
+      
+      {/* Number line */}
+      <div className="relative w-full max-w-2xl h-20 mt-4">
+        {/* Horizontal line */}
+        <motion.div 
+          className="absolute top-10 left-0 right-0 h-1 bg-gray-400 dark:bg-gray-600"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        ></motion.div>
+        
+        {/* Tick marks and numbers */}
+        <div className="absolute top-0 left-0 right-0 flex justify-between">
+          {Array.from({ length: max - min + 1 }, (_, i) => min + i).map((num, index) => (
+            <motion.div 
+              key={num} 
+              className="flex flex-col items-center"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+            >
+              {/* Tick mark */}
+              <div className="h-3 w-0.5 bg-gray-400 dark:bg-gray-600 mt-7"></div>
+              
+              {/* Number label */}
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1">
+                {num}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+        
+        {/* Marker (circle) */}
+        <AnimatePresence mode="wait">
+          {currentPosition !== null && (
+            <motion.div 
+              key={`marker`}
+              className="absolute w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-red-500 border-2 border-white 
+                flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-lg z-10"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ 
+                scale: 1, 
+                opacity: 1,
+                // This is the corrected position calculation
+                left: `calc(${(currentPosition - min) / (max - min) * 100}% - 1rem)`,
+                top: '0.5rem',
+              }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 500, 
+                damping: 30,
+                // Slower animation to make jumps more visible
+                duration: 0.4
+              }}
+            >
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      
+      {/* Result display */}
+      <AnimatePresence>
+        {showResult && targetPosition !== null && (
+          <motion.div 
+            className="text-lg sm:text-xl font-bold text-purple-600 dark:text-purple-400 mt-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5 }}
+          >
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+  
+
+// Add this component after your other component definitions
+const ArithmeticBlocks: React.FC<{ question: string, operation: '+' | '-' }> = ({ 
+  question, 
+  operation 
+}) => {
+  const [showSecondGroup, setShowSecondGroup] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  
+  // Parse the question
+  const regex = operation === '+' ? /(\d+)\s*\+\s*(\d+)/ : /(\d+)\s*-\s*(\d+)/;
+  const match = question.match(regex);
+  if (!match) return null;
+  
+  const num1 = parseInt(match[1]);
+  const num2 = parseInt(match[2]);
+  const result = operation === '+' ? num1 + num2 : num1 - num2;
+  
+  // Animation sequence
+  useEffect(() => {
+    const timer1 = setTimeout(() => setShowSecondGroup(true), 1500);
+    const timer2 = setTimeout(() => setShowResult(true), 3000);
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, []);
+  
+  return (
+    <div className="flex flex-col items-center gap-2 sm:gap-4">
+      <div className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-white mb-2 sm:mb-4">
+        {num1} {operation} {num2} = ?
+      </div>
+
+      {operation === '+' && (
+        <div className="flex flex-col items-center">
+          {/* First number */}
+          <div className="mb-2 sm:mb-4">
+            <BlockGroup 
+              count={num1} 
+              color="bg-blue-500" 
+              label={`${num1}`} 
+              layout="grid"
+            />
+          </div>
+          
+          {/* Operation symbol */}
+          <div className="text-xl sm:text-2xl font-bold text-gray-600 dark:text-gray-300 my-1 sm:my-2">
+            +
+          </div>
+          
+          {/* Second number (appears after delay) */}
+          <div className={`mb-2 sm:mb-4 transition-opacity duration-500 ${showSecondGroup ? 'opacity-100' : 'opacity-0'}`}>
+            <BlockGroup 
+              count={num2} 
+              color="bg-green-500" 
+              label={`${num2}`} 
+              layout="grid"
+            />
+          </div>
+          
+          {/* Result */}
+          {showResult && (
+            <>
+              <div className="text-xl sm:text-2xl font-bold text-gray-600 dark:text-gray-300 my-1 sm:my-2">
+                =
+              </div>
+              <div className="animate-drop-in">
+                <BlockGroup 
+                  count={result} 
+                  color="bg-purple-500" 
+                  label="?" 
+                  layout="grid"
+                />
+              </div>
+            </>
+          )}
+        </div>
+      )}
+      
+      {operation === '-' && (
+        <div className="flex flex-col items-center">
+          {/* First number */}
+          <div className="mb-2 sm:mb-4">
+            <SubtractionBlockGroup 
+              total={num1} 
+              toRemove={num2} 
+              showRemoval={showSecondGroup}
+              showResult={showResult}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+
+// Add a specialized component for subtraction visualization
+const SubtractionBlockGroup: React.FC<{ 
+  total: number; 
+  toRemove: number;
+  showRemoval: boolean;
+  showResult: boolean;
+}> = ({ total, toRemove, showRemoval, showResult }) => {
+  // Ensure we don't try to remove more than the total
+  const actualRemove = Math.min(toRemove, total);
+  const remaining = total - actualRemove;
+  
+  // Determine optimal grid columns based on number of blocks
+  const getGridCols = () => {
+    const totalBlocks = Math.min(total, 50);
+    if (totalBlocks <= 9) return 'grid-cols-3';
+    if (totalBlocks <= 16) return 'grid-cols-4';
+    if (totalBlocks <= 25) return 'grid-cols-5';
+    if (totalBlocks <= 36) return 'grid-cols-6';
+    return 'grid-cols-8';
+  };
+  
+  return (
+    <div className="flex flex-col items-center">
+      <div className="font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">{total}</div>
+      <div className={`grid ${getGridCols()} gap-0.5 sm:gap-1 max-w-[180px] sm:max-w-[240px]`}>
+        {/* Blocks that will remain (shown in blue) */}
+        {Array.from({ length: Math.min(remaining, 50) }, (_, i) => (
+          <div
+            key={`remain-${i}`}
+            className={`
+              w-4 h-4 sm:w-6 sm:h-6 bg-blue-500 rounded-sm sm:rounded-md shadow-sm animate-drop-in
+              flex items-center justify-center text-white text-[8px] sm:text-xs font-bold
+              transition-all duration-500
+            `}
+            style={{ animationDelay: `${i * 30}ms` }}
+          />
+        ))}
+        
+        {/* Blocks that will be removed (shown in red when showRemoval is true) */}
+        {Array.from({ length: Math.min(actualRemove, 50 - remaining) }, (_, i) => (
+          <div
+            key={`remove-${i}`}
+            className={`
+              w-4 h-4 sm:w-6 sm:h-6 rounded-sm sm:rounded-md shadow-sm 
+              flex items-center justify-center text-white text-[8px] sm:text-xs font-bold
+              transition-all duration-500
+              ${showRemoval 
+                ? (showResult ? 'opacity-0 scale-0' : 'bg-red-500 scale-110') 
+                : 'bg-blue-500'}
+            `}
+            style={{ 
+              animationDelay: `${(remaining + i) * 30}ms`,
+              transitionDelay: `${i * 70}ms`
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+
+// Update the BlockGroup component to support different layouts
 interface BlockGroupProps {
   count: number;
   color: string;
   label: string;
+  layout?: 'horizontal' | 'vertical' | 'grid';
 }
 
-const BlockGroup: React.FC<BlockGroupProps> = ({ count, color, label }) => {
+const BlockGroup: React.FC<BlockGroupProps> = ({ count, color, label, layout = 'grid' }) => {
+  // Dynamic grid columns based on count
+  const getGridClass = () => {
+    if (layout === 'horizontal') {
+      return count <= 10 ? 'grid-cols-10' : 'grid-cols-10 flex-wrap';
+    } else if (layout === 'vertical') {
+      return 'grid-cols-1';
+    } else {
+      // Cube-like grid layout
+      const totalBlocks = Math.min(count, 50);
+      if (totalBlocks <= 9) return 'grid-cols-3';
+      if (totalBlocks <= 16) return 'grid-cols-4';
+      if (totalBlocks <= 25) return 'grid-cols-5';
+      if (totalBlocks <= 36) return 'grid-cols-6';
+      return 'grid-cols-8';
+    }
+  };
+  
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="font-semibold text-gray-700 dark:text-gray-300">{label}</div>
-      <div className="grid grid-cols-5 gap-1 max-w-[150px]">
-        {Array.from({ length: Math.min(count, 25) }, (_, i) => (
+    <div className="flex flex-col items-center gap-1 sm:gap-2">
+      <div className="font-semibold text-sm sm:text-base text-gray-700 dark:text-gray-300">{label}</div>
+      <div className={`grid ${getGridClass()} gap-0.5 sm:gap-1 max-w-[180px] sm:max-w-[250px]`}>
+        {Array.from({ length: Math.min(count, 50) }, (_, i) => (
           <div
             key={i}
             className={`
-              w-6 h-6 ${color} rounded-md shadow-sm animate-drop-in
-              flex items-center justify-center text-white text-xs font-bold
+              w-4 h-4 sm:w-6 sm:h-6 ${color} rounded-sm sm:rounded-md shadow-sm animate-drop-in
+              flex items-center justify-center text-white text-[8px] sm:text-xs font-bold
             `}
-            style={{ animationDelay: `${i * 50}ms` }}
+            style={{ animationDelay: `${i * 30}ms` }}
           />
         ))}
-        {count > 25 && (
-          <div className="col-span-5 text-center text-sm text-gray-600 dark:text-gray-400 mt-1">
-            +{count - 25} more
-          </div>
-        )}
       </div>
     </div>
   );
@@ -436,15 +901,20 @@ style.textContent = `
   
   .animate-drop-in {
     animation: drop-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
   }
   
   .animate-fade-in {
     animation: fade-in 0.5s ease-out forwards;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
   }
 
   .animate-pop {
-    animation: pop 1s ease-in-out forwards;
+    animation: pop 1s ease-in forwards;
     animation-iteration-count: 1;
+    animation-fill-mode: forwards;
   }
 `;
 
