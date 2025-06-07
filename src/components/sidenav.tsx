@@ -2,7 +2,8 @@ import { NavLink } from "react-router-dom";
 import TrophyIcon from "@src/assets/trophy.svg";
 import HomeIcon from "@src/assets/home.svg";
 import ProfileIcon from "@src/assets/profile.svg";
-import SettingsIcon from "@src/assets/settings.svg"; // Import the settings icon
+import SettingsIcon from "@src/assets/settings.svg";
+import ShopIcon from "@src/assets/store.svg";
 import { useAuth } from "@src/AuthContext";
 
 const SideNavBar = () => {
@@ -83,7 +84,28 @@ const SideNavBar = () => {
               )}
             </NavLink>
           </li>
-
+          {/* Shop Link */}
+          <li className="w-full flex justify-center">
+            <NavLink to="/shop">
+              {({ isActive }) => (
+                <div className={`relative flex flex-col items-center w-16 py-3 px-2 rounded-xl transition-all duration-200 ${
+                  isActive 
+                    ? "bg-[#374DB0] text-white" 
+                    : "text-[#374DB0] dark:text-white hover:bg-[#374DB0]/10"
+                }`}>
+                  <div className={`transition-all duration-200 ${isActive ? "scale-110" : ""}`}>
+                    <img src={ShopIcon} className="w-10 md:w-12 mx-auto" alt="Shop" />
+                    <span className="text-xs mt-1 font-medium text-center block">Shop</span>
+                  </div>
+                  <div className="absolute -bottom-1 left-0 right-0 flex justify-center">
+                    <div className={`h-1 rounded-full transition-all ${
+                      isActive ? "w-8 bg-yellow-400" : "w-0"
+                    }`}></div>
+                  </div>
+                </div>
+              )}
+            </NavLink>
+          </li>
           {/* Settings Link - NEW */}
           <li className="w-full flex justify-center">
             <NavLink to="/settings">
@@ -106,14 +128,30 @@ const SideNavBar = () => {
               )}
             </NavLink>
           </li>
+          
 
           {/* Streak display */}
           <li className="mt-auto w-full flex justify-center">
-            <div className="w-16 h-16 rounded-full bg-[#374DB0]/10 dark:bg-[#374DB0]/30 flex flex-col items-center justify-center">
-              <span className="text-lg font-bold text-[#374DB0] dark:text-white">7</span>
-              <span className="text-xs text-[#374DB0] dark:text-white">days</span>
+            <div className="w-16 h-16 rounded-full bg-[#374DB0]/10 dark:bg-[#374DB0]/30 flex flex-col items-center justify-center group relative">
+              <span className="text-lg font-bold text-[#374DB0] dark:text-white">
+                {user?.streak || 0}
+              </span>
+              <span className="text-xs text-[#374DB0] dark:text-white">
+                {user?.streak === 1 ? "day" : "days"}
+              </span>
+              
+              {/* Tooltip on hover */}
+              <div className="absolute bottom-full mb-2 w-32 bg-white dark:bg-gray-800 shadow-lg rounded-md p-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                <p className="text-gray-700 dark:text-gray-300 text-center">
+                  {user?.lastLoginDate ? 
+                    `Last login: ${new Date(user.lastLoginDate).toLocaleDateString()}` : 
+                    'Start your streak by completing lessons daily!'}
+                </p>
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-white dark:bg-gray-800"></div>
+              </div>
             </div>
           </li>
+
         </ul>
       </div>
     </nav>

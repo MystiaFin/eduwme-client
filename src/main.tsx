@@ -20,14 +20,16 @@ import HomePage from "./pages/Home.tsx";
 import LeaderboardPage from "./pages/Leaderboard.tsx";
 import ProfilePage from "./pages/Profile.tsx";
 import Courses from "./pages/Course.tsx";
+import ExercisePage from "./pages/Exercise.tsx";
+import Settings from "./pages/settings.tsx";
+import ShopPage from "./pages/Shop.tsx";
 
 // Auth Pages Import
 import Register from "./pages/auth/register.tsx";
 import Login from "./pages/auth/login.tsx";
 import { AuthGuard } from "./AuthGuard.tsx";
 import { RequireAuth } from "./RequireAuth.tsx";
-import ExercisePage from "./pages/Exercise.tsx";
-import Settings from "./pages/settings.tsx";
+
 
 
 createRoot(document.getElementById("root")!).render(
@@ -49,6 +51,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/home" element={<HomePage />} />
                 <Route path="/dashboard" element={<HomePage />} />
                 <Route path="/leaderboard" element={<LeaderboardPage />} />
+                <Route path="/shop" element={<ShopPage />} />
                 <Route path="/profile/:userId" element={<ProfilePage />} />
                 <Route path="/courses/:courseId" element={<Courses />} />
                 <Route path="/exercise/:exerciseId" element={<ExercisePage />} />

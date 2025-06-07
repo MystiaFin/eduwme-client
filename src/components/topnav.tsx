@@ -1,5 +1,4 @@
 import NavbarLogo from "@src/assets/nav-logo.svg";
-import ExitButton from "./exitbutton";
 const HamburgerStyle: string =
   "mb-[5px] w-[28px] h-[8px] block bg-[#273B4A] rounded-r-xs";
 const TopNavBar = () => {
@@ -13,7 +12,6 @@ const TopNavBar = () => {
           ))}
       </div>
       <img src={NavbarLogo} alt="Logo" className="w-[100px] h-[40px]" />
-      <ExitButton />
     </div>
   );
 };

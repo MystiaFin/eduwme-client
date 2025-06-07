@@ -62,7 +62,7 @@ const Exercise = () => {
   const [retryCount, setRetryCount] = useState<number>(0);
   
   // Timer configuration
-  const TIME_LIMIT = 15; // seconds - can be adjusted
+  const TIME_LIMIT = 30; // seconds - can be adjusted
   const timerRef = useRef<number | null>(null);
   
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";

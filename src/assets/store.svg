@@ -1,9 +1,7 @@
-<svg width="100px" height="100px" viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg" stroke-width="0.3" stroke="#000000" fill="none">
-  <path d="M6.5 3.397v3.197a0.365 0.365 0 0 1 -0.375 0.355H1.875a0.365 0.365 0 0 1 -0.375 -0.355V3.396" fill="#FFFFFF"/>
-  <path d="M1.055 2.397s-0.138 0.97 0.806 1.117a0.896 0.896 0 0 0 0.762 -0.25A0.929 0.929 0 0 0 4 3.25a0.925 0.925 0 0 0 0.625 0.311 1.475 1.475 0 0 0 0.738 -0.269 0.833 0.833 0 0 0 0.584 0.269 1 1 0 0 0 0.991 -1.163L6.348 1.131a0.125 0.125 0 0 0 -0.117 -0.081H1.75a0.125 0.125 0 0 0 -0.117 0.083Z" fill="#FFFFFF"/>
-  <path d="M3.283 6.94L3.283 4.806L4.73 4.806L4.73 6.94" fill="none"/>
-  <path d="M1.055 2.397L6.942 2.397"/>
-  <path d="M2.63 2.397L2.63 1.05"/>
-  <path d="M4.006 2.397L4.006 1.05"/>
-  <path d="M5.376 2.397L5.376 1.05"/>
-</svg>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Transformed by: SVG Repo Mixer Tools -->
+<svg width="800px" height="800px" viewBox="0 0 24 24" id="magicoon-Filled" xmlns="http://www.w3.org/2000/svg" fill="" stroke="">
+<g id="SVGRepo_bgCarrier" stroke-width="0"/>
+<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
+<g id="SVGRepo_iconCarrier"> <defs> <style>.cls-1{fill:#ffffff;}</style> </defs> <title>store</title> <g id="store-Filled"> <path id="store-Filled-2" data-name="store-Filled" class="cls-1" d="M20.5,18A3.5,3.5,0,0,1,17,21.5H14.53V19a2.5,2.5,0,0,0-5,0v2.5H7A3.5,3.5,0,0,1,3.5,18V13.35A5.634,5.634,0,0,0,5.99,14,4.409,4.409,0,0,0,9,12.78a4.3,4.3,0,0,0,6,0A4.409,4.409,0,0,0,18.01,14a5.634,5.634,0,0,0,2.49-.65Zm.974-9.158L20.386,5.577A4.494,4.494,0,0,0,16.117,2.5H7.883A4.494,4.494,0,0,0,3.614,5.577L2.526,8.842A.5.5,0,0,0,2.5,9a3.5,3.5,0,0,0,3.49,3.5A3.853,3.853,0,0,0,9,11.034a3.809,3.809,0,0,0,6.006,0A3.854,3.854,0,0,0,18.01,12.5,3.5,3.5,0,0,0,21.5,9,.5.5,0,0,0,21.474,8.842Z"/> </g> </g>
+</svg>

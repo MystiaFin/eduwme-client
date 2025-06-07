@@ -23,7 +23,7 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
 
     // Update useEffect to only run once
     useEffect(() => {
-      if (!hasInitialized.current && (animType === 'blocks' || animType === 'numbers' || animType === 'numLine') && question) {
+      if (!hasInitialized.current && (animType === 'blocks' || animType === 'numbers' || animType === 'numLine' || animType === 'storyAdd' || animType === 'storyMinus') && question) {
         hasInitialized.current = true;
         // Small delay to ensure component is mounted
         const timer = setTimeout(() => {
@@ -36,7 +36,8 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
 
   const startAnimation = useCallback(() => {
     // For numbers/numLine animation type, just set that we're ready to animate
-    if (animType === 'numbers' || animType === 'numLine') {
+    if (animType === 'numbers' || animType === 'numLine' || animType === 'storyAdd' || 
+      animType === 'storyMinus') {
       setAnimationState(prev => ({
         ...prev,
         isAnimating: true
@@ -241,7 +242,8 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
   };
 
   
-  if (animType !== 'blocks' && animType !== 'numbers' && animType !== 'numLine') {
+  if (animType !== 'blocks' && animType !== 'numbers' && animType !== 'numLine' && animType !== 'storyAdd' && 
+    animType !== 'storyMinus') {
     return (
       <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
         Animation type "{animType}" not implemented
@@ -283,7 +285,7 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
       <div className="w-full h-full flex flex-col items-center justify-center p-2 sm:p-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 rounded-lg">
         <div className="w-full max-w-4xl">
           {animType === 'numbers' && (
-  <div className="flex flex-col items-center gap-2 sm:gap-6">
+            <div className="flex flex-col items-center gap-2 sm:gap-6">
               <div className="text-lg sm:text-xl md:text-2xl font-medium text-gray-700 dark:text-gray-200 mb-2 sm:mb-4 text-center">
                 {question}
               </div>
@@ -293,6 +295,13 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
                 ))}
               </div>
             </div>
+          )}
+         {animType === 'storyAdd' && (
+            <StoryProblemBlocks question={question} operation="add" />
+          )}
+          
+          {animType === 'storyMinus' && (
+            <StoryProblemBlocks question={question} operation="minus" />
           )}
 
           {animType === 'numLine' && (
@@ -689,9 +698,9 @@ const ArithmeticBlocks: React.FC<{ question: string, operation: '+' | '-' }> = (
       </div>
 
       {operation === '+' && (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-row items-center flex-wrap justify-center gap-2 sm:gap-4">
           {/* First number */}
-          <div className="mb-2 sm:mb-4">
+          <div className="mr-0 sm:mr-2">
             <BlockGroup 
               count={num1} 
               color="bg-blue-500" 
@@ -701,12 +710,12 @@ const ArithmeticBlocks: React.FC<{ question: string, operation: '+' | '-' }> = (
           </div>
           
           {/* Operation symbol */}
-          <div className="text-xl sm:text-2xl font-bold text-gray-600 dark:text-gray-300 my-1 sm:my-2">
+          <div className="text-xl sm:text-2xl font-bold text-gray-600 dark:text-gray-300 mx-1 sm:mx-2">
             +
           </div>
           
           {/* Second number (appears after delay) */}
-          <div className={`mb-2 sm:mb-4 transition-opacity duration-500 ${showSecondGroup ? 'opacity-100' : 'opacity-0'}`}>
+          <div className={`transition-opacity duration-500 mr-0 sm:mr-2 ${showSecondGroup ? 'opacity-100' : 'opacity-0'}`}>
             <BlockGroup 
               count={num2} 
               color="bg-green-500" 
@@ -718,7 +727,7 @@ const ArithmeticBlocks: React.FC<{ question: string, operation: '+' | '-' }> = (
           {/* Result */}
           {showResult && (
             <>
-              <div className="text-xl sm:text-2xl font-bold text-gray-600 dark:text-gray-300 my-1 sm:my-2">
+              <div className="text-xl sm:text-2xl font-bold text-gray-600 dark:text-gray-300 mx-1 sm:mx-2">
                 =
               </div>
               <div className="animate-drop-in">
@@ -735,9 +744,9 @@ const ArithmeticBlocks: React.FC<{ question: string, operation: '+' | '-' }> = (
       )}
       
       {operation === '-' && (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-row items-center flex-wrap justify-center gap-2 sm:gap-4">
           {/* First number */}
-          <div className="mb-2 sm:mb-4">
+          <div className="mr-0 sm:mr-2">
             <SubtractionBlockGroup 
               total={num1} 
               toRemove={num2} 
@@ -745,6 +754,14 @@ const ArithmeticBlocks: React.FC<{ question: string, operation: '+' | '-' }> = (
               showResult={showResult}
             />
           </div>
+          
+          {/* Result explanation - now to the right */}
+          {showSecondGroup && (
+            <div className="ml-2 sm:ml-4 text-base sm:text-lg font-medium text-gray-700 dark:text-gray-300 transition-opacity duration-300">
+              {!showResult && `Removing ${num2}...`}
+              {showResult && `= ?`}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -832,11 +849,12 @@ const BlockGroup: React.FC<BlockGroupProps> = ({ count, color, label, layout = '
       return 'grid-cols-1';
     } else {
       // Cube-like grid layout
-      const totalBlocks = Math.min(count, 50);
-      if (totalBlocks <= 9) return 'grid-cols-3';
-      if (totalBlocks <= 16) return 'grid-cols-4';
+      const totalBlocks = Math.min(count, 120);
+      if (totalBlocks <= 9) return 'grid-cols-5';
+      if (totalBlocks <= 16) return 'grid-cols-5';
       if (totalBlocks <= 25) return 'grid-cols-5';
       if (totalBlocks <= 36) return 'grid-cols-6';
+      if (totalBlocks <= 64) return 'grid-cols-8';
       return 'grid-cols-8';
     }
   };
@@ -845,7 +863,7 @@ const BlockGroup: React.FC<BlockGroupProps> = ({ count, color, label, layout = '
     <div className="flex flex-col items-center gap-1 sm:gap-2">
       <div className="font-semibold text-sm sm:text-base text-gray-700 dark:text-gray-300">{label}</div>
       <div className={`grid ${getGridClass()} gap-0.5 sm:gap-1 max-w-[180px] sm:max-w-[250px]`}>
-        {Array.from({ length: Math.min(count, 50) }, (_, i) => (
+        {Array.from({ length: Math.min(count, 120) }, (_, i) => (
           <div
             key={i}
             className={`
@@ -860,9 +878,118 @@ const BlockGroup: React.FC<BlockGroupProps> = ({ count, color, label, layout = '
   );
 };
 
+// Updated StoryProblemBlocks component
+const StoryProblemBlocks: React.FC<{ 
+  question: string, 
+  operation: 'add' | 'minus' 
+}> = ({ 
+  question, 
+  operation 
+}) => {
+  const [showSecondGroup, setShowSecondGroup] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  
+  // Extract numbers from story problem text
+  const extractNumbers = (text: string): number[] => {
+    const matches = text.match(/\d+/g);
+    if (!matches || matches.length < 2) return [0, 0];
+    
+    // Return the first two numbers found
+    return [parseInt(matches[0]), parseInt(matches[1])];
+  };
+  
+  const [num1, num2] = extractNumbers(question);
+  const result = operation === 'add' ? num1 + num2 : num1 - num2;
+  
+  // Animation sequence
+  useEffect(() => {
+    const timer1 = setTimeout(() => setShowSecondGroup(true), 1500);
+    const timer2 = setTimeout(() => setShowResult(true), 3000);
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, []);
+
+  // Color schemes for story problems
+  const firstGroupColor = operation === 'add' ? 'bg-red-500' : 'bg-blue-500';
+  const secondGroupColor = operation === 'add' ? 'bg-blue-500' : 'bg-red-500';
+  
+  return (
+    <div className="flex flex-col items-center gap-2 sm:gap-4">
+      <div className="text-lg sm:text-xl font-medium text-gray-800 dark:text-white mb-2 sm:mb-4 text-center max-w-md">
+        {question}
+      </div>
+
+      {/* All blocks in one row */}
+      <div className="flex flex-row items-center flex-wrap justify-center gap-2 sm:gap-4">
+        {/* First number */}
+        <div className="mr-0 sm:mr-2">
+          <BlockGroup 
+            count={num1} 
+            color={firstGroupColor} 
+            label={operation === 'add' ? 'First group' : 'Total'} 
+            layout="grid"
+          />
+        </div>
+        
+        {/* Connecting text */}
+        <div className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-300 mx-1 sm:mx-2">
+          {operation === 'add' ? 'and' : 'remove'}
+        </div>
+        
+        {/* Second number (appears after delay) */}
+        <div className={`transition-opacity duration-500 mr-0 sm:mr-2 ${showSecondGroup ? 'opacity-100' : 'opacity-0'}`}>
+          <BlockGroup 
+            count={num2} 
+            color={secondGroupColor} 
+            label={operation === 'add' ? 'Second group' : 'Remove'} 
+            layout="grid"
+          />
+        </div>
+        
+        {/* Result - now in the same row */}
+        {showResult && (
+          <>
+            <div className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-300 mx-1 sm:mx-2 animate-fade-in">
+              {operation === 'add' ? 'altogether' : 'remaining'}
+            </div>
+            <div className="animate-slide-in-right">
+              <BlockGroup 
+                count={result} 
+                color="bg-purple-500" 
+                label="?" 
+                layout="grid"
+              />
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+
 // Add CSS animations via inline styles since we can't modify external CSS
 const style = document.createElement('style');
 style.textContent = `
+    @keyframes slide-in-right {
+    0% {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+  }
+
   @keyframes drop-in {
     0% {
       opacity: 0;

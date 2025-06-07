@@ -1,9 +1,6 @@
 import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import AdditionIcon from "@src/assets/additionIcon.svg";
-import SubtractionIcon from "@src/assets/subtractionIcon.svg";
-import MultiplicationIcon from "@src/assets/multiplicationIcon.svg";
-import DivisionIcon from "@src/assets/divisionIcon.svg";
 import { useAuth } from "../AuthContext";
 
 // Define types for course batches
@@ -59,6 +56,7 @@ interface CourseResponse {
 interface CourseProgressDetail {
   courseId: string;
   status: "not_started" | "in_progress" | "completed";
+  completionPercentage?: number; // Added for progress tracking
   // Add other course-specific progress details if needed
 }
 
@@ -75,15 +73,16 @@ interface UserProgress {
 // - Responsive padding scales with screen size
 // - Responsive border width for better visual weight on large screens
 // - Responsive text sizes for balanced appearance
+// Update ButtonStyle for smaller mobile sizes
 const ButtonStyle = `
-  w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24
-  p-2 md:p-3 
+  w-12 h-12 sm:w-14 sm:h-14 md:w-20 md:h-20 lg:w-24 lg:h-24
+  p-1.5 sm:p-2 md:p-3 
   bg-white/20 
   flex flex-col justify-center items-center 
-  rounded-2xl 
-  border-2 md:border-3 lg:border-4 border-[#374DB0] 
-  text-lg md:text-xl lg:text-2xl 
-  gap-1
+  rounded-xl sm:rounded-2xl 
+  border border-[#374DB0] sm:border-2 md:border-3 lg:border-4
+  text-base sm:text-lg md:text-xl lg:text-2xl 
+  gap-0.5 sm:gap-1
   transition-all duration-200
   hover:scale-105 hover:shadow-lg
   dark:bg-gray-800/20 dark:border-[#5a6fd1]
@@ -98,12 +97,12 @@ const getIconForCourse = (title: string): CourseIcon => {
   if (normalizedTitle.includes('addition')) {
     return { 
       icon: "➕",
-      size: { xs: "text-3xl", sm: "text-4xl", md: "text-5xl", lg: "text-6xl" }
+      size: { xs: "text-2xl", sm: "text-3xl", md: "text-4xl", lg: "text-5xl" }
     };
   } else if (normalizedTitle.includes('subtraction')) {
     return { 
       icon: "➖",
-      size: { xs: "text-3xl", sm: "text-4xl", md: "text-5xl", lg: "text-6xl" }
+      size: { xs: "text-2xl", sm: "text-3xl", md: "text-4xl", lg: "text-5xl" }
     };
   } else if (normalizedTitle.includes('multiplication')) {
     return { 
@@ -278,31 +277,30 @@ const Home = () => {
   }
 
   return (
-    // Main container with bottom padding for mobile navigation bar
-    // Added responsive horizontal and vertical padding
-    // Added bottom padding to account for mobile nav bar
-    <div className="max-w-[85%] md:max-w-5xl lg:max-w-6xl mx-auto px-2 sm:px-4 py-3 md:py-8 pb-20 md:pb-16">
-      {/* User stats section with responsive layout */}
-      {/* Changed from row to column on mobile for better space usage */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 md:mb-8">
-        {/* Responsive heading text with dark mode support */}
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Learning Areas</h1>
-        {/* User stats badges with responsive sizing and spacing */}
-        <div className="flex gap-2 md:gap-3 items-center">
-          {/* Gems badge with responsive text and padding */}
-          <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 md:px-4 md:py-2 rounded-full flex items-center shadow">
-            <span className="mr-1 md:mr-2 text-base md:text-lg">💎</span>
-            <span className="font-semibold text-sm md:text-base">{user?.gems || 0}</span>
+    // Smaller padding and narrower max-width on mobile
+    <div className="max-w-[92%] sm:max-w-[85%] md:max-w-5xl lg:max-w-6xl mx-auto px-1 sm:px-2 md:px-4 py-2 sm:py-3 md:py-8 pb-20 md:pb-16">
+      {/* User stats section with better mobile layout */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-8">
+        {/* Smaller heading text on mobile */}
+        <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Learning Areas</h1>
+        
+        {/* Smaller user stats badges on mobile */}
+        <div className="flex gap-1.5 sm:gap-2 md:gap-3 items-center">
+          {/* Smaller gems badge */}
+          <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-4 md:py-2 rounded-full flex items-center shadow-sm sm:shadow text-xs sm:text-sm md:text-base">
+            <span className="mr-0.5 sm:mr-1 md:mr-2 text-sm sm:text-base md:text-lg">💎</span>
+            <span className="font-semibold">{user?.gems || 0}</span>
           </div>
-          {/* XP badge with responsive text and padding */}
-          <div className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 px-2 py-1 md:px-4 md:py-2 rounded-full flex items-center shadow">
-            <span className="mr-1 md:mr-2 text-base md:text-lg">🏅</span>
-            <span className="font-semibold text-sm md:text-base">{user?.xp || 0} XP</span>
+          
+          {/* Smaller XP badge */}
+          <div className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-4 md:py-2 rounded-full flex items-center shadow-sm sm:shadow text-xs sm:text-sm md:text-base">
+            <span className="mr-0.5 sm:mr-1 md:mr-2 text-sm sm:text-base md:text-lg">🏅</span>
+            <span className="font-semibold">{user?.xp || 0} XP</span>
           </div>
         </div>
       </div>
       
-      {/* Map through course batches with responsive spacing between each batch */}
+      {/* Map through course batches with tighter spacing on mobile */}
       {courseBatches.map((batch) => {
         const batchProgress = userProgress.find(p => p.courseBatchId === batch.courseBatchId);
         
@@ -311,62 +309,61 @@ const Home = () => {
           .filter(course => course !== undefined);
 
         return (
-          // Batch container with responsive margins, padding and dark mode support
-          <div key={batch.courseBatchId} className="mb-6 md:mb-10 bg-white dark:bg-gray-800 shadow-md md:shadow-lg rounded-lg md:rounded-xl p-3 sm:p-4 md:p-6 transition-colors duration-300">
-            {/* Batch header with responsive layout that stacks on small screens */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 md:mb-5 pb-2 md:pb-3 border-b border-gray-200 dark:border-gray-700">
+          // More compact container on mobile
+          <div key={batch.courseBatchId} className="mb-4 sm:mb-6 md:mb-10 bg-white dark:bg-gray-800 shadow-md md:shadow-lg rounded-lg md:rounded-xl p-2 sm:p-3 md:p-6 transition-colors duration-300">
+            {/* More compact batch header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 mb-2 sm:mb-3 md:mb-5 pb-1 sm:pb-2 md:pb-3 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center">
-                {/* Responsive heading text with dark mode support */}
-                <h2 className="text-lg md:text-xl lg:text-2xl font-semibold text-gray-700 dark:text-white">
+                {/* Smaller heading text */}
+                <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-gray-700 dark:text-white">
                   Stage {batch.stage}
                 </h2>
-                {/* Lock status badge with responsive text and padding */}
+                
+                {/* Smaller lock badge */}
                 {!batch.isUnlocked && (
-                  <span className="ml-2 md:ml-3 px-2 py-0.5 md:px-3 md:py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs md:text-sm font-medium">
+                  <span className="ml-1.5 sm:ml-2 md:ml-3 px-1.5 py-0.5 sm:px-2 sm:py-0.5 md:px-3 md:py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-[10px] sm:text-xs md:text-sm font-medium">
                     🔒 Locked
                   </span>
                 )}
-                {/* Unlock status badge with responsive text and padding */}
+                
+                {/* Smaller unlock badge */}
                 {batch.isUnlocked && (
-                  <span className="ml-2 md:ml-3 px-2 py-0.5 md:px-3 md:py-1 bg-green-100 dark:bg-green-800/30 text-green-700 dark:text-green-300 rounded-full text-xs md:text-sm font-medium">
+                  <span className="ml-1.5 sm:ml-2 md:ml-3 px-1.5 py-0.5 sm:px-2 sm:py-0.5 md:px-3 md:py-1 bg-green-100 dark:bg-green-800/30 text-green-700 dark:text-green-300 rounded-full text-[10px] sm:text-xs md:text-sm font-medium">
                     🔓 Unlocked
                   </span>
                 )}
               </div>
               
-              {/* Progress bar that has proper responsive width and styling */}
+              {/* Smaller progress bar */}
               {batchProgress && batch.isUnlocked && (
-                <div className="flex items-center mt-1 sm:mt-0">
-                  {/* Progress bar container with responsive width and height */}
-                  <div className="w-24 sm:w-28 md:w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 sm:h-2 md:h-3 mr-2 md:mr-3">
-                    {/* Progress bar fill with responsive height and dark mode support */}
+                <div className="flex items-center mt-0.5 sm:mt-0">
+                  <div className="w-20 sm:w-24 md:w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-1 sm:h-1.5 md:h-3 mr-1.5 sm:mr-2 md:mr-3">
                     <div 
-                      className="bg-[#374DB0] dark:bg-[#5a6fd1] h-1.5 sm:h-2 md:h-3 rounded-full transition-all duration-500 ease-out"
+                      className="bg-[#374DB0] dark:bg-[#5a6fd1] h-1 sm:h-1.5 md:h-3 rounded-full transition-all duration-500 ease-out"
                       style={{ 
                         width: `${batchProgress.totalCoursesInBatch > 0 ? (batchProgress.completedCoursesCount / batchProgress.totalCoursesInBatch) * 100 : 0}%` 
                       }}
                     ></div>
                   </div>
-                  {/* Progress text with responsive size and dark mode support */}
-                  <span className="text-xs md:text-sm text-gray-600 dark:text-gray-300 font-medium">
+                  <span className="text-[10px] sm:text-xs md:text-sm text-gray-600 dark:text-gray-300 font-medium">
                     {batchProgress.completedCoursesCount}/{batchProgress.totalCoursesInBatch}
                   </span>
                 </div>
               )}
             </div>
             
-            {/* Locked stage message with responsive text and padding, and dark mode support */}
+            {/* Smaller locked message */}
             {!batch.isUnlocked && (
-              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md md:rounded-lg p-3 md:p-5 text-center">
-                <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base lg:text-lg">
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-md md:rounded-lg p-2 sm:p-3 md:p-5 text-center">
+                <p className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-600 dark:text-gray-400">
                   Complete previous stages to unlock this learning area.
                 </p>
               </div>
             )}
             
-            {/* Course grid with responsive columns and gap */}
+            {/* Tighter grid layout for courses */}
             {batch.isUnlocked && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4 md:gap-6">
+              <div className="grid grid-cols-3 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1 xs:gap-1.5 sm:gap-3 md:gap-6">
                 {orderedCoursesToShow.map((course) => {
                   const courseSpecificProgress = batchProgress?.courses?.find(c => c.courseId === course.courseId);
                   const isCompleted = courseSpecificProgress?.status === "completed";
@@ -374,22 +371,64 @@ const Home = () => {
                   
                   return (
                     <div key={course.courseId} className="flex flex-col items-center text-center">
-                      {/* Course button with relative positioning for the completion badge */}
+                      {/* Smaller course button */}
                       <NavLink
                         to={`/courses/${course.courseId}`}
                         className={`${ButtonStyle} relative`}
                       >
-                        {/* Conditionally render text emoji or SVG icon with responsive sizing */}
+                        {/* Circle progress indicator */}
+                        <div className="absolute inset-0 w-full h-full">
+                          <svg className="w-full h-full" viewBox="0 0 100 100">
+                            {(isInProgress || isCompleted) && (
+                              <>
+                                {/* Background circle */}
+                                <circle
+                                  cx="50"
+                                  cy="50"
+                                  r="46"
+                                  fill="none"
+                                  stroke="#e5e7eb"
+                                  strokeWidth="4"
+                                  className="dark:opacity-20"
+                                />
+                                {/* Progress circle */}
+                                <circle
+                                  cx="50"
+                                  cy="50"
+                                  r="46"
+                                  fill="none"
+                                  stroke={isCompleted ? "#10b981" : "#3b82f6"}
+                                  strokeWidth="4"
+                                  strokeDasharray="289.5"
+                                  strokeDashoffset={
+                                    isCompleted 
+                                      ? "0" 
+                                      : courseSpecificProgress?.completionPercentage
+                                        ? `${289.5 * (1 - courseSpecificProgress.completionPercentage / 100)}`
+                                        : "144.75" // Default to 50% if no percentage available
+                                  }
+                                  transform="rotate(-90 50 50)"
+                                  strokeLinecap="round"
+                                  className="transition-all duration-700 ease-out"
+                                />
+                              </>
+                            )}
+                          </svg>
+                        </div>
+
+
+                        {/* Course icon - keep the existing code */}
                         {typeof getIconForCourse(course.title).icon === 'string' ? (
                           <span 
                             role="img" 
                             aria-label={`${course.title} icon`}
                             className={`
-                              ${getIconForCourse(course.title).size?.xs || 'text-2xl'} 
-                              sm:${getIconForCourse(course.title).size?.sm || 'text-3xl'} 
-                              md:${getIconForCourse(course.title).size?.md || 'text-4xl'} 
-                              lg:${getIconForCourse(course.title).size?.lg || 'text-5xl'} 
+                              ${getIconForCourse(course.title).size?.xs || 'text-xl'} 
+                              sm:${getIconForCourse(course.title).size?.sm || 'text-2xl'} 
+                              md:${getIconForCourse(course.title).size?.md || 'text-3xl'} 
+                              lg:${getIconForCourse(course.title).size?.lg || 'text-4xl'} 
                               dark:text-white
+                              z-10 relative
                             `}
                           >
                             {getIconForCourse(course.title).icon}
@@ -398,24 +437,26 @@ const Home = () => {
                           <img 
                             src={getIconForCourse(course.title).icon} 
                             alt={`${course.title} icon`}
-                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14"
+                            className="w-6 h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 lg:w-14 lg:h-14 z-10 relative"
                           />
                         )}
-                        {/* Completion badge with responsive positioning and size */}
+                        
+                        {/* Keep the completion checkmark badge */}
                         {isCompleted && (
-                          <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-green-500 text-white text-xs rounded-full p-1 leading-none">
+                          <span className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 md:-top-2 md:-right-2 bg-green-500 text-white text-[8px] sm:text-xs rounded-full p-0.5 sm:p-1 leading-none flex items-center justify-center w-3 h-3 sm:w-auto sm:h-auto z-20">
                             ✓
                           </span>
                         )}
                       </NavLink>
                       
-                      {/* Course title with responsive text size and dark mode support */}
-                      <p className="mt-2 md:mt-3 font-medium text-xs sm:text-sm md:text-base text-gray-700 dark:text-gray-200">
+                      {/* Smaller course title */}
+                      <p className="mt-1 sm:mt-2 md:mt-3 font-medium text-[10px] xs:text-xs sm:text-sm md:text-base text-gray-700 dark:text-gray-200 line-clamp-1 w-full">
                         {course.title}
                       </p>
-                      {/* In progress badge with responsive text size and dark mode support */}
+                      
+                      {/* Smaller in progress badge */}
                       {isInProgress && (
-                        <span className="mt-1 inline-block px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
+                        <span className="mt-0.5 sm:mt-1 inline-block px-1 py-0.5 bg-blue-100 dark:bg-blue-800/30 text-blue-700 dark:text-blue-300 rounded-full text-[8px] xs:text-[10px] sm:text-xs font-medium">
                           In Progress
                         </span>
                       )}
@@ -425,10 +466,10 @@ const Home = () => {
               </div>
             )}
             
-            {/* No courses message with responsive text, padding, and dark mode support */}
+            {/* Smaller empty message */}
             {batch.isUnlocked && orderedCoursesToShow.length === 0 && (
-              <div className="bg-yellow-50 dark:bg-yellow-800/20 rounded-md md:rounded-lg p-3 md:p-5 text-center">
-                <p className="text-yellow-700 dark:text-yellow-400 text-sm md:text-base lg:text-lg">
+              <div className="bg-yellow-50 dark:bg-yellow-800/20 rounded-md md:rounded-lg p-2 sm:p-3 md:p-5 text-center">
+                <p className="text-xs sm:text-sm md:text-base lg:text-lg text-yellow-700 dark:text-yellow-400">
                   No courses available in this learning area yet.
                 </p>
               </div>
@@ -437,10 +478,10 @@ const Home = () => {
         );
       })}
       
-      {/* No learning areas message with responsive text, padding, and dark mode support */}
+      {/* Empty state message */}
       {courseBatches.length === 0 && !loading && (
-        <div className="bg-blue-50 dark:bg-blue-800/20 rounded-md md:rounded-lg p-4 md:p-6 lg:p-10 text-center">
-          <p className="text-blue-700 dark:text-blue-300 text-base md:text-lg lg:text-xl">
+        <div className="bg-blue-50 dark:bg-blue-800/20 rounded-md md:rounded-lg p-3 sm:p-4 md:p-6 lg:p-10 text-center">
+          <p className="text-xs sm:text-sm md:text-lg lg:text-xl text-blue-700 dark:text-blue-300">
             No learning areas available yet. Check back soon!
           </p>
         </div>

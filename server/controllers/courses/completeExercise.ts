@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { completeSchema } from "../../validators/progress.validators.ts";
-import User from "../../models/User.ts";
-import CourseBatch  from "../../models/CourseBatch.ts";
-import Course from "../../models/Course.ts";
-import Exercise from "../../models/Exercise.ts";
+import { completeSchema } from "../../validators/progress.validators.js";
+import User from "../../models/User.js";
+import CourseBatch  from "../../models/CourseBatch.js";
+import Course from "../../models/Course.js";
+import Exercise from "../../models/Exercise.js";
 
 export const completeExercise = async (
   req: Request,

@@ -124,38 +124,26 @@ const LeaderboardPage = () => {
   }
 
    return (
-    // Added width constraints and proper bottom padding for mobile navigation
     <div className="max-w-full md:max-w-4xl lg:max-w-5xl mx-auto px-3 sm:px-4 py-4 md:py-8 pb-24 md:pb-16">
-      {/* Responsive heading with dark mode support */}
-      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center mb-3 md:mb-4 text-gray-800 dark:text-white">Leaderboard</h1>
-      {/* Responsive subheading with dark mode support */}
-      <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base text-center mb-4 md:mb-6">See how you stack up against other learners!</p>
+      {/* Heading with dark mode outline */}
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center mb-3 md:mb-4 text-gray-800 dark:text-gray-100 dark:text-outline">Leaderboard</h1>
+      {/* Subheading with dark mode outline */}
+      <p className="text-gray-600 dark:text-gray-300 dark:text-outline text-sm md:text-base text-center mb-4 md:mb-6">See how you stack up against other learners!</p>
       
-      {/* Top 3 users podium - Improved responsiveness */}
+      {/* Top 3 users podium */}
       {users.length > 0 && (
         <div className="grid grid-cols-3 gap-1 sm:gap-4 mb-6 md:mb-8 max-w-md sm:max-w-xl md:max-w-2xl mx-auto">
           {/* Silver - 2nd place (left) */}
           <div className="col-span-1 flex flex-col items-center bg-gray-100 dark:bg-gray-800 rounded-xl sm:rounded-2xl p-1 sm:p-2 md:p-4 border border-gray-300 dark:border-gray-700 shadow-md">
-            <div className="relative mb-1 sm:mb-2">
-              <div className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-xs sm:text-base md:text-lg font-bold overflow-hidden">
-                {users[1] && users[1].profilePicture ? (
-                  <img src={users[1].profilePicture} alt={users[1].username} className="w-full h-full object-cover" />
-                ) : (
-                  <span>{getInitials(users[1]?.username || "")}</span>
-                )}
-              </div>
-              <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-4 h-4 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full bg-gray-400 text-white font-bold text-[10px] sm:text-xs md:text-sm flex items-center justify-center border-2 border-white dark:border-gray-800">
-                2
-              </div>
-            </div>
-            <p className="font-bold text-[10px] sm:text-xs md:text-sm text-center truncate w-full text-gray-800 dark:text-gray-200">
+            {/* ...existing image code... */}
+            <p className="font-bold text-[10px] sm:text-xs md:text-sm text-center truncate w-full text-gray-800 dark:text-gray-100 dark:text-outline">
               {users[1]?.nickname || users[1]?.username || ""}
             </p>
-            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">
+            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-200 dark:text-outline">
               {users[1]?.xp || 0} XP
             </p>
             <div className="mt-1 flex items-center gap-1">
-              <span className="text-[10px] sm:text-xs text-[#374DB0] dark:text-[#6d7edd]">
+              <span className="text-[10px] sm:text-xs text-[#374DB0] dark:text-[#8e9ce7] dark:text-outline">
                 Lvl {users[1]?.level || 1}
               </span>
             </div>
@@ -163,26 +151,15 @@ const LeaderboardPage = () => {
           
           {/* Gold - 1st place (center) */}
           <div className="col-span-1 flex flex-col items-center bg-yellow-100 dark:bg-yellow-900/40 rounded-xl sm:rounded-2xl p-1 sm:p-2 md:p-4 border-2 border-yellow-300 dark:border-yellow-600 shadow-md transform scale-105 sm:scale-110 -mt-2 sm:-mt-4 z-10">
-            <div className="relative mb-1 sm:mb-2">
-              <div className="w-10 h-10 sm:w-14 sm:h-14 md:w-20 md:h-20 rounded-full bg-yellow-300 dark:bg-yellow-600 flex items-center justify-center text-sm sm:text-lg md:text-xl font-bold overflow-hidden">
-                {users[0] && users[0].profilePicture ? (
-                  <img src={users[0].profilePicture} alt={users[0].username} className="w-full h-full object-cover" />
-                ) : (
-                  <span>{getInitials(users[0]?.username || "")}</span>
-                )}
-              </div>
-              <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-5 h-5 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full bg-yellow-500 text-white font-bold text-[10px] sm:text-xs md:text-sm flex items-center justify-center border-2 border-white dark:border-yellow-900">
-                1
-              </div>
-            </div>
-            <p className="font-bold text-[10px] sm:text-xs md:text-sm lg:text-base text-center truncate w-full text-gray-800 dark:text-gray-200">
+            {/* ...existing image code... */}
+            <p className="font-bold text-[10px] sm:text-xs md:text-sm lg:text-base text-center truncate w-full text-gray-800 dark:text-gray-100 dark:text-outline">
               {users[0]?.nickname || users[0]?.username || ""}
             </p>
-            <p className="text-[10px] sm:text-xs md:text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-[10px] sm:text-xs md:text-sm text-gray-600 dark:text-gray-200 dark:text-outline">
               {users[0]?.xp || 0} XP
             </p>
             <div className="mt-1 flex items-center gap-1">
-              <span className="text-[10px] sm:text-xs text-[#374DB0] dark:text-[#6d7edd]">
+              <span className="text-[10px] sm:text-xs text-[#374DB0] dark:text-[#8e9ce7] dark:text-outline">
                 Lvl {users[0]?.level || 1}
               </span>
             </div>
@@ -190,26 +167,15 @@ const LeaderboardPage = () => {
           
           {/* Bronze - 3rd place (right) */}
           <div className="col-span-1 flex flex-col items-center bg-amber-50 dark:bg-amber-900/30 rounded-xl sm:rounded-2xl p-1 sm:p-2 md:p-4 border border-amber-300 dark:border-amber-700 shadow-md">
-            <div className="relative mb-1 sm:mb-2">
-              <div className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full bg-amber-300 dark:bg-amber-600 flex items-center justify-center text-xs sm:text-base md:text-lg font-bold overflow-hidden">
-                {users[2] && users[2].profilePicture ? (
-                  <img src={users[2].profilePicture} alt={users[2].username} className="w-full h-full object-cover" />
-                ) : (
-                  <span>{getInitials(users[2]?.username || "")}</span>
-                )}
-              </div>
-              <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-4 h-4 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full bg-amber-600 text-white font-bold text-[10px] sm:text-xs md:text-sm flex items-center justify-center border-2 border-white dark:border-amber-900">
-                3
-              </div>
-            </div>
-            <p className="font-bold text-[10px] sm:text-xs md:text-sm text-center truncate w-full text-gray-800 dark:text-gray-200">
+            {/* ...existing image code... */}
+            <p className="font-bold text-[10px] sm:text-xs md:text-sm text-center truncate w-full text-gray-800 dark:text-gray-100 dark:text-outline">
               {users[2]?.nickname || users[2]?.username || ""}
             </p>
-            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">
+            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-200 dark:text-outline">
               {users[2]?.xp || 0} XP
             </p>
             <div className="mt-1 flex items-center gap-1">
-              <span className="text-[10px] sm:text-xs text-[#374DB0] dark:text-[#6d7edd]">
+              <span className="text-[10px] sm:text-xs text-[#374DB0] dark:text-[#8e9ce7] dark:text-outline">
                 Lvl {users[2]?.level || 1}
               </span>
             </div>
@@ -217,71 +183,75 @@ const LeaderboardPage = () => {
         </div>
       )}
       
-      {/* Full leaderboard - Improved mobile display */}
-      <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl sm:rounded-2xl shadow-md overflow-hidden border border-[#374DB0]/20 dark:border-[#374DB0]/40">
-        {/* Table header */}
-        <div className="bg-[#374DB0] dark:bg-[#2d3d8c] px-3 sm:px-4 py-2 sm:py-3 text-white grid grid-cols-12 gap-1">
-          <div className="col-span-2 sm:col-span-1 text-[10px] sm:text-xs font-medium uppercase">Rank</div>
-          <div className="col-span-6 sm:col-span-7 md:col-span-8 text-[10px] sm:text-xs font-medium uppercase">User</div>
-          <div className="col-span-4 sm:col-span-4 md:col-span-3 text-right text-[10px] sm:text-xs font-medium uppercase">XP</div>
-        </div>
-        
-        {/* Table rows */}
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {users.map((user, index) => (
-            <div 
-              key={user._id} 
-              className={`px-3 sm:px-4 py-2 sm:py-3 md:py-4 grid grid-cols-12 gap-1 items-center ${getRankBgColor(index + 1)} ${currentUser === user._id ? 'border-l-4 border-[#374DB0] dark:border-[#6d7edd]' : ''} transition-colors hover:bg-[#374DB0]/5 dark:hover:bg-[#374DB0]/10`}
-            >
-              {/* Rank column */}
-              <div className="col-span-2 sm:col-span-1">
-                <div className={`text-[10px] sm:text-xs md:text-sm font-bold ${getRankColor(index + 1)}`}>
-                  #{index + 1}
-                </div>
-              </div>
-              
-              {/* User column */}
-              <div className="col-span-6 sm:col-span-7 md:col-span-8">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 rounded-full flex items-center justify-center bg-[#374DB0]/10 dark:bg-[#374DB0]/30 text-[#374DB0] dark:text-[#6d7edd] font-bold">
-                    {user.profilePicture ? (
-                      <img src={user.profilePicture} alt={user.username} className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 rounded-full" />
-                    ) : (
-                      getInitials(user.username)
-                    )}
+      {/* Full leaderboard table */}
+        <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl sm:rounded-2xl shadow-md overflow-hidden border border-[#374DB0]/20 dark:border-[#374DB0]/40">
+          {/* Table header - Changed to purple text in dark mode */}
+          <div className="bg-[#374DB0] dark:bg-[#2d3d8c] px-3 sm:px-4 py-2 sm:py-3 text-white grid grid-cols-12 gap-1">
+            <div className="col-span-2 sm:col-span-1 text-[10px] sm:text-xs font-medium uppercase dark:text-purple-600">Rank</div>
+            <div className="col-span-6 sm:col-span-7 md:col-span-8 text-[10px] sm:text-xs font-medium uppercase dark:text-purple-600">User</div>
+            <div className="col-span-4 sm:col-span-4 md:col-span-3 text-right text-[10px] sm:text-xs font-medium uppercase dark:text-purple-600">XP</div>
+          </div>
+          
+          {/* Table rows */}
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
+            {users.map((user, index) => (
+              <div 
+                key={user._id} 
+                className={`px-3 sm:px-4 py-2 sm:py-3 md:py-4 grid grid-cols-12 gap-1 items-center ${getRankBgColor(index + 1)} ${currentUser === user._id ? 'border-l-4 border-[#374DB0] dark:border-purple-500' : ''} transition-colors hover:bg-[#374DB0]/5 dark:hover:bg-purple-900/10`}
+              >
+                {/* Rank column - Purple text in dark mode */}
+                <div className="col-span-2 sm:col-span-1">
+                  <div className={`text-[10px] sm:text-xs md:text-sm font-bold ${getRankColor(index + 1)} dark:text-purple-600`}>
+                    #{index + 1}
                   </div>
-                  <div className="ml-1 sm:ml-2 md:ml-4">
-                    <div className="text-[10px] sm:text-xs md:text-sm font-medium text-gray-900 dark:text-gray-200 truncate max-w-[80px] sm:max-w-[120px] md:max-w-full">
-                      {user.nickname || user.username}
-                    </div>
-                    <div className="hidden sm:flex items-center">
-                      {getStreakDays(user) && (
-                        <div className="text-[8px] sm:text-[10px] text-yellow-600 dark:text-yellow-400 mr-2">🔥 {getStreakDays(user)}</div>
+                </div>
+                
+                {/* User column */}
+                <div className="col-span-6 sm:col-span-7 md:col-span-8">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 rounded-full flex items-center justify-center bg-[#374DB0]/10 dark:bg-purple-900/30 text-[#374DB0] dark:text-purple-800 font-bold">
+                      {user.profilePicture ? (
+                        <img src={user.profilePicture} alt={user.username} className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 rounded-full" />
+                      ) : (
+                        getInitials(user.username)
                       )}
-                      <span className="px-1 sm:px-1.5 py-0.5 text-[8px] sm:text-[10px] rounded-full bg-[#374DB0]/10 dark:bg-[#374DB0]/30 text-[#374DB0] dark:text-[#6d7edd]">
-                        Lvl {user.level || 1}
-                      </span>
+                    </div>
+                    <div className="ml-1 sm:ml-2 md:ml-4">
+                      {/* Username - Purple text in dark mode */}
+                      <div className="text-[10px] sm:text-xs md:text-sm font-medium text-gray-900 dark:text-purple-200 truncate max-w-[80px] sm:max-w-[120px] md:max-w-full">
+                        {user.nickname || user.username}
+                      </div>
+                      <div className="hidden sm:flex items-center">
+                        {getStreakDays(user) && (
+                          <div className="text-[8px] sm:text-[10px] text-yellow-600 dark:text-yellow-300 mr-2">🔥 {getStreakDays(user)}</div>
+                        )}
+                        {/* Level badge - Purple in dark mode */}
+                        <span className="px-1 sm:px-1.5 py-0.5 text-[8px] sm:text-[10px] rounded-full bg-[#374DB0]/10 dark:bg-purple-900/30 text-[#374DB0] dark:text-purple-800">
+                          Lvl {user.level || 1}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
+                
+                {/* XP column - Purple text in dark mode */}
+                <div className="col-span-4 sm:col-span-4 md:col-span-3 text-right">
+                  <div className="text-[10px] sm:text-xs md:text-sm text-gray-900 dark:text-purple-200 font-medium">{user.xp} XP</div>
+                </div>
               </div>
-              
-              {/* XP column */}
-              <div className="col-span-4 sm:col-span-4 md:col-span-3 text-right">
-                <div className="text-[10px] sm:text-xs md:text-sm text-gray-900 dark:text-gray-200 font-medium">{user.xp} XP</div>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
-      
-      {users.length === 0 && (
-        <div className="text-center py-8 sm:py-10 bg-white/60 dark:bg-gray-800/60 rounded-xl sm:rounded-2xl shadow-md border border-[#374DB0]/20 dark:border-[#374DB0]/40">
-          <p className="text-gray-500 dark:text-gray-400">No users on the leaderboard yet.</p>
-        </div>
-      )}
+
+        {users.length === 0 && (
+          <div className="text-center py-8 sm:py-10 bg-white/60 dark:bg-gray-800/60 rounded-xl sm:rounded-2xl shadow-md border border-[#374DB0]/20 dark:border-[#374DB0]/40">
+            <p className="text-gray-500 dark:text-purple-200">No users on the leaderboard yet.</p>
+          </div>
+        )}
     </div>
   );
 };
+
+
 
 export default LeaderboardPage;

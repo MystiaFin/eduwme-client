@@ -1,7 +1,38 @@
 import { Link } from "react-router";
+import { useEffect, useState } from "react";
+
 import Logo from "@src/assets/logo.svg";
+import StreakMilestone from "./components/StreakMilestone";
+import { useAuth } from "./AuthContext";
+
+
 
 const LandingPage: React.FC = () => {
+    const { user, isAuthenticated, updateUserStreak } = useAuth();
+  const [showMilestone, setShowMilestone] = useState(false);
+  const [milestoneStreak, setMilestoneStreak] = useState(0);
+  
+  // Check for streak on app load
+  useEffect(() => {
+    if (isAuthenticated) {
+      const checkStreak = async () => {
+        await updateUserStreak();
+        
+        // Check if streak is a milestone (divisible by 5)
+        if (user?.streak && user.streak > 0 && user.streak % 5 === 0) {
+          // Show milestone notification
+          setMilestoneStreak(user.streak);
+          setShowMilestone(true);
+          
+          // Store that we've shown this milestone
+          localStorage.setItem(`milestone-${user.streak}`, 'shown');
+        }
+      };
+      
+      checkStreak();
+    }
+  }, [isAuthenticated]);
+  
   return (
     <main className="pl-4 relative flex flex-col items-start md:items-center justify-center h-screen overflow-hidden">
       <div className="z-10 flex flex-col px-6 md:px-0 md:items-center text-left md:text-center">
@@ -18,6 +49,12 @@ const LandingPage: React.FC = () => {
           </button>
         </Link>
       </div>
+      {showMilestone && (
+        <StreakMilestone 
+          streak={milestoneStreak} 
+          onClose={() => setShowMilestone(false)} 
+        />
+      )}
     </main>
   );
 };

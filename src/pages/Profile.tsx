@@ -415,46 +415,48 @@ const ProfilePage = () => {
   }
 
   return (
-    // Container with width constraints and proper spacing for mobile navigation
-    <div className="w-[85%] max-w-xs sm:max-w-lg md:max-w-xl mx-auto px-2 py-4 md:py-6 pb-20 md:pb-12 shadow-md md:shadow-lg rounded-lg mt-2 sm:mt-4 md:mt-6 dark:bg-gray-800/40">
-      {/* Success message with responsive text and dark mode */}
+    // Reduced width and padding, more compact container
+    <div className="w-[90%] max-w-xs sm:max-w-lg md:max-w-xl mx-auto px-1.5 py-3 md:py-6 pb-16 md:pb-12 
+      shadow-sm md:shadow-lg rounded-lg mt-1 sm:mt-4 md:mt-6 dark:bg-gray-800/40">
+      {/* Success message - smaller text and padding for mobile */}
       {updateSuccess && (
-        <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-md text-center text-sm sm:text-base">
+        <div className="mb-2 sm:mb-4 p-1.5 sm:p-3 bg-green-100 dark:bg-green-900/30 
+          text-green-700 dark:text-green-400 rounded-md text-center text-xs sm:text-sm">
           Profile updated successfully!
         </div>
       )}
       
-      {/* Error message with responsive text and dark mode */}
+      {/* Error message - smaller text and padding for mobile */}
       {updateError && (
-        <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-md text-center text-sm sm:text-base">
+        <div className="mb-2 sm:mb-4 p-1.5 sm:p-3 bg-red-100 dark:bg-red-900/30 
+          text-red-700 dark:text-red-400 rounded-md text-center text-xs sm:text-sm">
           Error: {updateError}
         </div>
       )}
       
-      {/* Header section with responsive layout and dark mode */}
-      <div className="flex justify-between items-center mb-4 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">
+      {/* Header section - more compact for mobile */}
+      <div className="flex justify-between items-center mb-2 sm:mb-6">
+        <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">
           Profile
         </h1>
         
-        {/* Edit button with responsive text and dark mode */}
+        {/* Smaller button on mobile */}
         {isOwnProfile && (
           <button
             onClick={handleEditToggle}
-            className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-md transition-colors text-sm sm:text-base ${
+            className={`px-2 py-1 sm:px-4 sm:py-2 rounded-md transition-colors text-xs sm:text-base ${
               isEditing 
                 ? "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600" 
                 : "bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
             }`}
           >
-            {isEditing ? "Cancel" : "Edit Profile"}
+            {isEditing ? "Cancel" : "Edit"}
           </button>
         )}
       </div>
       
-      {/* Profile image section with responsive sizing */}
-      <div className="flex flex-col items-center mb-5 sm:mb-6 md:mb-8">
-        {/* Hidden file input */}
+      {/* Profile image section - smaller image on mobile */}
+      <div className="flex flex-col items-center mb-3 sm:mb-6 md:mb-8">
         <input 
           type="file"
           ref={fileInputRef}
@@ -463,62 +465,68 @@ const ProfilePage = () => {
           className="hidden"
         />
         
-        {/* Profile image with responsive size and dark mode border */}
+        {/* Smaller profile image on mobile */}
         <div 
-          className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mb-2 sm:mb-3 md:mb-4 ${isEditing && isOwnProfile ? 'cursor-pointer' : ''}`}
+          className={`relative w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 mb-1.5 sm:mb-3 md:mb-4 
+            ${isEditing && isOwnProfile ? 'cursor-pointer' : ''}`}
           onClick={handleImageClick}
         >
           <img
             src={previewImage || userProfile.profilePicture || AvatarPlaceholder}
             alt="User Avatar"
-            className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+            className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full object-cover 
+              border-2 border-gray-200 dark:border-gray-700"
           />
           
-          {/* Overlay with camera icon when editing */}
+          {/* Smaller overlay icon */}
           {isEditing && isOwnProfile && (
             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full">
-              <span className="text-white text-xl sm:text-2xl md:text-3xl">📷</span>
+              <span className="text-white text-lg sm:text-2xl md:text-3xl">📷</span>
             </div>
           )}
         </div>
         
-        {/* Image upload button with responsive text */}
+        {/* Smaller text for upload button */}
         {isEditing && isOwnProfile && (
           <button
             type="button"
             onClick={handleImageClick}
-            className="mb-2 sm:mb-3 md:mb-4 text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-xs sm:text-sm"
+            className="mb-1.5 sm:mb-3 md:mb-4 text-blue-500 dark:text-blue-400 
+              hover:text-blue-700 dark:hover:text-blue-300 text-[10px] sm:text-sm"
           >
-            Change Profile Picture
+            Change Photo
           </button>
         )}
         
-        {/* Username with responsive text and dark mode */}
-        <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-white">
+        {/* Smaller username text */}
+        <h2 className="text-lg sm:text-2xl font-semibold text-gray-800 dark:text-white">
           {userProfile.username}
         </h2>
       </div>
       
       {isEditing ? (
-        /* Edit Form - Responsive and dark mode */
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        /* Edit Form - more compact for mobile */
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-6">
           <div className="space-y-1 sm:space-y-2">
-            <label className="block text-gray-700 dark:text-gray-300 font-medium text-sm sm:text-base">Nickname</label>
+            <label className="block text-gray-700 dark:text-gray-300 font-medium text-xs sm:text-base">Nickname</label>
             <input
               type="text"
               value={editedNickname}
               onChange={(e) => setEditedNickname(e.target.value)}
-              className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
+              className="w-full p-1.5 sm:p-3 border border-gray-300 dark:border-gray-600 rounded-md 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-xs sm:text-base"
               placeholder="Enter a nickname"
             />
           </div>
           
           <div className="space-y-1 sm:space-y-2">
-            <label className="block text-gray-700 dark:text-gray-300 font-medium text-sm sm:text-base">Bio</label>
+            <label className="block text-gray-700 dark:text-gray-300 font-medium text-xs sm:text-base">Bio</label>
             <textarea
               value={editedBiodata}
               onChange={(e) => setEditedBiodata(e.target.value)}
-              className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] sm:min-h-[120px] dark:bg-gray-700 dark:text-white text-sm sm:text-base"
+              className="w-full p-1.5 sm:p-3 border border-gray-300 dark:border-gray-600 rounded-md 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[80px] sm:min-h-[120px] 
+                dark:bg-gray-700 dark:text-white text-xs sm:text-base"
               placeholder="Tell us about yourself"
             />
           </div>
@@ -527,41 +535,42 @@ const ProfilePage = () => {
             <button
               type="submit"
               disabled={isSaving}
-              className={`px-4 sm:px-6 py-1.5 sm:py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors text-sm sm:text-base ${
+              className={`px-3 sm:px-6 py-1 sm:py-2 bg-green-500 text-white rounded-md 
+                hover:bg-green-600 transition-colors text-xs sm:text-base ${
                 isSaving ? "opacity-70 cursor-not-allowed" : ""
               }`}
             >
-              {isSaving ? "Saving..." : "Save Changes"}
+              {isSaving ? "Saving..." : "Save"}
             </button>
           </div>
         </form>
       ) : (
-        /* Display Profile Info - Responsive and dark mode */
-        <div className="space-y-3 sm:space-y-4">
-          <div className="p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md shadow-sm">
-            <strong className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">Nickname:</strong>
-            <p className="text-gray-800 dark:text-gray-200 text-base sm:text-lg">
+        /* Display Profile Info - more compact for mobile */
+        <div className="space-y-2 sm:space-y-4">
+          <div className="p-2 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md shadow-sm">
+            <strong className="text-gray-600 dark:text-gray-400 text-xs sm:text-base">Nickname:</strong>
+            <p className="text-gray-800 dark:text-gray-200 text-sm sm:text-lg">
               {userProfile.nickname || "No nickname set"}
             </p>
           </div>
           
-          <div className="p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md shadow-sm">
-            <strong className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">Bio:</strong>
-            <p className="text-gray-800 dark:text-gray-200 text-base sm:text-lg whitespace-pre-wrap">
+          <div className="p-2 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md shadow-sm">
+            <strong className="text-gray-600 dark:text-gray-400 text-xs sm:text-base">Bio:</strong>
+            <p className="text-gray-800 dark:text-gray-200 text-sm sm:text-lg whitespace-pre-wrap">
               {userProfile.biodata || "No bio provided."}
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <div className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md shadow-sm text-center">
-              <strong className="text-blue-600 dark:text-blue-400 block text-xs sm:text-sm">XP</strong>
-              <p className="text-blue-800 dark:text-blue-300 text-xl sm:text-2xl font-semibold">
+          <div className="grid grid-cols-2 gap-2 sm:gap-4">
+            <div className="p-2 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md shadow-sm text-center">
+              <strong className="text-blue-600 dark:text-blue-400 block text-[10px] sm:text-sm">XP</strong>
+              <p className="text-blue-800 dark:text-blue-300 text-lg sm:text-2xl font-semibold">
                 {userProfile.xp}
               </p>
             </div>
-            <div className="p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-md shadow-sm text-center">
-              <strong className="text-green-600 dark:text-green-400 block text-xs sm:text-sm">Level</strong>
-              <p className="text-green-800 dark:text-green-300 text-xl sm:text-2xl font-semibold">
+            <div className="p-2 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-md shadow-sm text-center">
+              <strong className="text-green-600 dark:text-green-400 block text-[10px] sm:text-sm">Level</strong>
+              <p className="text-green-800 dark:text-green-300 text-lg sm:text-2xl font-semibold">
                 {userProfile.level}
               </p>
             </div>
