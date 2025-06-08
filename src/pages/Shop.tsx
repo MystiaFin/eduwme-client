@@ -348,7 +348,7 @@ const Shop = () => {
       {activeTab === "shop" && (
         <div className="space-y-4 sm:space-y-6">
           {/* Organize shop items by category */}
-          {["avatar", "background", "badge", "theme", "powerup"].map(category => {
+          {["background", "badge", "avatar", "theme", "powerup"].map(category => {
             const categoryItems = shopItemsByCategory[category] || [];
             const categoryLabel = category === "background" ? "Banners" : 
                                   category.charAt(0).toUpperCase() + category.slice(1) + "s";
@@ -485,11 +485,11 @@ const Shop = () => {
                             />
                           ) : (
                             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#374DB0]/20 dark:bg-[#5a6fd1]/20 flex items-center justify-center text-lg sm:text-xl">
-                              {item.details.category === "avatar" && "👤"}
                               {item.details.category === "background" && "🏞️"}
                               {item.details.category === "badge" && "🏅"}
                               {item.details.category === "theme" && "🎨"}
                               {item.details.category === "powerup" && "⚡"}
+                              {item.details.category === "avatar" && "👤"}
                             </div>
                           )}
                         </div>

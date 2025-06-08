@@ -7,23 +7,20 @@ import cookieParser from "cookie-parser";
 import compression from "compression";
 
 // routes imports
-import userRoutes from "./server/routes/userRoutes";
-import courseRoutes from "./server/routes/courseRoutes";
-import exerciseRoutes from "./server/routes/exerciseRoutes";
-import shopItemRoutes from "./server/routes/shopItemRoutes";
+import userRoutes from "./server/routes/userRoutes.js";
+import courseRoutes from "./server/routes/courseRoutes.js";
+import exerciseRoutes from "./server/routes/exerciseRoutes.js";
+import shopItemRoutes from "./server/routes/shopItemRoutes.js";
 
 // admin routes
-import adminRoutes from "./server/routes/adminRoutes";
+import adminRoutes from "./server/routes/adminRoutes.js";
 
 // utils imports
-import genericSearch from "./server/utils/genericSearch";
-import searchUsers from "./server/utils/searchUsers";
-import searchCourses from "./server/utils/searchCourses";
-import searchExercises from "./server/utils/searchExercises";
+import genericSearch from "./server/utils/genericSearch.js";
+import searchUsers from "./server/utils/searchUsers.js";
+import searchCourses from "./server/utils/searchCourses.js";
+import searchExercises from "./server/utils/searchExercises.js";
 
-// api imports
-import { leaderboard } from "./server/controllers/courses/leaderboard.js";
-import path from "path";
 
 // Environment variables
 const port: number = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -103,7 +100,6 @@ app.use(searchExercises);
 app.use("/users", userRoutes);
 app.use("/courses", courseRoutes);
 app.use("/exercises", exerciseRoutes);
-app.use("/leaderboard", leaderboard);
 app.use("/shop", shopItemRoutes);
 
 app.use("/admin", adminRoutes);

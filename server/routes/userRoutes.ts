@@ -11,6 +11,7 @@ import { isAdmin, isUser } from "../middlewares/middleware.js";
 import rateLimit from "express-rate-limit";
 import { updateStreak } from "../controllers/user/updatestreak.js";
 import { streakInfo } from "../controllers/user/streakInfo.js";
+import { leaderboard } from "../controllers/user/leaderboard.js";
 
 // More strict limiter for authentication
 const authLimiter = rateLimit({
@@ -32,6 +33,7 @@ router.put("/updateProfile", isUser, updateProfile);
 router.get("/getProfile/:userId", isUser, getUserById);
 router.get("/getme", isUser, getMe);
 router.get("/getUsers", isAdmin, getUsers);
+router.get("/leaderboard", isUser, leaderboard);
 router.post("/updateStreak", isUser, updateStreak);
 router.get("/streakInfo", isUser, streakInfo);
 
