@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useAuth } from "../AuthContext";
 import ExerciseAnimation from "@src/components/ExerciseAnimation";
@@ -60,12 +60,19 @@ const Exercise = () => {
   const [completionData, setCompletionData] = useState<CompletionResult | null>(null);
   const [showResult, setShowResult] = useState<boolean>(false);
   const [retryCount, setRetryCount] = useState<number>(0);
+
+  const MAX_TIME: number = 50;
   
-  // Timer configuration
-  const TIME_LIMIT = 30; // seconds - can be adjusted
+  // Timer configuration - dynamic based on difficulty
+  const timeLimit = useMemo(() => {
+    // Base time: 60 seconds for level 1, decreasing by 10 seconds per level
+    // Min time: 20 seconds for hardest exercises
+    return Math.max(MAX_TIME - ((exercise?.difficultyLevel || 1) - 1) * 10, 20);
+  }, [exercise?.difficultyLevel]);
+  
   const timerRef = useRef<number | null>(null);
   
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
   // Debounced option selection
   // Replace with direct selection instead of using debounce
@@ -95,7 +102,8 @@ const Exercise = () => {
       
       const data = await response.json();
       setExercise(data.exercise);
-      setTimeLeft(TIME_LIMIT); // Reset timer when new exercise loads
+      // Use the dynamic timeLimit instead of the constant
+      setTimeLeft(timeLimit); // Reset timer when new exercise loads
       setIsTimerRunning(true);
       setError(null); // Clear any previous errors
     } catch (err) {
@@ -103,7 +111,7 @@ const Exercise = () => {
     } finally {
       setLoading(false);
     }
-  }, [exerciseId, API_BASE_URL]);
+  }, [exerciseId, API_BASE_URL, timeLimit]);
 
   // Debounced fetch to prevent rapid API calls
   const debouncedFetch = useCallback(

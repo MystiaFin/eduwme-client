@@ -4,7 +4,7 @@ export const registerSchema = z
   .object({
     username: z
       .string()
-      .min(5)
+      .min(4, "Username must be at least 4 characters")
       .regex(
         /^[a-zA-Z0-9_]+$/,
         "Username can only contain letters, numbers, and underscores",

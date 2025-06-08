@@ -46,7 +46,7 @@ const Course = () => {
   const [error, setError] = useState<string | null>(null);
   const [courseProgress, setCourseProgress] = useState<CourseProgress[]>([]);
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
   // Fetch course details and then exercises
   useEffect(() => {

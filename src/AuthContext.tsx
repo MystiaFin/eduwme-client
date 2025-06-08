@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Fixed: Use import.meta.env for Vite
   const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+    import.meta.env.VITE_API_URL || "http://localhost:3000";
 
   // ...existing code...
   const fetchUser = async () => {
@@ -95,7 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    const logout = async () => {
     try {
       // Call your logout API endpoint
-      await fetch("http://localhost:3000/users/logout", {
+      await fetch(`${API_BASE_URL}/users/logout`, {
         method: "POST",
         credentials: "include",
       });
