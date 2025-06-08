@@ -13,6 +13,22 @@ interface UserProfile {
   profilePicture?: string;
 }
 
+// Interface for inventory items
+interface InventoryItem {
+  itemId: string;
+  dateAcquired: Date;
+  isEquipped: boolean;
+  details: {
+    itemId: string;
+    name: string;
+    description: string;
+    imageUrl?: string;
+    price: number;
+    category: "avatar" | "background" | "badge" | "theme" | "powerup";
+    isAvailable: boolean;
+  };
+}
+
 const ProfilePage = () => {
   const { userId } = useParams<{ userId: string }>();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -30,6 +46,13 @@ const ProfilePage = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [base64Image, setBase64Image] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // State for banner image
+  const [bannerImage, setBannerImage] = useState<string | null>(null);
+  // State for badge image
+  const [badgeImage, setBadgeImage] = useState<string | null>(null);
+  const [badgeName, setBadgeName] = useState<string | null>(null);
+  const [isLoadingInventory, setIsLoadingInventory] = useState<boolean>(false);
 
   const API_BASE_URL = 
     import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
@@ -81,6 +104,9 @@ const ProfilePage = () => {
           if (data.user.profilePicture) {
             setPreviewImage(data.user.profilePicture);
           }
+        
+          // fetch the user's inventory for banner and badge
+          fetchUserInventory(data.user._id);
         } else {
           throw new Error("User data not found in API response.");
         }
@@ -97,6 +123,56 @@ const ProfilePage = () => {
 
     fetchUserProfile();
   }, [userId, API_BASE_URL]);
+  
+  // Fetch user inventory to get equipped banner and badge
+  const fetchUserInventory = async (userId: string) => {
+    setIsLoadingInventory(true);
+    
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/shop/userInventory/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data && data.inventory && data.inventory.length > 0) {
+        // Find equipped banner (background)
+        const equippedBanner = data.inventory.find(
+          (item: InventoryItem) => item.details.category === "background" && item.isEquipped
+        );
+        
+        if (equippedBanner && equippedBanner.details.imageUrl) {
+          setBannerImage(equippedBanner.details.imageUrl);
+        }
+        
+        // Find equipped badge
+        const equippedBadge = data.inventory.find(
+          (item: InventoryItem) => item.details.category === "badge" && item.isEquipped
+        );
+        
+        if (equippedBadge && equippedBadge.details.imageUrl) {
+          setBadgeImage(equippedBadge.details.imageUrl);
+          setBadgeName(equippedBadge.details.name);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch user inventory:", err);
+      // We don't need to show this error to the user as it's not critical
+    } finally {
+      setIsLoadingInventory(false);
+    }
+  };
 
   // Add cleanup for object URLs when component unmounts
   useEffect(() => {
@@ -291,7 +367,7 @@ const ProfilePage = () => {
     }
   };
 
-    // Updated handleSubmit function
+  // Updated handleSubmit function
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userProfile || !isOwnProfile) return;
@@ -378,7 +454,7 @@ const ProfilePage = () => {
     }
   };
 
-   // Loading state with responsive styling and dark mode support
+  // Loading state with responsive styling and dark mode support
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[70vh]">
@@ -455,8 +531,24 @@ const ProfilePage = () => {
         )}
       </div>
       
-      {/* Profile image section - smaller image on mobile */}
-      <div className="flex flex-col items-center mb-3 sm:mb-6 md:mb-8">
+      <div className="relative">
+      {/* Banner section - display user's equipped banner */}
+      <div className="w-full h-28 sm:h-36 md:h-44 rounded-t-lg overflow-hidden relative">
+        {isLoadingInventory ? (
+          <div className="w-full h-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+        ) : bannerImage ? (
+          <img 
+            src={bannerImage} 
+            alt="Profile Banner" 
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20"></div>
+        )}
+      </div>
+      
+      {/* Profile image section - with overlap on banner */}
+      <div className="flex flex-col items-center -mt-8 sm:-mt-10 md:-mt-12 relative z-10 mb-2 sm:mb-4 md:mb-6">
         <input 
           type="file"
           ref={fileInputRef}
@@ -465,20 +557,20 @@ const ProfilePage = () => {
           className="hidden"
         />
         
-        {/* Smaller profile image on mobile */}
+        {/* Profile image with drop shadow for better visibility over banner */}
         <div 
-          className={`relative w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 mb-1.5 sm:mb-3 md:mb-4 
+          className={`relative w-16 h-16 sm:w-22 sm:h-22 md:w-26 md:h-26 mb-1.5 sm:mb-3 md:mb-4 
             ${isEditing && isOwnProfile ? 'cursor-pointer' : ''}`}
           onClick={handleImageClick}
         >
           <img
             src={previewImage || userProfile.profilePicture || AvatarPlaceholder}
             alt="User Avatar"
-            className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full object-cover 
-              border-2 border-gray-200 dark:border-gray-700"
+            className="w-16 h-16 sm:w-22 sm:h-22 md:w-26 md:h-26 rounded-full object-cover 
+              border-3 border-white dark:border-gray-800 shadow-md"
           />
           
-          {/* Smaller overlay icon */}
+          {/* Overlay icon */}
           {isEditing && isOwnProfile && (
             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full">
               <span className="text-white text-lg sm:text-2xl md:text-3xl">📷</span>
@@ -491,18 +583,36 @@ const ProfilePage = () => {
           <button
             type="button"
             onClick={handleImageClick}
-            className="mb-1.5 sm:mb-3 md:mb-4 text-blue-500 dark:text-blue-400 
+            className="mb-1 sm:mb-2 md:mb-3 text-blue-500 dark:text-blue-400 
               hover:text-blue-700 dark:hover:text-blue-300 text-[10px] sm:text-sm"
           >
             Change Photo
           </button>
         )}
         
-        {/* Smaller username text */}
-        <h2 className="text-lg sm:text-2xl font-semibold text-gray-800 dark:text-white">
-          {userProfile.username}
-        </h2>
+        {/* Username with badge */}
+        <div className="flex items-center justify-center gap-1 sm:gap-2">
+          <h2 className="text-lg sm:text-2xl font-semibold text-gray-800 dark:text-white">
+            {userProfile.username}
+          </h2>
+          
+          {/* Badge display */}
+          {badgeImage && (
+            <div className="relative group">
+              <img 
+                src={badgeImage} 
+                alt={badgeName || "User Badge"} 
+                className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 object-contain" 
+              />
+              {/* Tooltip for badge name */}
+              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                {badgeName || "User Badge"}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
+    </div>
       
       {isEditing ? (
         /* Edit Form - more compact for mobile */

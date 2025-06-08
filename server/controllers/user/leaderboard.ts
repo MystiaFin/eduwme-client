@@ -18,9 +18,13 @@ export const leaderboard = async (
       
       // Create a new object with all properties except profilePicture
       const transformedUser = {
-        ...userObj,
+        username: userObj.username,
+        nickname: userObj.nickname,
+        xp: userObj.xp,
+        level: userObj.level,
+        gems: userObj.gems,
         // Convert binary profile picture data to base64 string
-        profilePicture: userObj.profilePicture && userObj.profilePicture.data 
+        profilePicture: userObj.profilePicture && userObj.profilePicture.data
           ? `data:${userObj.profilePicture.contentType};base64,${userObj.profilePicture.data.toString('base64')}`
           : null
       };

@@ -44,17 +44,18 @@ export const purchaseItem = async (req: Request, res: Response): Promise<void> =
         user.inventory.push({
             itemId: shopItem.itemId,
             dateAcquired: new Date(),
-            isEquipped: false
+            isEquipped: false,
+
         });
         } else {
         // Add to existing inventory
         user.inventory.push({
             itemId: shopItem.itemId,
             dateAcquired: new Date(),
-            isEquipped: false
+            isEquipped: false,
         });
         }
-      
+
       
       // Save user changes
       await user.save();

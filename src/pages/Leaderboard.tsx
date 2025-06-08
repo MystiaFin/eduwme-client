@@ -2,28 +2,38 @@ import { useState, useEffect } from "react";
 
 // Interface based on your User model schema
 interface LeaderboardUser {
-  _id: string;
   username: string;
   nickname?: string;
   xp: number;
   level?: number;
   profilePicture?: string;
   gems?: number;
+}
+
+interface currentUser {
+  _id: string;
+  username: string;
+  nickname?: string;
+  profilePicture?: string;
+  xp: number;
+  level: number;
+  gems?: number;
   dateLastLogin?: string;
+  streak?: number;
 }
 
 const LeaderboardPage = () => {
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<currentUser | null>(null);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/leaderboard`, {
+        const response = await fetch(`${API_BASE_URL}/users/leaderboard`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -49,13 +59,13 @@ const LeaderboardPage = () => {
         
         // Get current user
         try {
-          const meResponse = await fetch(`${API_BASE_URL}/users/getme`, {
+          const meResponse = await fetch(`${API_BASE_URL}/users/getMe`, {
             credentials: "include"
           });
           
           if (meResponse.ok) {
             const meData = await meResponse.json();
-            setCurrentUser(meData.user._id);
+            setCurrentUser(meData);
           }
         } catch (err) {
           console.log("Could not fetch current user");
@@ -229,8 +239,8 @@ const LeaderboardPage = () => {
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {users.map((user, index) => (
               <div 
-                key={user._id} 
-                className={`px-3 sm:px-4 py-2 sm:py-3 md:py-4 grid grid-cols-12 gap-1 items-center ${getRankBgColor(index + 1)} ${currentUser === user._id ? 'border-l-4 border-[#374DB0] dark:border-purple-500' : ''} transition-colors hover:bg-[#374DB0]/5 dark:hover:bg-purple-900/10`}
+                key={user.username} 
+                className={`px-3 sm:px-4 py-2 sm:py-3 md:py-4 grid grid-cols-12 gap-1 items-center ${getRankBgColor(index + 1)} ${currentUser?.username === user.username ? 'border-l-4 border-[#374DB0] dark:border-purple-500' : ''} transition-colors hover:bg-[#374DB0]/5 dark:hover:bg-purple-900/10`}
               >
                 {/* Rank column - Purple text in dark mode */}
                 <div className="col-span-2 sm:col-span-1">
