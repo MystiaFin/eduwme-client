@@ -16,7 +16,7 @@ declare module "express" {
 }
 
 // Base middleware to verify token and attach user to request
-export const verifyTokenMiddleware = (
+const verifyTokenMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -29,7 +29,7 @@ export const verifyTokenMiddleware = (
       return;
     }
 
-    jwt.verify(token, JWT_SECRET || "default_secret", (err, decoded) => {
+    jwt.verify(token, JWT_SECRET || "default_secret", (err?: any, decoded?: any) => {
       if (err) {
         res.status(401).json({ message: "Invalid token" });
         return;
