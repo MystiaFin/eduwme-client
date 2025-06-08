@@ -29,6 +29,7 @@ import Register from "./pages/auth/register.tsx";
 import Login from "./pages/auth/login.tsx";
 import { AuthGuard } from "./AuthGuard.tsx";
 import { RequireAuth } from "./RequireAuth.tsx";
+import AutoExercise from "./pages/AutoExercise.tsx";
 
 
 
@@ -55,7 +56,8 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="/profile/:userId" element={<ProfilePage />} />
                 <Route path="/courses/:courseId" element={<Courses />} />
                 <Route path="/exercise/:exerciseId" element={<ExercisePage />} />
-                <Route path="/settings" element={<Settings />} />
+                <Route path="/auto-exercise/:courseId" element={<AutoExercise />} />
+=                <Route path="/settings" element={<Settings />} />
               </Route>
 
               {/* Dengan layout auth */}
