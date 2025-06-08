@@ -84,7 +84,7 @@ const userSchema = new mongoose.Schema({
   }, // Basic email validation
   role: {
     type: String,
-    enum: ["user", "admin", "moderator"],
+    enum: ["user", "admin"],
     default: "user",
     required: true,
   },
