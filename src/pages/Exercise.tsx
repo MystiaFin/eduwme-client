@@ -60,6 +60,8 @@ const Exercise = () => {
   const [completionData, setCompletionData] = useState<CompletionResult | null>(null);
   const [showResult, setShowResult] = useState<boolean>(false);
   const [retryCount, setRetryCount] = useState<number>(0);
+  const [textAnswer, setTextAnswer] = useState<string>("");
+
 
   const MAX_TIME: number = 50;
   
@@ -79,6 +81,11 @@ const Exercise = () => {
   const handleOptionSelect = useCallback((option: string) => {
     if (!isTimerRunning || result) return;
     setSelectedOption(option);
+  }, [isTimerRunning, result]);
+
+  const handleTextChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  if (!isTimerRunning || result) return;
+    setTextAnswer(e.target.value);
   }, [isTimerRunning, result]);
 
   // Fetch exercise data with rate limit handling
@@ -168,14 +175,20 @@ const Exercise = () => {
 
   // Debounced submit function
   const debouncedSubmit = useCallback(() => {
+    if (!exercise || !isTimerRunning) return;
+    
+    // For multiple-choice, we need selectedOption. For fill-in, we need textAnswer
+    if (exercise.type === 'multiple-choice' && !selectedOption) return;
+    if (exercise.type === 'fill-in' && !textAnswer.trim()) return;
+    
+    // Stop the timer immediately to prevent multiple submissions
+    setIsTimerRunning(false);
+    if (timerRef.current) clearInterval(timerRef.current);
+    
     const submitFn = async () => {
-      if (!exercise || !selectedOption || !isTimerRunning) return;
-      
-      // Stop the timer
-      setIsTimerRunning(false);
-      if (timerRef.current) clearInterval(timerRef.current);
-      
-      const isCorrect = selectedOption === exercise.answer;
+      const isCorrect = exercise.type === 'multiple-choice'
+        ? selectedOption === exercise.answer
+        : textAnswer.trim().toLowerCase() === exercise.answer.toLowerCase(); // Case insensitive comparison
       
       if (isCorrect) {
         // Correct answer within time limit
@@ -233,8 +246,10 @@ const Exercise = () => {
       setShowResult(true);
     };
     
-    debounce(submitFn, 500)();
-  }, [exercise, selectedOption, isTimerRunning, user, API_BASE_URL]);
+    // Execute immediately without using debounce
+    submitFn();
+    
+  }, [exercise, selectedOption, textAnswer, isTimerRunning, user, API_BASE_URL]);
 
   // Submit answer handler
   const handleSubmitAnswer = useCallback(() => {
@@ -388,33 +403,61 @@ const Exercise = () => {
         )}
         </div>
           
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
-          {exercise.options.map((option, index) => (
-            <button
-              key={index}
-              onClick={() => handleOptionSelect(option)}
-              disabled={!isTimerRunning || showResult}
-              className={`
-                p-1.5 sm:p-2.5 rounded-lg border text-left transition-all duration-150 text-xs sm:text-sm
-                ${selectedOption === option 
-                  ? 'bg-blue-500 text-white border-blue-600 dark:bg-blue-600 dark:border-blue-700' 
-                  : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500'}
-                ${!isTimerRunning || showResult ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
-              `}
-            >
-              {option}
-            </button>
-          ))}
+        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+          {exercise.type === 'multiple-choice' ? (
+            exercise.options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => handleOptionSelect(option)}
+                disabled={!isTimerRunning || showResult}
+                className={`
+                  p-2 sm:p-2.5 rounded-lg border text-left transition-all duration-150 text-xs sm:text-sm
+                  flex items-center min-h-[2.75rem] sm:min-h-[3rem]
+                  ${selectedOption === option 
+                    ? 'bg-blue-500 text-white border-blue-600 dark:bg-blue-600 dark:border-blue-700' 
+                    : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500'}
+                  ${!isTimerRunning || showResult ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
+                `}
+              >
+                {option}
+              </button>
+            ))
+          ) : (
+            <div className="col-span-2">
+              <input
+                type="text"
+                value={textAnswer}
+                onChange={handleTextChange}
+                disabled={!isTimerRunning || showResult}
+                placeholder="Type your answer here..."
+                className={`
+                  w-full p-2 sm:p-2.5 rounded-lg border text-xs sm:text-sm
+                  min-h-[2.75rem] sm:min-h-[3rem]
+                  bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 
+                  focus:border-blue-400 dark:focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800
+                  ${!isTimerRunning || showResult ? 'opacity-70 cursor-not-allowed' : ''}
+                `}
+              />
+            </div>
+          )}
         </div>
         
         {/* Submit button right after options with fixed spacing */}
         {!showResult ? (
-          <button
+           <button
             onClick={handleSubmitAnswer}
-            disabled={!selectedOption || !isTimerRunning || showResult}
+            disabled={
+              (exercise.type === 'multiple-choice' && !selectedOption) || 
+              (exercise.type === 'fill-in' && !textAnswer.trim()) || 
+              !isTimerRunning || 
+              showResult
+            }
             className={`
               w-full py-1.5 sm:py-2 text-xs sm:text-sm md:text-base font-medium rounded-lg transition-colors mt-1.5 sm:mt-2
-              ${(!selectedOption || !isTimerRunning || showResult)
+              ${((exercise.type === 'multiple-choice' && !selectedOption) || 
+                (exercise.type === 'fill-in' && !textAnswer.trim()) || 
+                !isTimerRunning || 
+                showResult)
                 ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed text-white dark:text-gray-300'
                 : 'bg-green-500 dark:bg-green-600 text-white hover:bg-green-600 dark:hover:bg-green-700'}
             `}
