@@ -293,23 +293,23 @@ const Shop = () => {
   }
 
   return (
-    <div className="max-w-full md:max-w-5xl lg:max-w-6xl mx-auto px-2 sm:px-3 py-2 sm:py-4 pb-20 sm:pb-16">
-      {/* Header section */}
-      <div className="flex justify-between items-center gap-2 mb-3 sm:mb-5">
-        <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 dark:text-white">Shop</h1>
+    <div className="max-w-full md:max-w-5xl lg:max-w-6xl mx-auto px-1 sm:px-3 py-1 sm:py-4 pb-16 sm:pb-16">
+      {/* Header section - more compact on mobile */}
+      <div className="flex justify-between items-center gap-1 mb-2 sm:mb-5">
+        <h1 className="text-base sm:text-xl md:text-2xl font-bold text-gray-800 dark:text-white">Shop</h1>
         
         {/* User gems badge */}
-        <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full flex items-center shadow text-xs sm:text-sm">
-          <span className="mr-1 text-sm sm:text-base">💎</span>
+        <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full flex items-center shadow text-xs sm:text-sm">
+          <span className="mr-0.5 sm:mr-1 text-sm sm:text-base">💎</span>
           <span className="font-semibold">{user?.gems || 0}</span>
         </div>
       </div>
 
-      {/* Tab navigation */}
-      <div className="flex border-b border-gray-200 dark:border-gray-700 mb-3 sm:mb-4">
+      {/* Tab navigation - smaller padding on mobile */}
+      <div className="flex border-b border-gray-200 dark:border-gray-700 mb-2 sm:mb-4">
         <button
           onClick={() => setActiveTab("shop")}
-          className={`py-1.5 sm:py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium border-b-2 ${
+          className={`py-1 sm:py-2 px-2 sm:px-4 text-xs sm:text-sm font-medium border-b-2 ${
             activeTab === "shop"
               ? "border-[#374DB0] dark:border-[#5a6fd1] text-[#374DB0] dark:text-[#5a6fd1]"
               : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
@@ -319,7 +319,7 @@ const Shop = () => {
         </button>
         <button
           onClick={() => setActiveTab("inventory")}
-          className={`py-1.5 sm:py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium border-b-2 ${
+          className={`py-1 sm:py-2 px-2 sm:px-4 text-xs sm:text-sm font-medium border-b-2 ${
             activeTab === "inventory"
               ? "border-[#374DB0] dark:border-[#5a6fd1] text-[#374DB0] dark:text-[#5a6fd1]"
               : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
@@ -329,10 +329,10 @@ const Shop = () => {
         </button>
       </div>
 
-      {/* Purchase status message */}
+      {/* Purchase status message - more compact on mobile */}
       {purchaseStatus.status !== "idle" && (
         <div 
-          className={`mb-3 p-2 sm:p-3 rounded-lg text-xs sm:text-sm ${
+          className={`mb-2 sm:mb-3 p-1.5 sm:p-3 rounded-lg text-xs ${
             purchaseStatus.status === "success" 
               ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300" 
               : purchaseStatus.status === "error"
@@ -346,7 +346,7 @@ const Shop = () => {
 
       {/* Shop tab content */}
       {activeTab === "shop" && (
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-3 sm:space-y-6">
           {/* Organize shop items by category */}
           {["background", "badge", "avatar", "theme", "powerup"].map(category => {
             const categoryItems = shopItemsByCategory[category] || [];
@@ -354,19 +354,19 @@ const Shop = () => {
                                   category.charAt(0).toUpperCase() + category.slice(1) + "s";
             
             return (
-              <div key={category} className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-2 sm:p-3">
-                <h2 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-white capitalize mb-2 pb-1 border-b border-gray-200 dark:border-gray-700">
+              <div key={category} className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-1.5 sm:p-3">
+                <h2 className="text-xs sm:text-base font-semibold text-gray-700 dark:text-white capitalize mb-1.5 sm:mb-2 pb-0.5 sm:pb-1 border-b border-gray-200 dark:border-gray-700">
                   {categoryLabel}
                 </h2>
                 
                 {categoryItems.length === 0 ? (
-                  <div className="bg-yellow-50 dark:bg-yellow-800/20 rounded-md p-3 text-center">
-                    <p className="text-yellow-700 dark:text-yellow-300 text-xs sm:text-sm">
+                  <div className="bg-yellow-50 dark:bg-yellow-800/20 rounded-md p-2 sm:p-3 text-center">
+                    <p className="text-yellow-700 dark:text-yellow-300 text-xs">
                       No {category} items available yet.
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+                  <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-1 sm:gap-3">
                     {categoryItems.map(item => {
                       const isOwned = inventory.some(i => i.itemId === item.itemId);
                       
@@ -375,8 +375,8 @@ const Shop = () => {
                           key={item.itemId}
                           className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col"
                         >
-                         {/* Item image */}
-                          <div className="h-40 sm:h-48 md:h-56 bg-gray-100 dark:bg-gray-700 flex items-center justify-center p-0.5">
+                          {/* Item image - shorter height on mobile */}
+                          <div className="h-24 sm:h-48 md:h-56 bg-gray-100 dark:bg-gray-700 flex items-center justify-center p-0.5">
                             {item.imageUrl ? (
                               <img 
                                 src={item.imageUrl} 
@@ -384,7 +384,7 @@ const Shop = () => {
                                 className="max-h-full max-w-full object-contain" 
                               />
                             ) : (
-                              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#374DB0]/20 dark:bg-[#5a6fd1]/20 flex items-center justify-center text-3xl sm:text-4xl">
+                              <div className="w-10 h-10 sm:w-20 sm:h-20 rounded-full bg-[#374DB0]/20 dark:bg-[#5a6fd1]/20 flex items-center justify-center text-xl sm:text-4xl">
                                 {item.category === "avatar" && "👤"}
                                 {item.category === "background" && "🏞️"}
                                 {item.category === "badge" && "🏅"}
@@ -393,23 +393,23 @@ const Shop = () => {
                               </div>
                             )}
                           </div>
-                          {/* Item details */}
-                          <div className="p-2 sm:p-3 flex-grow">
-                            <h3 className="font-medium text-xs sm:text-sm text-gray-800 dark:text-white line-clamp-1 mb-1">{item.name}</h3>
-                            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 mb-1 sm:mb-2 line-clamp-2">{item.description}</p>
+                          {/* Item details - reduced padding and text size */}
+                          <div className="p-1 sm:p-3 flex-grow">
+                            <h3 className="font-medium text-[10px] sm:text-sm text-gray-800 dark:text-white line-clamp-1 mb-0.5 sm:mb-1">{item.name}</h3>
+                            <p className="text-[8px] sm:text-xs text-gray-600 dark:text-gray-400 mb-0.5 sm:mb-2 line-clamp-1 sm:line-clamp-2">{item.description}</p>
                           </div>
                           
-                          {/* Price and purchase button */}
-                          <div className="p-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
+                          {/* Price and purchase button - more compact */}
+                          <div className="p-1 sm:p-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
                             <div className="flex items-center">
-                              <span className="text-sm sm:text-base mr-1">💎</span>
-                              <span className="font-medium text-xs sm:text-sm text-gray-800 dark:text-white">{item.price}</span>
+                              <span className="text-xs sm:text-base mr-0.5 sm:mr-1">💎</span>
+                              <span className="font-medium text-[10px] sm:text-sm text-gray-800 dark:text-white">{item.price}</span>
                             </div>
                             
                             <button
                               onClick={() => !isOwned && handlePurchase(item.itemId)}
                               disabled={isOwned || (user?.gems || 0) < item.price || purchaseStatus.status === "loading"}
-                              className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md ${
+                              className={`px-1 py-0.5 sm:px-2 sm:py-1 text-[9px] sm:text-xs font-medium rounded-md ${
                                 isOwned 
                                   ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 cursor-default"
                                   : (user?.gems || 0) < item.price
@@ -436,46 +436,46 @@ const Shop = () => {
         <div>
           {/* No items message */}
           {inventory.length === 0 ? (
-            <div className="bg-blue-50 dark:bg-blue-800/20 rounded-md p-3 text-center">
-              <p className="text-blue-700 dark:text-blue-300 text-xs sm:text-sm mb-2 sm:mb-3">
+            <div className="bg-blue-50 dark:bg-blue-800/20 rounded-md p-2 sm:p-3 text-center">
+              <p className="text-blue-700 dark:text-blue-300 text-xs mb-1.5 sm:mb-3">
                 You don't have any items yet.
               </p>
               <button
                 onClick={() => setActiveTab("shop")}
-                className="px-2 py-0.5 sm:px-3 sm:py-1 bg-[#374DB0] dark:bg-[#5a6fd1] text-white rounded-md hover:bg-[#293a8c] dark:hover:bg-[#4a5eb3] transition-colors text-xs sm:text-sm"
+                className="px-1.5 py-0.5 sm:px-3 sm:py-1 bg-[#374DB0] dark:bg-[#5a6fd1] text-white rounded-md hover:bg-[#293a8c] dark:hover:bg-[#4a5eb3] transition-colors text-[10px] sm:text-sm"
               >
                 Go to Shop
               </button>
             </div>
           ) : (
-            <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-3 sm:space-y-6">
               {Object.entries(inventoryByCategory).map(([category, items]) => (
-                <div key={category} className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-2 sm:p-3">
-                  <h2 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-white capitalize mb-2 pb-1 border-b border-gray-200 dark:border-gray-700">
+                <div key={category} className="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-1.5 sm:p-3">
+                  <h2 className="text-xs sm:text-base font-semibold text-gray-700 dark:text-white capitalize mb-1.5 sm:mb-2 pb-0.5 sm:pb-1 border-b border-gray-200 dark:border-gray-700">
                     {category === "background" ? "Banners" : 
-                     category.charAt(0).toUpperCase() + category.slice(1) + "s"}
+                    category.charAt(0).toUpperCase() + category.slice(1) + "s"}
                   </h2>
                   
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-1 sm:gap-2">
                     {items.map(item => (
                       <div 
                         key={item.itemId}
-                        className={`p-2 rounded-md border ${
+                        className={`p-1 sm:p-2 rounded-md border ${
                           item.isEquipped 
                             ? "border-green-400 bg-green-50 dark:border-green-600 dark:bg-green-900/20" 
                             : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
                         }`}
                       >
                         {/* Item header with equip status */}
-                        <div className="flex justify-between items-start mb-1">
-                          <h3 className="font-medium text-xs text-gray-800 dark:text-white line-clamp-1">{item.details.name}</h3>
+                        <div className="flex justify-between items-start mb-0.5 sm:mb-1">
+                          <h3 className="font-medium text-[10px] sm:text-xs text-gray-800 dark:text-white line-clamp-1">{item.details.name}</h3>
                           {item.isEquipped && (
-                            <span className="text-green-500 dark:text-green-400 text-sm sm:text-base">✓</span>
+                            <span className="text-green-500 dark:text-green-400 text-xs sm:text-base">✓</span>
                           )}
                         </div>
                         
-                        {/* Item image */}
-                        <div className="h-48 sm:h-56 md:h-64 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center mb-1 sm:mb-2 p-0.5">
+                        {/* Item image - shorter height on mobile */}
+                        <div className="h-28 sm:h-56 md:h-64 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center mb-0.5 sm:mb-2 p-0.5">
                           {item.details.imageUrl ? (
                             <img 
                               src={item.details.imageUrl} 
@@ -483,7 +483,7 @@ const Shop = () => {
                               className="max-h-full max-w-full object-contain" 
                             />
                           ) : (
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#374DB0]/20 dark:bg-[#5a6fd1]/20 flex items-center justify-center text-3xl sm:text-4xl">
+                            <div className="w-10 h-10 sm:w-20 sm:h-20 rounded-full bg-[#374DB0]/20 dark:bg-[#5a6fd1]/20 flex items-center justify-center text-xl sm:text-4xl">
                               {item.details.category === "background" && "🏞️"}
                               {item.details.category === "badge" && "🏅"}
                               {item.details.category === "theme" && "🎨"}
@@ -493,13 +493,13 @@ const Shop = () => {
                           )}
                         </div>
                                                 
-                        {/* Item description */}
-                        <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 mb-1.5 sm:mb-2 line-clamp-2">{item.details.description}</p>
+                        {/* Item description - smaller on mobile */}
+                        <p className="text-[8px] sm:text-xs text-gray-600 dark:text-gray-400 mb-1 sm:mb-2 line-clamp-1 sm:line-clamp-2">{item.details.description}</p>
                         
                         {/* Equip/unequip button */}
                         <button
                           onClick={() => handleEquipToggle(item.itemId, item.isEquipped)}
-                          className={`w-full px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md ${
+                          className={`w-full px-1 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-xs font-medium rounded-md ${
                             item.isEquipped 
                               ? "bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-700"
                               : "bg-[#374DB0] dark:bg-[#5a6fd1] text-white hover:bg-[#293a8c] dark:hover:bg-[#4a5eb3]"

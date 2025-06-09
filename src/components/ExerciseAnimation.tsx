@@ -22,7 +22,7 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
   const hasInitialized = useRef(false);
 
   // Exercise options for animType = blocks, numbers, numLine, storyAdd, storyMinus, storyMultiply, storyDiv
-  // blocks: Place value blocks
+  // blocks: Place value block
   // numbers: Show numbers
   // numLine: Number line representation
   // storyAdd: Story-based addition
