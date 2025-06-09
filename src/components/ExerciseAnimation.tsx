@@ -21,6 +21,15 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
   });
   const hasInitialized = useRef(false);
 
+  // Exercise options for animType = blocks, numbers, numLine, storyAdd, storyMinus, storyMultiply, storyDiv
+  // blocks: Place value blocks
+  // numbers: Show numbers
+  // numLine: Number line representation
+  // storyAdd: Story-based addition
+  // storyMinus: Story-based subtraction
+  // storyMultiply: Story-based multiplication
+  // storyDiv: Story-based division
+
     // Update useEffect to only run once
     useEffect(() => {
       if (!hasInitialized.current && (animType === 'blocks' || animType === 'numbers' || animType === 'numLine' || animType === 'storyAdd' || animType === 'storyMinus' || animType === 'storyMultiply' || 
