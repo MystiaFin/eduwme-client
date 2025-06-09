@@ -13,6 +13,8 @@ const Login = () => {
 
   const { login } = useAuth();
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -67,7 +69,7 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("http://localhost:3000/users/login", {
+      const response = await fetch(`${API_BASE_URL}/users/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

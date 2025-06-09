@@ -53,7 +53,7 @@ const Shop = () => {
     message: string;
   }>({ status: "idle", message: "" });
   
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
   // Fetch shop items and user inventory
   useEffect(() => {
@@ -375,8 +375,8 @@ const Shop = () => {
                           key={item.itemId}
                           className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col"
                         >
-                          {/* Item image */}
-                          <div className="h-20 sm:h-28 bg-gray-100 dark:bg-gray-700 flex items-center justify-center p-2 sm:p-3">
+                         {/* Item image */}
+                          <div className="h-40 sm:h-48 md:h-56 bg-gray-100 dark:bg-gray-700 flex items-center justify-center p-0.5">
                             {item.imageUrl ? (
                               <img 
                                 src={item.imageUrl} 
@@ -384,7 +384,7 @@ const Shop = () => {
                                 className="max-h-full max-w-full object-contain" 
                               />
                             ) : (
-                              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-[#374DB0]/20 dark:bg-[#5a6fd1]/20 flex items-center justify-center text-xl sm:text-2xl">
+                              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#374DB0]/20 dark:bg-[#5a6fd1]/20 flex items-center justify-center text-3xl sm:text-4xl">
                                 {item.category === "avatar" && "👤"}
                                 {item.category === "background" && "🏞️"}
                                 {item.category === "badge" && "🏅"}
@@ -393,7 +393,6 @@ const Shop = () => {
                               </div>
                             )}
                           </div>
-                          
                           {/* Item details */}
                           <div className="p-2 sm:p-3 flex-grow">
                             <h3 className="font-medium text-xs sm:text-sm text-gray-800 dark:text-white line-clamp-1 mb-1">{item.name}</h3>
@@ -476,7 +475,7 @@ const Shop = () => {
                         </div>
                         
                         {/* Item image */}
-                        <div className="h-14 sm:h-16 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center mb-1 sm:mb-2">
+                        <div className="h-48 sm:h-56 md:h-64 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center mb-1 sm:mb-2 p-0.5">
                           {item.details.imageUrl ? (
                             <img 
                               src={item.details.imageUrl} 
@@ -484,7 +483,7 @@ const Shop = () => {
                               className="max-h-full max-w-full object-contain" 
                             />
                           ) : (
-                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#374DB0]/20 dark:bg-[#5a6fd1]/20 flex items-center justify-center text-lg sm:text-xl">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#374DB0]/20 dark:bg-[#5a6fd1]/20 flex items-center justify-center text-3xl sm:text-4xl">
                               {item.details.category === "background" && "🏞️"}
                               {item.details.category === "badge" && "🏅"}
                               {item.details.category === "theme" && "🎨"}
@@ -493,7 +492,7 @@ const Shop = () => {
                             </div>
                           )}
                         </div>
-                        
+                                                
                         {/* Item description */}
                         <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 mb-1.5 sm:mb-2 line-clamp-2">{item.details.description}</p>
                         

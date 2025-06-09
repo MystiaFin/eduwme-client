@@ -13,6 +13,8 @@ const Register = () => {
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState("");
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
   const navigate = useNavigate();
 
   // Responsive form container
@@ -47,8 +49,8 @@ const Register = () => {
 
     if (!formData.username.trim()) {
       newErrors.username = "Username is required";
-    } else if (formData.username.length < 3) {
-      newErrors.username = "Username must be at least 3 characters";
+    } else if (formData.username.length < 4) {
+      newErrors.username = "Username must be at least 4 characters";
     }
 
     if (!formData.email.trim()) {
@@ -81,7 +83,7 @@ const Register = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("http://localhost:3000/users/register", {
+      const response = await fetch(`${API_BASE_URL}/users/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -46,7 +46,7 @@ const Course = () => {
   const [error, setError] = useState<string | null>(null);
   const [courseProgress, setCourseProgress] = useState<CourseProgress[]>([]);
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
   // Fetch course details and then exercises
   useEffect(() => {
@@ -258,6 +258,21 @@ const Course = () => {
                 <p className="text-[10px] sm:text-xs md:text-sm text-gray-600 dark:text-gray-400">
                   Level {course.level} • {exercises.length} Exercises • {courseProgress.filter(p => p.status === "completed").length} completed
                 </p>
+                
+                {/* Add Auto Exercise button */}
+                <button
+                  onClick={() => navigate(`/auto-exercise/${courseId}`)}
+                  className="mt-1 px-2 py-1 text-[10px] sm:text-xs md:text-sm font-medium rounded-md
+                    bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700
+                    text-white shadow-sm hover:shadow transition-all duration-200"
+                >
+                  <div className="flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 sm:h-4 sm:w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                    </svg>
+                    Auto Exercise Mode
+                  </div>
+                </button>
               </div>
           </div>
           

@@ -55,7 +55,7 @@ const ProfilePage = () => {
   const [isLoadingInventory, setIsLoadingInventory] = useState<boolean>(false);
 
   const API_BASE_URL = 
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+    import.meta.env.VITE_API_URL || "http://localhost:3000";
 
   // Check if the current user is viewing their own profile
   const isOwnProfile = user && userId === user._id;

@@ -21,9 +21,19 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
   });
   const hasInitialized = useRef(false);
 
+  // Exercise options for animType = blocks, numbers, numLine, storyAdd, storyMinus, storyMultiply, storyDiv
+  // blocks: Place value blocks
+  // numbers: Show numbers
+  // numLine: Number line representation
+  // storyAdd: Story-based addition
+  // storyMinus: Story-based subtraction
+  // storyMultiply: Story-based multiplication
+  // storyDiv: Story-based division
+
     // Update useEffect to only run once
     useEffect(() => {
-      if (!hasInitialized.current && (animType === 'blocks' || animType === 'numbers' || animType === 'numLine' || animType === 'storyAdd' || animType === 'storyMinus') && question) {
+      if (!hasInitialized.current && (animType === 'blocks' || animType === 'numbers' || animType === 'numLine' || animType === 'storyAdd' || animType === 'storyMinus' || animType === 'storyMultiply' || 
+       animType === 'storyDiv') && question) {
         hasInitialized.current = true;
         // Small delay to ensure component is mounted
         const timer = setTimeout(() => {
@@ -37,7 +47,8 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
   const startAnimation = useCallback(() => {
     // For numbers/numLine animation type, just set that we're ready to animate
     if (animType === 'numbers' || animType === 'numLine' || animType === 'storyAdd' || 
-      animType === 'storyMinus') {
+      animType === 'storyMinus' || animType === 'storyMultiply' ||
+      animType === 'storyDiv') {
       setAnimationState(prev => ({
         ...prev,
         isAnimating: true
@@ -243,7 +254,7 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
 
   
   if (animType !== 'blocks' && animType !== 'numbers' && animType !== 'numLine' && animType !== 'storyAdd' && 
-    animType !== 'storyMinus') {
+    animType !== 'storyMinus' && animType !== 'storyMultiply' && animType !== 'storyDiv') {
     return (
       <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
         Animation type "{animType}" not implemented
@@ -304,6 +315,14 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
             <StoryProblemBlocks question={question} operation="minus" />
           )}
 
+           {animType === 'storyMultiply' && (
+            <StoryProblemBlocks question={question} operation="multiply" />
+          )}
+      
+          {animType === 'storyDiv' && (
+            <StoryProblemBlocks question={question} operation="div" />
+          )}
+
           {animType === 'numLine' && (
           <NumberLineAnimation question={questionLower} />
           )}
@@ -325,6 +344,13 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
 
       {animType === 'blocks' && questionLower.includes('-') && 
       <ArithmeticBlocks question={questionLower} operation="-" />}
+
+      {animType === 'blocks' && (questionLower.includes('*') || questionLower.includes('×')) && 
+      <ArithmeticBlocks question={questionLower} operation="*" />}
+
+      {animType === 'blocks' && (questionLower.includes('/') || questionLower.includes('÷')) && (
+        <ArithmeticBlocks question={questionLower} operation="/" />
+      )}
     </div>
   </div>
   );
@@ -664,22 +690,42 @@ const NumberLineAnimation: React.FC<{ question: string }> = ({ question }) => {
 };
   
 
-// Add this component after your other component definitions
-const ArithmeticBlocks: React.FC<{ question: string, operation: '+' | '-' }> = ({ 
+// Update ArithmeticBlocks component to support multiplication and division
+const ArithmeticBlocks: React.FC<{ 
+  question: string, 
+  operation: '+' | '-' | '*' | '/' 
+}> = ({ 
   question, 
   operation 
 }) => {
   const [showSecondGroup, setShowSecondGroup] = useState(false);
   const [showResult, setShowResult] = useState(false);
   
-  // Parse the question
-  const regex = operation === '+' ? /(\d+)\s*\+\s*(\d+)/ : /(\d+)\s*-\s*(\d+)/;
+  // Parse the question based on operation
+  let regex;
+  if (operation === '+') {
+    regex = /(\d+)\s*\+\s*(\d+)/;
+  } else if (operation === '-') {
+    regex = /(\d+)\s*-\s*(\d+)/;
+  } else if (operation === '*') {
+    regex = /(\d+)\s*[*×]\s*(\d+)/; // Support both * and × for multiplication
+  } else { // Division
+    regex = /(\d+)\s*[\/÷]\s*(\d+)/; // Support both / and ÷ for division
+  }
+  
   const match = question.match(regex);
   if (!match) return null;
   
   const num1 = parseInt(match[1]);
   const num2 = parseInt(match[2]);
-  const result = operation === '+' ? num1 + num2 : num1 - num2;
+  let result;
+  
+  switch(operation) {
+    case '+': result = num1 + num2; break;
+    case '-': result = num1 - num2; break;
+    case '*': result = num1 * num2; break;
+    case '/': result = num1 / num2; break;
+  }
   
   // Animation sequence
   useEffect(() => {
@@ -694,7 +740,7 @@ const ArithmeticBlocks: React.FC<{ question: string, operation: '+' | '-' }> = (
   return (
     <div className="flex flex-col items-center gap-2 sm:gap-4">
       <div className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-white mb-2 sm:mb-4">
-        {num1} {operation} {num2} = ?
+        {num1} {operation === '*' ? '×' : operation === '/' ? '÷' : operation} {num2} = ?
       </div>
 
       {operation === '+' && (
@@ -764,6 +810,127 @@ const ArithmeticBlocks: React.FC<{ question: string, operation: '+' | '-' }> = (
           )}
         </div>
       )}
+
+      {operation === '*' && (
+        <div className="flex flex-col items-center">
+          <div className="flex flex-row flex-wrap justify-center gap-4 sm:gap-6">
+            {/* Show num1 groups of num2 blocks each */}
+            {Array.from({ length: Math.min(num1, 10) }, (_, groupIndex) => (
+              <div 
+                key={`group-${groupIndex}`} 
+                className={`border-2 border-dashed p-2 sm:p-3 rounded-md 
+                  ${showSecondGroup ? 'border-green-500 dark:border-green-400' : 'border-transparent'} 
+                  transition-all duration-500`}
+                style={{ animationDelay: `${groupIndex * 200}ms` }}
+              >
+                <div className="text-center text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 mb-1 sm:mb-2">
+                  Group {groupIndex + 1}
+                </div>
+                <BlockGroup
+                  count={num2}
+                  color="bg-green-500"
+                  label=""
+                  layout="grid"
+                />
+              </div>
+            ))}
+          </div>
+          
+          {/* Result */}
+          {showResult && (
+            <div className="mt-4 sm:mt-6 animate-fade-in">
+              <div className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-300 mb-2 sm:mb-3 text-center">
+                {num1} groups of {num2} = ?
+              </div>
+              <div className="animate-drop-in">
+                <BlockGroup 
+                  count={result} 
+                  color="bg-purple-500" 
+                  label="?" 
+                  layout="grid"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {operation === '/' && (
+        <div className="flex flex-col items-center">
+          {/* Initial blocks */}
+          <div className="mb-4 relative">
+            <div className="text-center text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 mb-1 sm:mb-2">
+              Starting with {num1} blocks
+            </div>
+            <BlockGroup 
+              count={num1} 
+              color="bg-blue-500" 
+              label="" 
+              layout="grid"
+            />
+            
+            {/* Division instructions */}
+            {showSecondGroup && (
+              <div className="mt-2 text-center text-sm sm:text-base font-medium text-gray-600 dark:text-gray-300 animate-fade-in">
+                Divide into groups of {num2}
+              </div>
+            )}
+          </div>
+          
+          {/* Groups */}
+          {showSecondGroup && (
+            <div className="flex flex-row flex-wrap justify-center gap-3 sm:gap-4 animate-fade-in">
+              {Array.from({ length: Math.floor(num1 / num2) }, (_, groupIndex) => (
+                <div 
+                  key={`group-${groupIndex}`} 
+                  className="border-2 border-dashed border-blue-500 dark:border-blue-400 p-2 sm:p-3 rounded-md"
+                  style={{ animationDelay: `${groupIndex * 200 + 500}ms` }}
+                >
+                  <div className="text-center text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 mb-1 sm:mb-2">
+                    Group {groupIndex + 1}
+                  </div>
+                  <BlockGroup
+                    count={num2}
+                    color="bg-green-500"
+                    label=""
+                    layout="grid"
+                  />
+                </div>
+              ))}
+              
+              {/* Remainder */}
+              {num1 % num2 > 0 && (
+                <div 
+                  className="border-2 border-dashed border-yellow-500 dark:border-yellow-400 p-2 sm:p-3 rounded-md"
+                >
+                  <div className="text-center text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 mb-1 sm:mb-2">
+                    Remainder
+                  </div>
+                  <BlockGroup
+                    count={num1 % num2}
+                    color="bg-yellow-500"
+                    label=""
+                    layout="grid"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Result */}
+          {showResult && (
+            <div className="mt-4 sm:mt-6 animate-fade-in">
+              <div className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-300 mb-2 sm:mb-3 text-center">
+                {num1} ÷ {num2} = {Math.floor(num1 / num2)}
+                {num1 % num2 > 0 && ` with remainder ${num1 % num2}`}
+              </div>
+              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400 text-center">
+                ?
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -784,12 +951,15 @@ const SubtractionBlockGroup: React.FC<{
   // Determine optimal grid columns based on number of blocks
   const getGridCols = () => {
     const totalBlocks = Math.min(total, 50);
-    if (totalBlocks <= 9) return 'grid-cols-3';
-    if (totalBlocks <= 16) return 'grid-cols-4';
+    if (totalBlocks <= 9) return 'grid-cols-5';
+    if (totalBlocks <= 16) return 'grid-cols-5';
     if (totalBlocks <= 25) return 'grid-cols-5';
     if (totalBlocks <= 36) return 'grid-cols-6';
     return 'grid-cols-8';
   };
+  
+  // Get total blocks for ordering
+  const totalBlocksToShow = Math.min(total, 50);
   
   return (
     <div className="flex flex-col items-center">
@@ -804,7 +974,10 @@ const SubtractionBlockGroup: React.FC<{
               flex items-center justify-center text-white text-[8px] sm:text-xs font-bold
               transition-all duration-500
             `}
-            style={{ animationDelay: `${i * 30}ms` }}
+            style={{ 
+              order: totalBlocksToShow - i - 1, // Reverse order for top-first layout
+              animationDelay: `${i * 30}ms` 
+            }}
           />
         ))}
         
@@ -821,6 +994,7 @@ const SubtractionBlockGroup: React.FC<{
                 : 'bg-blue-500'}
             `}
             style={{ 
+              order: totalBlocksToShow - (remaining + i) - 1, // Maintain reverse order
               animationDelay: `${(remaining + i) * 30}ms`,
               transitionDelay: `${i * 70}ms`
             }}
@@ -841,38 +1015,68 @@ interface BlockGroupProps {
 }
 
 const BlockGroup: React.FC<BlockGroupProps> = ({ count, color, label, layout = 'grid' }) => {
-  // Dynamic grid columns based on count
-  const getGridClass = () => {
-    if (layout === 'horizontal') {
-      return count <= 10 ? 'grid-cols-10' : 'grid-cols-10 flex-wrap';
-    } else if (layout === 'vertical') {
-      return 'grid-cols-1';
-    } else {
-      // Cube-like grid layout
-      const totalBlocks = Math.min(count, 120);
-      if (totalBlocks <= 9) return 'grid-cols-5';
-      if (totalBlocks <= 16) return 'grid-cols-5';
-      if (totalBlocks <= 25) return 'grid-cols-5';
-      if (totalBlocks <= 36) return 'grid-cols-6';
-      if (totalBlocks <= 64) return 'grid-cols-8';
-      return 'grid-cols-8';
-    }
+  // Determine the appropriate grid columns based on count and layout
+  const getOptimalColumns = () => {
+    if (layout === 'horizontal') return 10;
+    if (layout === 'vertical') return 1;
+    
+    // For grid layout, determine best column count
+    const totalBlocks = Math.min(count, 120);
+    if (totalBlocks <= 9) return 3;
+    if (totalBlocks <= 25) return 5;
+    if (totalBlocks <= 36) return 6;
+    if (totalBlocks <= 64) return 8;
+    return 10;
   };
+  
+  const cols = getOptimalColumns();
+  
+  // Calculate full rows and remainder
+  const totalBlocks = Math.min(count, 120);
+  const fullRows = Math.floor(totalBlocks / cols);
+  const remainderCount = totalBlocks % cols;
+  
+  // Generate CSS class for grid columns
+  const gridColsClass = `grid-cols-${cols}`;
   
   return (
     <div className="flex flex-col items-center gap-1 sm:gap-2">
-      <div className="font-semibold text-sm sm:text-base text-gray-700 dark:text-gray-300">{label}</div>
-      <div className={`grid ${getGridClass()} gap-0.5 sm:gap-1 max-w-[180px] sm:max-w-[250px]`}>
-        {Array.from({ length: Math.min(count, 120) }, (_, i) => (
-          <div
-            key={i}
-            className={`
-              w-4 h-4 sm:w-6 sm:h-6 ${color} rounded-sm sm:rounded-md shadow-sm animate-drop-in
-              flex items-center justify-center text-white text-[8px] sm:text-xs font-bold
-            `}
-            style={{ animationDelay: `${i * 30}ms` }}
-          />
-        ))}
+      <div className="font-semibold text-sm sm:text-base text-gray-700 dark:text-gray-300">
+        {label}
+      </div>
+      
+      <div className="flex flex-col gap-0.5 sm:gap-1 max-w-[180px] sm:max-w-[250px]">
+        {/* Remainder row (if any) - displayed at the top */}
+        {remainderCount > 0 && (
+          <div className={`grid grid-cols-${cols} gap-0.5 sm:gap-1`}>
+            {Array.from({ length: remainderCount }, (_, i) => (
+              <div
+                key={`remainder-${i}`}
+                className={`
+                  w-4 h-4 sm:w-6 sm:h-6 ${color} rounded-sm sm:rounded-md shadow-sm animate-drop-in
+                  flex items-center justify-center text-white text-[8px] sm:text-xs font-bold
+                `}
+                style={{ animationDelay: `${i * 30}ms` }}
+              />
+            ))}
+          </div>
+        )}
+        
+        {/* Full rows - displayed below the remainder */}
+        {fullRows > 0 && (
+          <div className={`grid ${gridColsClass} gap-0.5 sm:gap-1`}>
+            {Array.from({ length: fullRows * cols }, (_, i) => (
+              <div
+                key={`full-${i}`}
+                className={`
+                  w-4 h-4 sm:w-6 sm:h-6 ${color} rounded-sm sm:rounded-md shadow-sm animate-drop-in
+                  flex items-center justify-center text-white text-[8px] sm:text-xs font-bold
+                `}
+                style={{ animationDelay: `${(remainderCount + i) * 30}ms` }}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -880,94 +1084,255 @@ const BlockGroup: React.FC<BlockGroupProps> = ({ count, color, label, layout = '
 
 // Updated StoryProblemBlocks component
 const StoryProblemBlocks: React.FC<{ 
-  question: string, 
-  operation: 'add' | 'minus' 
-}> = ({ 
-  question, 
-  operation 
-}) => {
-  const [showSecondGroup, setShowSecondGroup] = useState(false);
-  const [showResult, setShowResult] = useState(false);
-  
-  // Extract numbers from story problem text
-  const extractNumbers = (text: string): number[] => {
-    const matches = text.match(/\d+/g);
-    if (!matches || matches.length < 2) return [0, 0];
+    question: string, 
+    operation: 'add' | 'minus' | 'multiply' | 'div' 
+  }> = ({ 
+    question, 
+    operation 
+  }) => {
+    const [showSecondGroup, setShowSecondGroup] = useState(false);
+    const [showResult, setShowResult] = useState(false);
     
-    // Return the first two numbers found
-    return [parseInt(matches[0]), parseInt(matches[1])];
-  };
-  
-  const [num1, num2] = extractNumbers(question);
-  const result = operation === 'add' ? num1 + num2 : num1 - num2;
-  
-  // Animation sequence
-  useEffect(() => {
-    const timer1 = setTimeout(() => setShowSecondGroup(true), 1500);
-    const timer2 = setTimeout(() => setShowResult(true), 3000);
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
+    // Extract numbers from story problem text
+    const extractNumbers = (text: string): number[] => {
+      const matches = text.match(/\d+/g);
+      if (!matches || matches.length < 2) return [0, 0];
+      
+      // Return the first two numbers found
+      return [parseInt(matches[0]), parseInt(matches[1])];
     };
-  }, []);
+    
+    const [num1, num2] = extractNumbers(question);
+    const result = operation === 'add' ? num1 + num2 : 
+                  operation === 'minus' ? num1 - num2 : 
+                  operation === 'multiply' ? num1 * num2 : 
+                  Math.floor(num1 / num2);
+    
+    // Animation sequence
+    useEffect(() => {
+      const timer1 = setTimeout(() => setShowSecondGroup(true), 1500);
+      const timer2 = setTimeout(() => setShowResult(true), 3000);
+      return () => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+      };
+    }, []);
 
-  // Color schemes for story problems
-  const firstGroupColor = operation === 'add' ? 'bg-red-500' : 'bg-blue-500';
-  const secondGroupColor = operation === 'add' ? 'bg-blue-500' : 'bg-red-500';
-  
-  return (
-    <div className="flex flex-col items-center gap-2 sm:gap-4">
-      <div className="text-lg sm:text-xl font-medium text-gray-800 dark:text-white mb-2 sm:mb-4 text-center max-w-md">
-        {question}
-      </div>
+    // Color schemes
+    const firstGroupColor = operation === 'add' ? 'bg-red-500' : 
+                          operation === 'minus' ? 'bg-blue-500' :
+                          operation === 'multiply' ? 'bg-green-500' : 'bg-purple-500';
+    const secondGroupColor = operation === 'add' ? 'bg-blue-500' : 
+                            operation === 'minus' ? 'bg-red-500' :
+                            operation === 'multiply' ? 'bg-yellow-500' : 'bg-blue-500';
+    
+    // For multiplication and division
+    const getMultiplicationDisplay = () => {
+      return (
+        <div className="flex flex-col items-center">
+          <div className="flex flex-row flex-wrap justify-center gap-4 sm:gap-6">
+            {/* Show num1 groups of num2 blocks each */}
+            {Array.from({ length: num1 }, (_, groupIndex) => (
+              <div 
+                key={`group-${groupIndex}`} 
+                className={`border-2 border-dashed p-2 sm:p-3 rounded-md 
+                  ${showSecondGroup ? 'border-green-500 dark:border-green-400' : 'border-transparent'} 
+                  transition-all duration-500`}
+                style={{ animationDelay: `${groupIndex * 200}ms` }}
+              >
+                <div className="text-center text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 mb-1 sm:mb-2">
+                  Group {groupIndex + 1}
+                </div>
+                <BlockGroup
+                  count={num2}
+                  color={secondGroupColor}
+                  label=""
+                  layout="grid"
+                />
+              </div>
+            ))}
+          </div>
+          
+          {/* Result */}
+          {showResult && (
+            <div className="mt-4 sm:mt-6 animate-fade-in">
+              <div className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-300 mb-2 sm:mb-3 text-center">
+                {num1} groups of {num2} = ?
+              </div>
+              <div className="animate-drop-in">
+                <BlockGroup 
+                  count={result} 
+                  color="bg-purple-500" 
+                  label="?" 
+                  layout="grid"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+    
+    const getDivisionDisplay = () => {
+      // Calculate the groups and remainder
+      const quotient = Math.floor(num1 / num2);
+      const remainder = num1 % num2;
+      
+      return (
+        <div className="flex flex-col items-center">
+          {/* Initial blocks */}
+          <div className="mb-4 relative">
+            <div className="text-center text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 mb-1 sm:mb-2">
+              Starting with {num1} blocks
+            </div>
+            <BlockGroup 
+              count={num1} 
+              color={firstGroupColor} 
+              label="" 
+              layout="grid"
+            />
+            
+            {/* Division instructions */}
+            {showSecondGroup && (
+              <div className="mt-2 text-center text-sm sm:text-base font-medium text-gray-600 dark:text-gray-300 animate-fade-in">
+                Divide into groups of {num2}
+              </div>
+            )}
+          </div>
+          
+          {/* Groups */}
+          {showSecondGroup && (
+            <div className="flex flex-row flex-wrap justify-center gap-3 sm:gap-4 animate-fade-in">
+              {Array.from({ length: quotient }, (_, groupIndex) => (
+                <div 
+                  key={`group-${groupIndex}`} 
+                  className="border-2 border-dashed border-blue-500 dark:border-blue-400 p-2 sm:p-3 rounded-md"
+                  style={{ animationDelay: `${groupIndex * 200 + 500}ms` }}
+                >
+                  <div className="text-center text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 mb-1 sm:mb-2">
+                    Group {groupIndex + 1}
+                  </div>
+                  <BlockGroup
+                    count={num2}
+                    color={secondGroupColor}
+                    label=""
+                    layout="grid"
+                  />
+                </div>
+              ))}
+              
+              {/* Remainder */}
+              {remainder > 0 && (
+                <div 
+                  className="border-2 border-dashed border-yellow-500 dark:border-yellow-400 p-2 sm:p-3 rounded-md"
+                >
+                  <div className="text-center text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 mb-1 sm:mb-2">
+                    Remainder
+                  </div>
+                  <BlockGroup
+                    count={remainder}
+                    color="bg-yellow-500"
+                    label=""
+                    layout="grid"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Result */}
+          {showResult && (
+            <div className="mt-4 sm:mt-6 animate-fade-in">
+              <div className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-300 mb-2 sm:mb-3 text-center">
+                {num1} ÷ {num2} = ?
+                {remainder > 0 && ` with remainder ${remainder}`}
+              </div>
+              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400 text-center">
+                ?
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+    
+    // Conditional rendering based on operation
+    if (operation === 'multiply') {
+      return (
+        <div className="flex flex-col items-center gap-2 sm:gap-4">
+          <div className="text-lg sm:text-xl font-medium text-gray-800 dark:text-white mb-2 sm:mb-4 text-center max-w-md">
+            {question}
+          </div>
+          {getMultiplicationDisplay()}
+        </div>
+      );
+    }
+    
+    if (operation === 'div') {
+      return (
+        <div className="flex flex-col items-center gap-2 sm:gap-4">
+          <div className="text-lg sm:text-xl font-medium text-gray-800 dark:text-white mb-2 sm:mb-4 text-center max-w-md">
+            {question}
+          </div>
+          {getDivisionDisplay()}
+        </div>
+      );
+    }
+    
+    // Original add/minus rendering
+    return (
+      <div className="flex flex-col items-center gap-2 sm:gap-4">
+        <div className="text-lg sm:text-xl font-medium text-gray-800 dark:text-white mb-2 sm:mb-4 text-center max-w-md">
+          {question}
+        </div>
 
-      {/* All blocks in one row */}
-      <div className="flex flex-row items-center flex-wrap justify-center gap-2 sm:gap-4">
-        {/* First number */}
-        <div className="mr-0 sm:mr-2">
-          <BlockGroup 
-            count={num1} 
-            color={firstGroupColor} 
-            label={operation === 'add' ? 'First group' : 'Total'} 
-            layout="grid"
-          />
+        {/* All blocks in one row */}
+        <div className="flex flex-row items-center flex-wrap justify-center gap-2 sm:gap-4">
+          {/* First number */}
+          <div className="mr-0 sm:mr-2">
+            <BlockGroup 
+              count={num1} 
+              color={firstGroupColor} 
+              label={operation === 'add' ? 'First group' : 'Total'} 
+              layout="grid"
+            />
+          </div>
+          
+          {/* Connecting text */}
+          <div className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-300 mx-1 sm:mx-2">
+            {operation === 'add' ? 'and' : 'remove'}
+          </div>
+          
+          {/* Second number (appears after delay) */}
+          <div className={`transition-opacity duration-500 mr-0 sm:mr-2 ${showSecondGroup ? 'opacity-100' : 'opacity-0'}`}>
+            <BlockGroup 
+              count={num2} 
+              color={secondGroupColor} 
+              label={operation === 'add' ? 'Second group' : 'Remove'} 
+              layout="grid"
+            />
+          </div>
+          
+          {/* Result - now in the same row */}
+          {showResult && (
+            <>
+              <div className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-300 mx-1 sm:mx-2 animate-fade-in">
+                {operation === 'add' ? 'altogether' : 'remaining'}
+              </div>
+              <div className="animate-slide-in-right">
+                <BlockGroup 
+                  count={result} 
+                  color="bg-purple-500" 
+                  label="?" 
+                  layout="grid"
+                />
+              </div>
+            </>
+          )}
         </div>
-        
-        {/* Connecting text */}
-        <div className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-300 mx-1 sm:mx-2">
-          {operation === 'add' ? 'and' : 'remove'}
-        </div>
-        
-        {/* Second number (appears after delay) */}
-        <div className={`transition-opacity duration-500 mr-0 sm:mr-2 ${showSecondGroup ? 'opacity-100' : 'opacity-0'}`}>
-          <BlockGroup 
-            count={num2} 
-            color={secondGroupColor} 
-            label={operation === 'add' ? 'Second group' : 'Remove'} 
-            layout="grid"
-          />
-        </div>
-        
-        {/* Result - now in the same row */}
-        {showResult && (
-          <>
-            <div className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-300 mx-1 sm:mx-2 animate-fade-in">
-              {operation === 'add' ? 'altogether' : 'remaining'}
-            </div>
-            <div className="animate-slide-in-right">
-              <BlockGroup 
-                count={result} 
-                color="bg-purple-500" 
-                label="?" 
-                layout="grid"
-              />
-            </div>
-          </>
-        )}
       </div>
-    </div>
-  );
-};
+    );
+  };
 
 
 // Add CSS animations via inline styles since we can't modify external CSS
