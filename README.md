@@ -124,7 +124,7 @@ Update the `.env` file with your specific configurations:
 
 - `MONGO_URI`: Your MongoDB connection string (e.g., `mongodb://localhost:27017/eduwme_db`).
 - `PORT`: The port for the backend server (defaults to `3000` if not set).
-- `VITE_API_BASE_URL`: The base URL for your backend API, used by the frontend (e.g., `http://localhost:3000`). This should be set in a `.env` file in the root for Vite to pick up, or directly in frontend code if preferred. The `src/pages/Home.tsx` file suggests it's read from `import.meta.env.VITE_API_BASE_URL`.
+- `VITE_API_URL`: The base URL for your backend API, used by the frontend (e.g., `http://localhost:3000`). This should be set in a `.env` file in the root for Vite to pick up, or directly in frontend code if preferred. The `src/pages/Home.tsx` file suggests it's read from `import.meta.env.VITE_API_BASE_URL`.
 
 ## Installation
 
