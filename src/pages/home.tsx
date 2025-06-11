@@ -347,12 +347,14 @@ const Home = () => {
                     <div 
                       className="bg-[#374DB0] dark:bg-[#5a6fd1] h-1 sm:h-1.5 md:h-3 rounded-full transition-all duration-500 ease-out"
                       style={{ 
-                        width: `${batchProgress.totalCoursesInBatch > 0 ? (batchProgress.completedCoursesCount / batchProgress.totalCoursesInBatch) * 100 : 0}%` 
+                        // Use batch.coursesLength as the source of truth for total courses
+                        width: `${batch.coursesLength > 0 ? (batchProgress.completedCoursesCount / batch.coursesLength) * 100 : 0}%` 
                       }}
                     ></div>
                   </div>
                   <span className="text-[10px] sm:text-xs md:text-sm text-gray-600 dark:text-gray-300 font-medium">
-                    {batchProgress.completedCoursesCount}/{batchProgress.totalCoursesInBatch}
+                    {/* Also update the displayed count to match */}
+                    {batchProgress.completedCoursesCount}/{batch.coursesLength}
                   </span>
                 </div>
               )}
