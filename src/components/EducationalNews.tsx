@@ -50,21 +50,29 @@ const EducationalNews = () => {
           // Continue with API call if cache parsing fails
         }
       }
+
       
       // NASA FREE API 
-      let API_KEY = import.meta.env.VITE_NASA_API_KEY || 'HKaauhzFPjstNB0fCgf3ySJF0HyMeImt0Pfi4vOJ'; // Fallback to a demo key if not set
+      const API_KEY = import.meta.env.VITE_NASA_API_KEY || 'HKaauhzFPjstNB0fCgf3ySJF0HyMeImt0Pfi4vOJ'
 
-      if (!API_KEY) {
-        API_KEY = 'DEMO_KEY';
-      }
-
+      let newResponse: Response | undefined;
+      
       try {
         const response = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${API_KEY}`);
         if (!response.ok) {
+          try {
+            newResponse = await fetch(`https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY`);
+
+          } catch (err) {
+            throw new Error(`Failed to fetch demo API: ${err instanceof Error ? err.message : 'Unknown error'}`);
+          }
           throw new Error(`Failed to fetch space news: ${response.status}`);
         }
-        const data = await response.json();
-        
+        let data = await response.json();
+        if (!data || !data.url || !data.title || !data.explanation) {
+          data = await newResponse?.json();
+        }
+
         // Save to cache
         localStorage.setItem('nasaAPOD', JSON.stringify(data));
         localStorage.setItem('nasaAPODTime', now.toString());
