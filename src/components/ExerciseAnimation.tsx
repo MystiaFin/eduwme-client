@@ -22,7 +22,7 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
   const hasInitialized = useRef(false);
 
   // Exercise options for animType = blocks, numbers, numLine, storyAdd, storyMinus, storyMultiply, storyDiv
-  // blocks: Place value blocks
+  // blocks: Place value block
   // numbers: Show numbers
   // numLine: Number line representation
   // storyAdd: Story-based addition
@@ -162,30 +162,24 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
     return names[position] || `10^${position}`;
   };
 
-  const createPlaceValueBlocks = (question: string) => {
-    // Simplified regex that finds any two numbers in the question
-    const matches = question.match(/(\d+).*?(\d+)/);
-    if (!matches) return null;
+const createPlaceValueBlocks = (question: string) => {
+  // First, check for place value questions with just one number
+  const placeValuePattern = /(?:in|of)\s+(?:the\s+)?(?:number\s+)?(\d+)(?:.*?)(ones|tens|hundreds|thousands)\s+(?:place|position|digit)/i;
+  const placeMatch = question.match(placeValuePattern);
+  
+  if (placeMatch) {
+    const number = placeMatch[1];
+    const positionName = placeMatch[2].toLowerCase();
     
-    // Extract the two numbers
-    const firstNum = matches[1];
-    const secondNum = matches[2];
+    // Map position name to index
+    const positionMap: Record<string, number> = {
+      'ones': 0,
+      'tens': 1,
+      'hundreds': 2,
+      'thousands': 3
+    };
     
-    // Determine which is the digit and which is the full number
-    let targetDigit: number;
-    let number: string;
-    
-    if (firstNum.length === 1 && secondNum.length > 1) {
-      targetDigit = parseInt(firstNum);
-      number = secondNum;
-    } else if (secondNum.length === 1 && firstNum.length > 1) {
-      targetDigit = parseInt(secondNum);
-      number = firstNum;
-    } else {
-      targetDigit = parseInt(firstNum);
-      number = secondNum;
-    }
-    
+    const targetPosition = positionMap[positionName] || 0;
     const digits = number.split('').reverse();
     
     return (
@@ -201,8 +195,7 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
             const digitValue = parseInt(digit);
             if (digitValue === 0) return null;
             
-            const isTarget = digitValue === targetDigit && 
-              number.split('').findIndex(d => d === digit.toString()) === number.length - position - 1;
+            const isTarget = position === targetPosition;
             
             return (
               <PlaceValueSection
@@ -217,7 +210,97 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
         </div>
       </div>
     );
-  };
+  }
+  
+  // Next, check for single number without specific place value mention
+  const singleNumber = question.match(/\b(\d+)\b/);
+  if (singleNumber && !question.match(/\d+.*?\d+/)) {
+    const number = singleNumber[1];
+    const digits = number.split('').reverse();
+    
+    return (
+      <div className="flex flex-col items-center gap-4">
+        {/* Number display */}
+        <div className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-4">
+          {number}
+        </div>
+        
+        {/* Place value sections */}
+        <div className="flex flex-wrap gap-6 justify-center items-end">
+          {digits.map((digit, position) => {
+            const digitValue = parseInt(digit);
+            if (digitValue === 0) return null;
+            
+            return (
+              <PlaceValueSection
+                key={position}
+                digit={digitValue}
+                position={position}
+                isHighlighted={false}
+                delay={position * 300}
+              />
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+  
+  // Finally, fall back to the original logic for two numbers
+  const matches = question.match(/(\d+).*?(\d+)/);
+  if (!matches) return null;
+  
+  // Extract the two numbers
+  const firstNum = matches[1];
+  const secondNum = matches[2];
+  
+  // Determine which is the digit and which is the full number
+  let targetDigit: number;
+  let number: string;
+  
+  if (firstNum.length === 1 && secondNum.length > 1) {
+    targetDigit = parseInt(firstNum);
+    number = secondNum;
+  } else if (secondNum.length === 1 && firstNum.length > 1) {
+    targetDigit = parseInt(secondNum);
+    number = firstNum;
+  } else {
+    targetDigit = parseInt(firstNum);
+    number = secondNum;
+  }
+  
+  const digits = number.split('').reverse();
+  
+  return (
+    <div className="flex flex-col items-center gap-4">
+      {/* Number display */}
+      <div className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-4">
+        {number}
+      </div>
+      
+      {/* Place value sections */}
+      <div className="flex flex-wrap gap-6 justify-center items-end">
+        {digits.map((digit, position) => {
+          const digitValue = parseInt(digit);
+          if (digitValue === 0) return null;
+          
+          const isTarget = digitValue === targetDigit && 
+            number.split('').findIndex(d => d === digit.toString()) === number.length - position - 1;
+          
+          return (
+            <PlaceValueSection
+              key={position}
+              digit={digitValue}
+              position={position}
+              isHighlighted={isTarget}
+              delay={position * 300}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
   const createNumberBlocks = (question: string) => {
     const match = question.match(/\d+/);
@@ -235,8 +318,8 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
         <div className="flex flex-wrap gap-6 justify-center items-end">
           {digits.map((digit, position) => {
             const digitValue = parseInt(digit);
-            if (digitValue === 0) return null;
             
+            // Don't skip zeros - instead show a placeholder with text
             return (
               <PlaceValueSection
                 key={position}
@@ -327,14 +410,16 @@ const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({ animType, questio
           <NumberLineAnimation question={questionLower} />
           )}
 
-          {animType === 'blocks' && questionLower.match(/\d+.*?\d+/)&& 
+        {animType === 'blocks' && 
+          questionLower.match(/\d+/) && 
           !questionLower.includes('+') && 
           !questionLower.includes('-') && 
           !questionLower.includes('*') && 
           !questionLower.includes('/') && 
           !questionLower.includes('×') && 
           !questionLower.includes('÷') && 
-          createPlaceValueBlocks(questionLower)}
+          createPlaceValueBlocks(questionLower)
+          }
 
         {animType === 'blocks' && questionLower.includes('show') && questionLower.includes('number') && 
             createNumberBlocks(questionLower)}
@@ -701,23 +786,15 @@ const ArithmeticBlocks: React.FC<{
   const [showSecondGroup, setShowSecondGroup] = useState(false);
   const [showResult, setShowResult] = useState(false);
   
-  // Parse the question based on operation
-  let regex;
-  if (operation === '+') {
-    regex = /(\d+)\s*\+\s*(\d+)/;
-  } else if (operation === '-') {
-    regex = /(\d+)\s*-\s*(\d+)/;
-  } else if (operation === '*') {
-    regex = /(\d+)\s*[*×]\s*(\d+)/; // Support both * and × for multiplication
-  } else { // Division
-    regex = /(\d+)\s*[\/÷]\s*(\d+)/; // Support both / and ÷ for division
-  }
+  // More flexible parsing to extract two numbers from the question
+  const extractNumbers = (text: string): [number, number] => {
+    const matches = text.match(/\d+/g);
+    if (!matches || matches.length < 2) return [0, 0];
+    // Return the first two numbers found
+    return [parseInt(matches[0]), parseInt(matches[1])];
+  };
   
-  const match = question.match(regex);
-  if (!match) return null;
-  
-  const num1 = parseInt(match[1]);
-  const num2 = parseInt(match[2]);
+  const [num1, num2] = extractNumbers(question);
   let result;
   
   switch(operation) {
@@ -739,8 +816,8 @@ const ArithmeticBlocks: React.FC<{
   
   return (
     <div className="flex flex-col items-center gap-2 sm:gap-4">
-      <div className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-white mb-2 sm:mb-4">
-        {num1} {operation === '*' ? '×' : operation === '/' ? '÷' : operation} {num2} = ?
+      <div className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-white mb-2 sm:mb-4 text-center max-w-md">
+        {question}
       </div>
 
       {operation === '+' && (
@@ -789,28 +866,37 @@ const ArithmeticBlocks: React.FC<{
         </div>
       )}
       
-      {operation === '-' && (
-        <div className="flex flex-row items-center flex-wrap justify-center gap-2 sm:gap-4">
-          {/* First number */}
-          <div className="mr-0 sm:mr-2">
-            <SubtractionBlockGroup 
-              total={num1} 
-              toRemove={num2} 
-              showRemoval={showSecondGroup}
-              showResult={showResult}
-            />
-          </div>
-          
-          {/* Result explanation - now to the right */}
-          {showSecondGroup && (
-            <div className="ml-2 sm:ml-4 text-base sm:text-lg font-medium text-gray-700 dark:text-gray-300 transition-opacity duration-300">
-              {!showResult && `Removing ${num2}...`}
-              {showResult && `= ?`}
+     {operation === '-' && (
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center w-full">
+            {/* Top row: subtraction visualization */}
+            <div className="mb-3 text-center">
+              <SubtractionBlockGroup 
+                total={num1} 
+                toRemove={num2} 
+                showRemoval={showSecondGroup}
+                showResult={showResult}
+              />
             </div>
-          )}
+            
+            {/* Middle row: animation explanation */}
+            {showSecondGroup && (
+              <motion.div 
+                className="text-base font-medium text-gray-700 dark:text-gray-300 mb-3 text-center"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {!showResult 
+                  ? `Taking away ${num2} blocks...` 
+                  : ``}
+              </motion.div>
+            )}
+          </div>
         </div>
       )}
 
+      {/* Keep existing multiplication code */}
       {operation === '*' && (
         <div className="flex flex-col items-center">
           <div className="flex flex-row flex-wrap justify-center gap-4 sm:gap-6">
@@ -855,6 +941,7 @@ const ArithmeticBlocks: React.FC<{
         </div>
       )}
 
+      {/* Keep existing division code */}
       {operation === '/' && (
         <div className="flex flex-col items-center">
           {/* Initial blocks */}
@@ -1244,11 +1331,7 @@ const StoryProblemBlocks: React.FC<{
           {showResult && (
             <div className="mt-4 sm:mt-6 animate-fade-in">
               <div className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-300 mb-2 sm:mb-3 text-center">
-                {num1} ÷ {num2} = ?
-                {remainder > 0 && ` with remainder ${remainder}`}
-              </div>
-              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400 text-center">
-                ?
+                {remainder > 0 && ` with remainder ${remainder}`} 
               </div>
             </div>
           )}

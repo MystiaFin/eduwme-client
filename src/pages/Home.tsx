@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import AdditionIcon from "@src/assets/additionIcon.svg";
 import { useAuth } from "../AuthContext";
+import EducationalNews from "@src/components/EducationalNews";
 
 // Define types for course batches
 interface CourseBatch {
@@ -279,11 +280,12 @@ const Home = () => {
   return (
     // Smaller padding and narrower max-width on mobile
     <div className="max-w-[92%] sm:max-w-[85%] md:max-w-5xl lg:max-w-6xl mx-auto px-1 sm:px-2 md:px-4 py-2 sm:py-3 md:py-8 pb-20 md:pb-16">
+
       {/* User stats section with better mobile layout */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-8">
         {/* Smaller heading text on mobile */}
         <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Learning Areas</h1>
-        
+  
         {/* Smaller user stats badges on mobile */}
         <div className="flex gap-1.5 sm:gap-2 md:gap-3 items-center">
           {/* Smaller gems badge */}
@@ -298,6 +300,10 @@ const Home = () => {
             <span className="font-semibold">{user?.xp || 0} XP</span>
           </div>
         </div>
+      </div>
+
+      <div className="lg:col-span-1">
+        <EducationalNews />
       </div>
       
       {/* Map through course batches with tighter spacing on mobile */}
@@ -341,12 +347,14 @@ const Home = () => {
                     <div 
                       className="bg-[#374DB0] dark:bg-[#5a6fd1] h-1 sm:h-1.5 md:h-3 rounded-full transition-all duration-500 ease-out"
                       style={{ 
-                        width: `${batchProgress.totalCoursesInBatch > 0 ? (batchProgress.completedCoursesCount / batchProgress.totalCoursesInBatch) * 100 : 0}%` 
+                        // Use batch.coursesLength as the source of truth for total courses
+                        width: `${batch.coursesLength > 0 ? (batchProgress.completedCoursesCount / batch.coursesLength) * 100 : 0}%` 
                       }}
                     ></div>
                   </div>
                   <span className="text-[10px] sm:text-xs md:text-sm text-gray-600 dark:text-gray-300 font-medium">
-                    {batchProgress.completedCoursesCount}/{batchProgress.totalCoursesInBatch}
+                    {/* Also update the displayed count to match */}
+                    {batchProgress.completedCoursesCount}/{batch.coursesLength}
                   </span>
                 </div>
               )}
@@ -486,6 +494,7 @@ const Home = () => {
           </p>
         </div>
       )}
+
     </div>
   );
 };

@@ -225,7 +225,8 @@ const ProfilePage = () => {
   };
 
   // Improved compressImage function with better quality and size control
-  const compressImage = (file: File, maxWidth = 1200, quality = 0.9): Promise<Blob> => {
+  // Modify your compressImage function to recursively try lower quality settings
+  const compressImage = (file: File, maxWidth = 300, quality = 0.9, attempt = 1): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -234,38 +235,70 @@ const ProfilePage = () => {
         img.src = event.target?.result as string;
         
         img.onload = () => {
-          const canvas = document.createElement('canvas');
+          // Calculate appropriate dimensions based on attempt number
           let width = img.width;
           let height = img.height;
           
+          // Reduce dimensions more aggressively on subsequent attempts
+          const currentMaxWidth = attempt > 1 ? maxWidth / attempt : maxWidth;
+          
           // Calculate new dimensions while maintaining aspect ratio
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
+          if (width > currentMaxWidth) {
+            height = Math.round((height * currentMaxWidth) / width);
+            width = currentMaxWidth;
           }
           
-          // Ensure minimum dimensions
-          width = Math.max(width, 200);
-          height = Math.max(height, 200);
+          // Ensure minimum dimensions (but smaller on later attempts)
+          const minDimension = Math.max(100, 200 / attempt);
+          width = Math.max(width, minDimension);
+          height = Math.max(height, minDimension);
           
+          const canvas = document.createElement('canvas');
           canvas.width = width;
           canvas.height = height;
           
           const ctx = canvas.getContext('2d');
           ctx?.drawImage(img, 0, 0, width, height);
           
-          // Use better quality for smaller images, lower quality for larger ones
-          const finalQuality = file.size > 2 * 1024 * 1024 ? 0.7 : quality;
+          // Lower quality more aggressively with each attempt
+          const finalQuality = Math.min(0.7, quality - (attempt * 0.1));
           
           canvas.toBlob(
-            (blob) => {
+            async (blob) => {
               if (blob) {
-                resolve(blob);
+                // Check if the blob size is less than 30KB
+                if (blob.size <= 30 * 1024) {
+                  resolve(blob);
+                } else if (attempt < 5) {
+                  // Try again with more aggressive compression
+                  try {
+                    const smallerBlob = await compressImage(file, maxWidth, quality, attempt + 1);
+                    resolve(smallerBlob);
+                  } catch (err) {
+                    reject(err);
+                  }
+                } else {
+                  // Last resort: force a very small image
+                  canvas.width = 200;
+                  canvas.height = 200;
+                  ctx?.drawImage(img, 0, 0, 200, 200);
+                  canvas.toBlob(
+                    (finalBlob) => {
+                      if (finalBlob && finalBlob.size <= 30 * 1024) {
+                        resolve(finalBlob);
+                      } else {
+                        reject(new Error('Unable to compress image below 30KB'));
+                      }
+                    },
+                    'image/jpeg',
+                    0.5
+                  );
+                }
               } else {
                 reject(new Error('Canvas to Blob conversion failed'));
               }
             },
-            'image/jpeg', // Always convert to JPEG for consistent handling
+            'image/jpeg',
             finalQuality
           );
         };
@@ -304,14 +337,6 @@ const ProfilePage = () => {
         return;
       }
       
-      // Increased max size to 10MB since we'll be handling the resizing properly
-      const maxSize = 10 * 1024 * 1024; 
-      if (file.size > maxSize) {
-        setUpdateError("Image size should be less than 10MB");
-        if (fileInputRef.current) fileInputRef.current.value = "";
-        return;
-      }
-      
       try {
         // Show processing message
         setUpdateError("Processing image, please wait...");
@@ -325,22 +350,12 @@ const ProfilePage = () => {
         const previewURL = URL.createObjectURL(file);
         setPreviewImage(previewURL);
         
-        // Determine compression parameters based on file size
-        let quality = 0.9;
-        let maxWidth = 1200;
+        // Initial compression settings - will be adjusted automatically if needed
+        const initialMaxWidth = 600;
+        const initialQuality = 0.8;
         
-        if (file.size > 2 * 1024 * 1024) { // > 2MB
-          quality = 0.8;
-          maxWidth = 1000;
-        }
-        
-        if (file.size > 5 * 1024 * 1024) { // > 5MB
-          quality = 0.7;
-          maxWidth = 800;
-        }
-        
-        // Compress the image
-        const compressedBlob = await compressImage(file, maxWidth, quality);
+        // Compress the image with size target of 30KB
+        const compressedBlob = await compressImage(file, initialMaxWidth, initialQuality);
         console.log(`Original size: ${file.size / 1024}KB, Compressed size: ${compressedBlob.size / 1024}KB`);
         
         // Convert compressed image to base64 for sending to the server
@@ -572,8 +587,8 @@ const ProfilePage = () => {
           
           {/* Overlay icon */}
           {isEditing && isOwnProfile && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full">
-              <span className="text-white text-lg sm:text-2xl md:text-3xl">📷</span>
+            <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-900 bg-opacity-40 rounded-full">
+              <span className="text-white text-lg sm:text-2xl md:text-3xl"> {base64Image? <img src={base64Image} alt="Profile" className="w-full h-full object-cover rounded-full" /> : "👤"}</span>
             </div>
           )}
         </div>
@@ -583,11 +598,21 @@ const ProfilePage = () => {
           <button
             type="button"
             onClick={handleImageClick}
-            className="mb-1 sm:mb-2 md:mb-3 text-blue-500 dark:text-blue-400 
+            className=" text-blue-500 dark:text-blue-400 
               hover:text-blue-700 dark:hover:text-blue-300 text-[10px] sm:text-sm"
           >
             Change Photo
           </button>
+        )}
+
+        {/* Add size warning message here - only when an image has been selected */}
+        {/* Add size warning message here - only when a NEW image has been selected */}
+        {isEditing && isOwnProfile && previewImage && base64Image && (
+          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 
+            mt-0 mb-2 text-center max-w-[200px] sm:max-w-[250px]">
+            Images will be automatically compressed to under 30KB. 
+            Simple images with good contrast work best.
+          </p>
         )}
         
         {/* Username with badge */}
