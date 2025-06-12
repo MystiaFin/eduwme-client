@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import LoadingPage from "@src/components/loading";
 
 // Define types for shop items and inventory
 interface ShopItem {
@@ -270,11 +271,7 @@ const Shop = () => {
 
   // Loading state
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[70vh]">
-        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Loading shop items...</p>
-      </div>
-    );
+    return <LoadingPage message="Loading shop..." fullScreen={false} />;
   }
 
   // Error state

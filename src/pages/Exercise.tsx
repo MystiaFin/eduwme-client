@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useAuth } from "../AuthContext";
 import ExerciseAnimation from "@src/components/ExerciseAnimation";
+import LoadingPage from "@src/components/loading";
 
 // Debounce utility function - define it before using it
 const debounce = <T extends (...args: any[]) => any>(fn: T, ms = 300) => {
@@ -283,13 +284,9 @@ const Exercise = () => {
   }, [showResult, handleReturn]);
 
     // Loading state with responsive sizing and dark mode
-     if (loading) {
-      return (
-        <div className="flex justify-center items-center min-h-[60vh]">
-          <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">Loading exercise...</p>
-        </div>
-      );
-    }
+  if (loading) {
+    return <LoadingPage message="Loading exercise..." fullScreen={false} />;
+  }
 
     // Error state with more compact styling
     if (error) {
@@ -415,7 +412,7 @@ const Exercise = () => {
                   flex items-center min-h-[2.75rem] sm:min-h-[3rem]
                   ${selectedOption === option 
                     ? 'bg-blue-500 text-white border-blue-600 dark:bg-blue-600 dark:border-blue-700' 
-                    : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500'}
+                    : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 dark:text-blue-200'}
                   ${!isTimerRunning || showResult ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
                 `}
               >
@@ -434,7 +431,7 @@ const Exercise = () => {
                   w-full p-2 sm:p-2.5 rounded-lg border text-xs sm:text-sm
                   min-h-[2.75rem] sm:min-h-[3rem]
                   bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 
-                  focus:border-blue-400 dark:focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800
+                  focus:border-blue-400 dark:focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 dark:text-blue-200
                   ${!isTimerRunning || showResult ? 'opacity-70 cursor-not-allowed' : ''}
                 `}
               />

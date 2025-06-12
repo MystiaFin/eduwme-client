@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useAuth } from "../AuthContext";
 import ExerciseAnimation from "@src/components/ExerciseAnimation";
+import LoadingPage from "@src/components/loading";
 
 // Define interfaces for our data
 interface ExerciseData {
@@ -351,11 +352,7 @@ const AutoExercise = () => {
 
   // Loading state
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">Loading auto exercise mode...</p>
-      </div>
-    );
+    return <LoadingPage message="Loading auto exercise mode..." fullScreen={false} />;
   }
 
   // Error state
