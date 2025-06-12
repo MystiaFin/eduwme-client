@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useAuth } from "../AuthContext";
+import LoadingPage from "@src/components/loading";
 
 // Define interfaces for type safety
 interface Exercise {
@@ -142,11 +143,7 @@ const Course = () => {
 
   // Loading state - more compact
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[70vh]">
-        <p className="text-xs sm:text-sm md:text-base text-gray-600 dark:text-gray-300">Loading course content...</p>
-      </div>
-    );
+    return <LoadingPage message="Loading course content..." fullScreen={false} />;
   }
 
   // Error state - more compact

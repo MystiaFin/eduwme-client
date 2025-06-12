@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router";
 import { useAuth } from "../AuthContext";
 import AvatarPlaceholder from "../assets/avatar_placeholder.jpg";
+import LoadingPage from "@src/components/loading";
 
 interface UserProfile {
   _id: string;
@@ -471,11 +472,7 @@ const ProfilePage = () => {
 
   // Loading state with responsive styling and dark mode support
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-[70vh]">
-        <p className="text-base sm:text-lg md:text-xl text-gray-700 dark:text-gray-300">Loading profile...</p>
-      </div>
-    );
+    return <LoadingPage message="Loading profile..." fullScreen={false} />;
   }
 
   // Error state with responsive styling and dark mode support

@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import AdditionIcon from "@src/assets/additionIcon.svg";
 import { useAuth } from "../AuthContext";
 import EducationalNews from "@src/components/EducationalNews";
+import LoadingPage from "@src/components/loading";
 
 // Define types for course batches
 interface CourseBatch {
@@ -253,12 +254,7 @@ const Home = () => {
 
   // Updated loading state with responsive spacing and text size
   if (loading) {
-    return (
-      <div className="gap-4 md:gap-5 flex flex-col mt-12 md:mt-20 items-center justify-center">
-        {/* Added dark mode support to loading text */}
-        <p className="text-base md:text-lg text-gray-600 dark:text-gray-300">Loading courses...</p>
-      </div>
-    );
+    return <LoadingPage message="Loading courses..." fullScreen={false} />;
   }
 
   // Updated error state with responsive layout and dark mode support

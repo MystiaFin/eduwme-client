@@ -1,7 +1,9 @@
+import LoadingPage from "@src/components/loading";
 import { useState, useEffect } from "react";
 
 // Interface based on your User model schema
 interface LeaderboardUser {
+  dateLastLogin: unknown;
   username: string;
   nickname?: string;
   xp: number;
@@ -109,12 +111,7 @@ const LeaderboardPage = () => {
   };
 
   if (loading) {
-    return (
-      <div className="gap-4 md:gap-5 flex flex-col mt-12 md:mt-20 items-center justify-center">
-        {/* Added dark mode support */}
-        <p className="text-base md:text-lg text-gray-600 dark:text-gray-300">Loading leaderboard...</p>
-      </div>
-    );
+    return <LoadingPage message="Loading leaderboard..." fullScreen={false} />;
   }
 
   if (error) {
