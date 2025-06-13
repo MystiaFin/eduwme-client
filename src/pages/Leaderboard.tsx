@@ -70,7 +70,7 @@ const LeaderboardPage = () => {
             setCurrentUser(meData);
           }
         } catch (err) {
-          console.log("Could not fetch current user");
+          console.log("Could not fetch current user:", err);
         }
       } catch (error) {
         console.error("Error fetching leaderboard:", error);

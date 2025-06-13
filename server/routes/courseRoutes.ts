@@ -35,7 +35,7 @@ router.put("/updateCourseBatch", isAdmin, updateCourseBatch);
 router.delete("/deleteCourseBatch", isAdmin, deleteCourseBatch);
 
 // Courses Routes
-router.get("/getCourses", getCourses);
+router.get("/getCourses", isUser, getCourses);
 router.get("/getCoursesById/:courseId", isUser, getCoursesById);
 
 router.post("/createCourse", isAdmin, createCourse);

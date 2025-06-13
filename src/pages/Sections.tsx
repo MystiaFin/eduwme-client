@@ -1,4 +1,4 @@
-import SectionCard from "@/components/sectioncard";
+import SectionCard from "../components/sectioncard";
 
 const SectionPage = () => {
   const data = [
@@ -18,7 +18,7 @@ const SectionPage = () => {
     <main>
       <section>
         {data.map((list) => (
-          <SectionCard key={list.id} title={list.title} exp={list.exp} />
+          <SectionCard key={list.id} title={list.title} exp={list.exp.toString()} />
         ))}
       </section>
     </main>

@@ -16,12 +16,12 @@ import MainLayout from "./pages/layout.tsx";
 import AuthLayout from "./pages/auth/layout.tsx";
 
 // Page Import
-import HomePage from "./pages/Home.tsx";
-import LeaderboardPage from "./pages/Leaderboard.tsx";
+import HomePage from "./pages/home.tsx";
+import LeaderboardPage from "./pages/leaderboard.tsx";
 import ProfilePage from "./pages/Profile.tsx";
 import Courses from "./pages/Course.tsx";
 import ExercisePage from "./pages/Exercise.tsx";
-import Settings from "./pages/settings.tsx";
+import Settings from "./pages/Settings.tsx";
 import ShopPage from "./pages/Shop.tsx";
 
 // Auth Pages Import

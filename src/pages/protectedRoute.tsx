@@ -1,5 +1,4 @@
-import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router';
 
 const ProtectedRoute = () => {
   // Check if the token exists in localStorage

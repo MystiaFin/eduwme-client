@@ -36,6 +36,17 @@ interface CourseProgress {
   lastAttempted?: Date;
 }
 
+interface BatchProgress {
+  courseBatchId: string;
+  courses: CourseProgressItem[];
+}
+
+interface CourseProgressItem {
+  courseId: string;
+  exercises: CourseProgress[];
+}
+
+
 const Course = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
@@ -79,13 +90,13 @@ const Course = () => {
             const userData = await userResponse.json();
             // Fixed: userData directly contains the user object, not nested under a "user" property
             const batchProgress = userData.courseBatchesProgress?.find(
-              (batch: any) => batch.courseBatchId === fetchedCourse.courseBatchId
+              (batch: BatchProgress) => batch.courseBatchId === fetchedCourse.courseBatchId
             );
             
             const currentCourseProgress = batchProgress?.courses?.find(
-              (c: any) => c.courseId === courseId
+              (c: CourseProgressItem) => c.courseId === courseId
             );
-            
+
             if (currentCourseProgress?.exercises) {
               setCourseProgress(currentCourseProgress.exercises);
             }

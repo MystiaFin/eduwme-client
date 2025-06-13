@@ -215,16 +215,6 @@ const ProfilePage = () => {
     setUpdateSuccess(false);
   };
 
-  // Convert image file to base64
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   // Improved compressImage function with better quality and size control
   // Modify your compressImage function to recursively try lower quality settings
   const compressImage = (file: File, maxWidth = 300, quality = 0.9, attempt = 1): Promise<Blob> => {

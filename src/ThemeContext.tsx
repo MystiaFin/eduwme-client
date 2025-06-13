@@ -20,7 +20,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           return savedTheme;
         }
       }
-    } catch (error) {
+    } catch {
       console.warn('localStorage not available, using system preference');
     }
     

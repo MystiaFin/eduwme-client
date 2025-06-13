@@ -660,31 +660,6 @@ const NumberLineAnimation: React.FC<{ question: string }> = ({ question }) => {
   
   const { min, max } = getNumberLineRange();
   
-  // Determine if we're adding or subtracting
-  const isAddition = question.includes('+');
-  const isSubtraction = question.includes('-');
-  
-  // Operation text description
-  const getOperationText = () => {
-    if (!isAnimating && !showResult) return '';
-    
-    if (isAddition && initialPosition !== null && targetPosition !== null) {
-      if (currentPosition === targetPosition) {
-        return `Result: ${targetPosition}`;
-      }
-      return `Moving right: ${initialPosition} → ${currentPosition}`;
-    }
-    
-    if (isSubtraction && initialPosition !== null && targetPosition !== null) {
-      if (currentPosition === targetPosition) {
-        return `Result: ${targetPosition}`;
-      }
-      return `Moving left: ${initialPosition} → ${currentPosition}`;
-    }
-    
-    return '';
-  };
-  
   return (
     <div className="flex flex-col items-center gap-4 p-4 w-full">
       <motion.div 

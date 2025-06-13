@@ -36,6 +36,30 @@ interface CompletionResult {
   courseProgress: number;
 }
 
+
+interface ExerciseProgress {
+  exerciseId: string;
+  status: "not_started" | "in_progress" | "completed";
+  score?: number;
+  lastAttempted?: Date;
+}
+
+interface CourseProgressItem {
+  courseId: string;
+  status: "not_started" | "in_progress" | "completed";
+  totalExercisesInCourse: number;
+  completedExercisesCount: number;
+  exercises: ExerciseProgress[];
+}
+
+interface BatchProgress {
+  courseBatchId: string;
+  status: "not_started" | "in_progress" | "completed";
+  totalCoursesInBatch: number;
+  completedCoursesCount: number;
+  courses: CourseProgressItem[];
+}
+
 const AutoExercise = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
@@ -123,18 +147,18 @@ const AutoExercise = () => {
         if (userResponse.ok) {
           const userData = await userResponse.json();
           const batchProgress = userData.courseBatchesProgress?.find(
-            (batch: any) => batch.courseBatchId === course.courseBatchId
+            (batch: BatchProgress) => batch.courseBatchId === course.courseBatchId
           );
           
           const currentCourseProgress = batchProgress?.courses?.find(
-            (c: any) => c.courseId === courseId
+            (c: CourseProgressItem) => c.courseId === courseId
           );
-          
+
           if (currentCourseProgress?.exercises) {
             const completedExerciseIds = new Set<string>(
               currentCourseProgress.exercises
-                .filter((ex: any) => ex.status === "completed")
-                .map((ex: any) => ex.exerciseId as string)
+                .filter((ex: ExerciseProgress) => ex.status === "completed")
+                .map((ex: ExerciseProgress) => ex.exerciseId as string)
             );
             setCompletedExercises(completedExerciseIds);
             
@@ -296,7 +320,7 @@ const AutoExercise = () => {
           });
           
           // Update progress
-          setProgress(prev => {
+          setProgress(() => {
             const newProgress = (completedExercises.size + 1) / allExercises.length;
             return Math.min(newProgress, 1);
           });

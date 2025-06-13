@@ -1,10 +1,9 @@
-import { Outlet, NavLink, useLocation } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import Logo from "@src/assets/logo.svg";
 
 const AuthLayout = () => {
   const location = useLocation();
   const isSignIn = location.pathname === "/login";
-  const isSignUp = location.pathname === "/register";
 
   return (
     <div className="min-h-screen mt-[2vh] flex flex-col items-center px-4 py-6 md:py-10">

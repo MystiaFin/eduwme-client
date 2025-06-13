@@ -7,7 +7,7 @@ import ShopIcon from "@src/assets/store.svg";
 import { useAuth } from "@src/AuthContext";
 
 const SideNavBar = () => {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user } = useAuth();
 
   const profileLink = `/profile/${user?._id}`;
 
