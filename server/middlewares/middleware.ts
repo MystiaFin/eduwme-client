@@ -29,7 +29,7 @@ const verifyTokenMiddleware = (
       return;
     }
 
-    jwt.verify(token, JWT_SECRET || "default_secret", (err?: any, decoded?: any) => {
+    jwt.verify(token, JWT_SECRET || "default_secret", (err: unknown, decoded: unknown) => {
       if (err) {
         res.status(401).json({ message: "Invalid token" });
         return;

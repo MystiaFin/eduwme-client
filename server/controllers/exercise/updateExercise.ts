@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
-import Course from "../../models/Course.ts";
-import CourseBatch from "../../models/CourseBatch.ts";
-import Exercise from "../../models/Exercise.ts";
-import { updateExerciseSchema } from "../../validators/exercise.validators.ts";
+import Course from "../../models/Course";
+import CourseBatch from "../../models/CourseBatch";
+import Exercise from "../../models/Exercise";
+import { updateExerciseSchema } from "../../validators/exercise.validators";
 
 export const updateExercise = async (
   req: Request,
   res: Response,
-): Promise<Response | void> => {
+): Promise<void> => {
   try {
     const validatedData = updateExerciseSchema.parse(req.body);
     const {

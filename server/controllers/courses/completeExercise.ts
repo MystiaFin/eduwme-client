@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
-import { completeSchema } from "../../validators/progress.validators.js";
-import User from "../../models/User.js";
-import CourseBatch  from "../../models/CourseBatch.js";
-import Course from "../../models/Course.js";
-import Exercise from "../../models/Exercise.js";
+import { completeSchema } from "../../validators/progress.validators";
+import User from "../../models/User";
+import CourseBatch  from "../../models/CourseBatch";
+import Course from "../../models/Course";
+import Exercise from "../../models/Exercise";
 
 export const completeExercise = async (
   req: Request,
   res: Response,
-): Promise<Response | void> => {
+): Promise<void> => {
   try {
     // validate request body with zod
     const validatedData = completeSchema.parse(req.params);

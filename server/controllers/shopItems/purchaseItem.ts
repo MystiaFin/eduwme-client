@@ -65,9 +65,11 @@ export const purchaseItem = async (req: Request, res: Response): Promise<void> =
         item: shopItem,
         remainingGems: user.gems
       });
+      return;
     } catch (err) {
       console.error(err);
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
       res.status(500).json({ error: message });
+      return;
     }
   }

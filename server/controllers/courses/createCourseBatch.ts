@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import CourseBatch from "../../models/CourseBatch";
-import { courseBatchSchema } from "../../validators/courseBatch.validators.ts";
+import { courseBatchSchema } from "../../validators/courseBatch.validators";
 
 export const createCourseBatch = async (
   req: Request,
   res: Response,
-): Promise<Response | void> => {
+): Promise<void> => {
   try {
     // validate request body
     const validatedData = courseBatchSchema.parse(req.body);
@@ -24,8 +24,8 @@ export const createCourseBatch = async (
       res.status(400).json({ message: "Course batch ID already exists" });
       return;
     }
-    
-    const courseList = []
+
+    const courseList: unknown[] = [];
 
     // check how many courses are in the course database
     const coursesLength: number = courseList.length;
@@ -42,10 +42,12 @@ export const createCourseBatch = async (
     res
       .status(200)
       .json({ message: "Course batch created successfully", courseBatch });
+    return;
   } catch (err) {
     console.error(err);
     const message =
       err instanceof Error ? err.message : "An unknown error occurred";
     res.status(500).json({ error: message });
+    return;
   }
 };

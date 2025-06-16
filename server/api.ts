@@ -7,19 +7,19 @@ import cookieParser from "cookie-parser";
 import compression from "compression";
 
 // routes imports
-import userRoutes from "./server/routes/userRoutes.js";
-import courseRoutes from "./server/routes/courseRoutes.js";
-import exerciseRoutes from "./server/routes/exerciseRoutes.js";
-import shopItemRoutes from "./server/routes/shopItemRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import courseRoutes from "./routes/courseRoutes.js";
+import exerciseRoutes from "./routes/exerciseRoutes.js";
+import shopItemRoutes from "./routes/shopItemRoutes.js";
 
 // admin routes
-import adminRoutes from "./server/routes/adminRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 // utils imports
-import genericSearch from "./server/utils/genericSearch.js";
-import searchUsers from "./server/utils/searchUsers.js";
-import searchCourses from "./server/utils/searchCourses.js";
-import searchExercises from "./server/utils/searchExercises.js";
+import genericSearch from "./utils/genericSearch.js";
+import searchUsers from "./utils/searchUsers.js";
+import searchCourses from "./utils/searchCourses.js";
+import searchExercises from "./utils/searchExercises.js";
 
 
 // Environment variables

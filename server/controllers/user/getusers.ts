@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import searchUsers from "../../utils/searchUsers.js";
+import searchUsers from "../../utils/searchUsers";
 
 export const getUsers = async (
   req: Request,
   res: Response,
-): Promise<Response | void> => {
+): Promise<void> => {
   try {
     const pageSize = Number(req.query.page_size) || 10;
     const page = Number(req.query.page) || 1;
@@ -20,7 +20,8 @@ export const getUsers = async (
     } = await searchUsers(search, sort, page, pageSize);
 
     if (!users || users.length === 0) {
-      return res.status(404).json({ message: "No users found" });
+      res.status(404).json({ message: "No users found" });
+      return;
     }
 
     // compress user profile picture strings
@@ -38,7 +39,7 @@ export const getUsers = async (
       userProgress: user.courseBatchesProgress,
     }));
 
-    return res.status(200).json({
+    res.status(200).json({
       message: "Users retrieved successfully",
       users: compressedUsers,
       totalItems,
@@ -46,10 +47,12 @@ export const getUsers = async (
       nextPage,
       previousPage,
     });
+    return;
   } catch (err) {
     console.error(err);
     const message =
       err instanceof Error ? err.message : "An unknown error occurred";
-    return res.status(500).json({ error: message });
+    res.status(500).json({ error: message });
+    return;
   }
 };

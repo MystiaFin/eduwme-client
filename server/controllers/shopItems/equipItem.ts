@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import User from '../../models/User.js';
-import ShopItem from '../../models/ShopItem.js';
-import { equipItemSchema } from '../../validators/shopItem.validators.js';
+import User from '../../models/User';
+import ShopItem from '../../models/ShopItem';
+import { equipItemSchema } from '../../validators/shopItem.validators';
 
-export const equipItem = async (req: Request, res: Response): Promise<void | Response> => {
+export const equipItem = async (req: Request, res: Response): Promise<void> => {
     try {
       const validatedData = equipItemSchema.parse(req.body);
       const { userId, itemId, equip } = validatedData;
@@ -72,9 +72,11 @@ export const equipItem = async (req: Request, res: Response): Promise<void | Res
           details: transformedShopItem
         }
       });
+      return;
     } catch (err) {
       console.error(err);
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
       res.status(500).json({ error: message });
+      return;
     }
 }

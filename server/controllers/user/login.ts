@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User from "../../models/User.ts";
-import { loginSchema } from "../../validators/auth.validators.ts";
+import User from "../../models/User";
+import { loginSchema } from "../../validators/auth.validators";
 
 const JWT_SECRET = process.env.JWT_SECRET || "default_secret";
 const EXPIRATION_TIME = process.env.JWT_EXPIRES_IN || "1d";
@@ -10,7 +10,7 @@ const EXPIRATION_TIME = process.env.JWT_EXPIRES_IN || "1d";
 export const userLogin = async (
   req: Request,
   res: Response,
-): Promise<Response | void> => {
+): Promise<void> => {
   try {
     const { username, password } = loginSchema.parse(req.body);
 

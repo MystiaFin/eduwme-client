@@ -1,22 +1,22 @@
 import { Router } from "express";
 
-import { completeExercise } from "../controllers/courses/completeExercise.js";
+import { completeExercise } from "../controllers/courses/completeExercise";
 
 // course batches
-import { createCourseBatch } from "../controllers/courses/createCourseBatch.js";
-import { getCourseBatches } from "../controllers/courses/getCourseBatches.js";
-import { getCourseBatchById } from "../controllers/courses/getCourseBatchById.js";
-import { updateCourseBatch } from "../controllers/courses/updateCourseBatch.js";
-import { deleteCourseBatch } from "../controllers/courses/deleteCourseBatch.js";
+import { createCourseBatch } from "../controllers/courses/createCourseBatch";
+import { getCourseBatches } from "../controllers/courses/getCourseBatches";
+import { getCourseBatchById } from "../controllers/courses/getCourseBatchById";
+import { updateCourseBatch } from "../controllers/courses/updateCourseBatch";
+import { deleteCourseBatch } from "../controllers/courses/deleteCourseBatch";
 
 // courses
-import { getCourses } from "../controllers/courses/getCourses.js";
-import { getCoursesById } from "../controllers/courses/getCoursesById.js";
-import { createCourse } from "../controllers/courses/createCourse.js";
-import { updateCourse } from "../controllers/courses/updateCourse.js";
-import { deleteCourse } from "../controllers/courses/deleteCourse.js";
+import { getCourses } from "../controllers/courses/getCourses";
+import { getCoursesById } from "../controllers/courses/getCoursesById";
+import { createCourse } from "../controllers/courses/createCourse";
+import { updateCourse } from "../controllers/courses/updateCourse";
+import { deleteCourse } from "../controllers/courses/deleteCourse";
 // middleware
-import { isAdmin, isUser, } from "../middlewares/middleware.js";
+import { isAdmin, isUser, } from "../middlewares/middleware";
 
 const router = Router();
 

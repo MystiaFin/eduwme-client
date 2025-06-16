@@ -1,17 +1,17 @@
 import { Router } from "express";
-import { userRegister } from "../controllers/user/register.js";
-import { userLogin } from "../controllers/user/login.js";
-import { updateProfile } from "../controllers/user/updateprofile.js";
-import { getUserById } from "../controllers/user/getprofile.js";
-import { getUsers } from "../controllers/user/getusers.js";
-import { getMe } from "../controllers/user/getMe.js";
-import { userLogout } from "../controllers/user/logout.js";
+import { userRegister } from "../controllers/user/register";
+import { userLogin } from "../controllers/user/login";
+import { updateProfile } from "../controllers/user/updateprofile";
+import { getUserById } from "../controllers/user/getprofile";
+import { getUsers } from "../controllers/user/getusers";
+import { getMe } from "../controllers/user/getMe";
+import { userLogout } from "../controllers/user/logout";
 
-import { isAdmin, isUser } from "../middlewares/middleware.js";
+import { isAdmin, isUser } from "../middlewares/middleware";
 import rateLimit from "express-rate-limit";
-import { updateStreak } from "../controllers/user/updatestreak.js";
-import { streakInfo } from "../controllers/user/streakInfo.js";
-import { leaderboard } from "../controllers/user/leaderboard.js";
+import { updateStreak } from "../controllers/user/updatestreak";
+import { streakInfo } from "../controllers/user/streakInfo";
+import { leaderboard } from "../controllers/user/leaderboard";
 
 // More strict limiter for authentication
 const authLimiter = rateLimit({

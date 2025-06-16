@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
-import Course from "../../models/Course.js";
-import CourseBatch from "../../models/CourseBatch.js";
-import { courseUpdateSchema } from "../../validators/course.validators.js";
+import Course from "../../models/Course";
+import CourseBatch from "../../models/CourseBatch";
+import { courseUpdateSchema } from "../../validators/course.validators";
 import sharp from "sharp"; // Add this import
 
 export const updateCourse = async (
   req: Request,
   res: Response,
-): Promise<Response | void> => {
+): Promise<void> => {
   try {
     const validatedData = courseUpdateSchema.parse(req.body);
     const { courseBatchId, courseId, title, level, logo } = validatedData;
@@ -63,7 +63,8 @@ export const updateCourse = async (
         }
       } catch (error) {
         console.error("Error processing logo image:", error);
-        return res.status(400).json({ error: "Invalid logo image data" });
+        res.status(400).json({ error: "Invalid logo image data" });
+        return;
       }
     }
 

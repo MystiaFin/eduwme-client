@@ -1,13 +1,14 @@
 import {Request, Response} from 'express';
-import User from '../../models/User.js';
+import User from '../../models/User';
 
-export const updateStreak = async (req: Request, res: Response): Promise<void | Promise<unknown>> => {
+export const updateStreak = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id;
     const user = await User.findById(userId);
     
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
     
     const currentDate = new Date();
@@ -19,12 +20,13 @@ export const updateStreak = async (req: Request, res: Response): Promise<void | 
       user.lastLoginDate = currentDate;
       await user.save();
       
-      return res.json({
+      res.json({
         streak: 1,
         lastLoginDate: user.lastLoginDate,
         currentDate: currentDate,
         streakUpdated: true
       });
+      return;
     }
     
     // If no previous login, set streak to 1
@@ -33,12 +35,13 @@ export const updateStreak = async (req: Request, res: Response): Promise<void | 
       user.lastLoginDate = currentDate;
       await user.save();
       
-      return res.json({
+      res.json({
         streak: 1,
         lastLoginDate: user.lastLoginDate,
         currentDate: currentDate,
         streakUpdated: true
       });
+      return;
     }
     
     // Check if last login was yesterday (streak continues)
@@ -74,14 +77,16 @@ export const updateStreak = async (req: Request, res: Response): Promise<void | 
     
     await user.save();
     
-    return res.json({
+    res.json({
       streak: user.streak,
       lastLoginDate: user.lastLoginDate,
       currentDate: currentDate,
       streakUpdated
     });
+    return;
   } catch (error) {
     console.error('Error updating streak:', error);
-    return res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error' });
+    return;
   }
 }

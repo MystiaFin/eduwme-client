@@ -1,11 +1,10 @@
 import { Request, Response } from "express";
-import CourseBatch from "../../models/CourseBatch.ts";
-import { courseBatchSchema } from "../../validators/course.validators.ts";
+import CourseBatch from "../../models/CourseBatch";
 
 export const getCourseBatchById = async (
   req: Request,
   res: Response,
-): Promise<Response | void> => {
+): Promise<void> => {
   try {
     const { courseBatchId } = req.params;
 

@@ -4,7 +4,7 @@ import CourseBatch from "../../models/CourseBatch";
 export const deleteCourseBatch = async (
   req: Request,
   res: Response,
-): Promise<Response | void> => {
+): Promise<void> => {
   try {
     const { courseBatchId } = req.body;
 

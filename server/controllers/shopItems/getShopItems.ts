@@ -1,5 +1,5 @@
 import {Request, Response} from 'express';
-import ShopItem from '../../models/ShopItem.js';
+import ShopItem from '../../models/ShopItem';
 
 export const getShopItems = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -37,9 +37,11 @@ export const getShopItems = async (req: Request, res: Response): Promise<void> =
         message: 'Shop items retrieved successfully', 
         shopItems: formattedShopItems 
       });
+      return;
     } catch (err) {
       console.error(err);
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
       res.status(500).json({ error: message });
+      return;
     }
 }

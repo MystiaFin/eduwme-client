@@ -1,12 +1,10 @@
 import { Request, Response } from "express";
-import searchCourses from "../../utils/searchCourses.ts";
-import { courseSchema } from "../../validators/course.validators.ts";
-import Course from "../../models/Course.ts";
+import searchCourses from "../../utils/searchCourses";
 
 export const getCourses = async (
   req: Request,
   res: Response,
-): Promise<Response | void> => {
+): Promise<void> => {
   try {
     const pageSize = Number(req.query.page_size) || 10;
     const page = Number(req.query.page) || 1;

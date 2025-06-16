@@ -5,7 +5,6 @@
     "module": "NodeNext",               // Use Node.js's native ES module system
     "moduleResolution": "NodeNext",     // How modules are found, matching the 'module' setting
     "outDir": "./dist-server",          // **Emit JS files** to a separate directory for the server
-    "esModuleInterop": true,            // Allows cleaner imports from CommonJS modules
     "strict": true,                     // Enable strict type-checking
 
     // --- Project References & Build ---
@@ -20,7 +19,7 @@
 
   },
   // **Include your backend source files**
-  "include": ["api.ts", "middleware.ts","models/**/*.ts", "validators/**/*.ts", "server/**/*.ts"],
+  "include": ["server/api.ts", "middleware.ts","models/**/*.ts", "validators/**/*.ts", "server/**/*.ts"],
   // Exclude node_modules and frontend source
   "exclude": ["node_modules", "src", "dist"]
 }

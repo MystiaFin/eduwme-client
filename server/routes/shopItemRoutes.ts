@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { purchaseItem } from "../controllers/shopItems/purchaseItem.js";
-import { getUserInventory } from "../controllers/shopItems/getUserInventory.js";
-import { getShopItems } from "../controllers/shopItems/getShopItems.js";
-import { equipItem } from "../controllers/shopItems/equipItem.js";
-import { isAdmin, isUser } from "../middlewares/middleware.js";
-import { createShopItem } from "../controllers/shopItems/createShopItem.js";
+import { purchaseItem } from "../controllers/shopItems/purchaseItem";
+import { getUserInventory } from "../controllers/shopItems/getUserInventory";
+import { getShopItems } from "../controllers/shopItems/getShopItems";
+import { equipItem } from "../controllers/shopItems/equipItem";
+import { isAdmin, isUser } from "../middlewares/middleware";
+import { createShopItem } from "../controllers/shopItems/createShopItem";
 
 const router = Router();
 

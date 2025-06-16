@@ -5,7 +5,7 @@ import CourseBatch from "../../models/CourseBatch";
 export const deleteCourse = async (
   req: Request,
   res: Response,
-): Promise<Response | void> => {
+): Promise<void> => {
   try {
     const { courseId, courseBatchId } = req.body;
 
@@ -36,7 +36,7 @@ export const deleteCourse = async (
 
     // delete courseId from courseList in courseBatch
     existingCourseBatch.courseList = existingCourseBatch.courseList.filter(
-      (course) => course !== courseId,
+      (course: unknown) => course !== courseId,
     );
     if (existingCourseBatch.coursesLength > 0) {
       existingCourseBatch.coursesLength -= 1;

@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import User from '../../models/User.js';
-import ShopItem from '../../models/ShopItem.js';
+import User from '../../models/User';
+import ShopItem from '../../models/ShopItem';
 
-export const getUserInventory = async (req: Request, res: Response): Promise<Response | void> => {
+export const getUserInventory = async (req: Request, res: Response): Promise<void> => {
     try {
       const { userId } = req.params;
       
@@ -62,9 +62,11 @@ export const getUserInventory = async (req: Request, res: Response): Promise<Res
         message: 'User inventory retrieved successfully',
         inventory: inventoryDetails
       });
+      return;
     } catch (err) {
       console.error(err);
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
       res.status(500).json({ error: message });
+      return;
     }
 }

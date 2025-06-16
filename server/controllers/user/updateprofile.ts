@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
-import User from "../../models/User.ts";
-import { profileSchema } from "../../validators/profile.validators.ts";
+import User from "../../models/User";
+import { profileSchema } from "../../validators/profile.validators";
 import sharp from "sharp"; // Add this import
 
 export const updateProfile = async (
   req: Request,
   res: Response,
-): Promise<Response | void> => {
+): Promise<void> => {
   try {
     // validate request body with zod
     const validatedData = profileSchema.parse(req.body);
@@ -15,7 +15,8 @@ export const updateProfile = async (
     // find user
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      res.status(404).json({ message: "User not found" });
+      return;
     }
 
     // update user profile
@@ -49,14 +50,15 @@ export const updateProfile = async (
         }
       } catch (error) {
         console.error("Error processing image:", error);
-        return res.status(400).json({ error: "Invalid image data" });
+        res.status(400).json({ error: "Invalid image data" });
+        return;
       }
     }
     
     user.dateUpdated = new Date();
     await user.save();
-
-    return res
+    
+    res
       .status(200)
       .json({ 
         message: "Profile updated successfully", 
@@ -67,10 +69,12 @@ export const updateProfile = async (
             null
         }
       });
+      return;
   } catch (err) {
     console.error(err);
     const message =
       err instanceof Error ? err.message : "An unknown error occurred";
-    return res.status(500).json({ error: message });
+    res.status(500).json({ error: message });
+    return;
   }
 };

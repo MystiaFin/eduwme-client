@@ -1,10 +1,10 @@
-import Exercise from "../../models/Exercise.ts";
+import Exercise from "../../models/Exercise";
 import { Request, Response } from "express";
 
 export const getExerciseById = async (
   req: Request,
   res: Response,
-): Promise<Response | void> => {
+): Promise<void> => {
   try {
     const { exerciseId } = req.params;
     // basic validation

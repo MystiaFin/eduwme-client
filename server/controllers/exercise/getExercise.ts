@@ -1,10 +1,10 @@
-import searchExercises from "../../utils/searchExercises.ts";
+import {searchExercises} from "../../utils/searchExercises";
 import { Request, Response } from "express";
 
 export const getExercise = async (
   req: Request,
   res: Response,
-): Promise<Response | void> => {
+): Promise<void> => {
   try {
     const pageSize = Number(req.query.page_size) || 10;
     const page = Number(req.query.page) || 1;

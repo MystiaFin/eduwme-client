@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import User from "../../models/User.js";
+import User from "../../models/User";
 
 export const leaderboard = async (
   req: Request,
   res: Response
-): Promise<Response | void> => {
+): Promise<void> => {
   try {
     // Get the top users by XP
     const users = await User.find({})
@@ -28,17 +28,19 @@ export const leaderboard = async (
           ? `data:${userObj.profilePicture.contentType};base64,${userObj.profilePicture.data.toString('base64')}`
           : null
       };
-      
+
       return transformedUser;
     });
 
-    return res.status(200).json({
+    res.status(200).json({
       message: "Leaderboard retrieved successfully",
       leaderboard
     });
+    return;
   } catch (err) {
     console.error(err);
     const message = err instanceof Error ? err.message : "An unknown error occurred";
-    return res.status(500).json({ error: message });
+    res.status(500).json({ error: message });
+    return;
   }
 };

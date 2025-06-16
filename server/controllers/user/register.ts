@@ -1,14 +1,12 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import User from "../../models/User.ts";
-import { z } from "zod";
-import { registerSchema } from "../../validators/auth.validators.ts";
+import User from "../../models/User";
+import { registerSchema } from "../../validators/auth.validators";
 
 export const userRegister = async (
   req: Request,
   res: Response,
-): Promise<Response | void> => {
+): Promise<void> => {
   try {
     // validate request body with zod
     const validatedData = registerSchema.parse(req.body);

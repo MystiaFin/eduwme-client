@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import { createShopItemSchema } from '../../validators/shopItem.validators.js';
-import ShopItem from '../../models/ShopItem.js';
+import { createShopItemSchema } from '../../validators/shopItem.validators';
+import ShopItem from '../../models/ShopItem';
 import sharp from 'sharp';
 
-export const createShopItem = async (req: Request, res: Response): Promise<Response | void> => {
+export const createShopItem = async (req: Request, res: Response): Promise<void> => {
     try {
       const validatedData = createShopItemSchema.parse(req.body);
       const { itemId, name, description, imageUrl, price, category, isAvailable } = validatedData;
@@ -16,7 +16,7 @@ export const createShopItem = async (req: Request, res: Response): Promise<Respo
       }
       
       // Process image if provided
-      let imageData = null;
+      let imageData: { data: Buffer; contentType: string } | null = null;
       if (imageUrl) {
         try {
           // Extract the base64 data and content type
@@ -43,7 +43,9 @@ export const createShopItem = async (req: Request, res: Response): Promise<Respo
           }
         } catch (error) {
           console.error("Error processing image:", error);
-          return res.status(400).json({ error: "Invalid image data" });
+
+          res.status(400).json({ error: "Invalid image data" });
+          return; 
         }
       }
       
@@ -75,9 +77,11 @@ export const createShopItem = async (req: Request, res: Response): Promise<Respo
 
 
       res.status(201).json({ message: 'Shop item created successfully', shopItem: transformedShopItem });
+      return;
     } catch (err) {
       console.error(err);
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
       res.status(500).json({ error: message });
+      return;
     }
 }

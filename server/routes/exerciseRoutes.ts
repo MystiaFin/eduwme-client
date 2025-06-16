@@ -1,12 +1,12 @@
 import { Router } from "express";
 
-import { createExercise } from "../controllers/exercise/createExercise.ts";
-import { getExerciseById } from "../controllers/exercise/getExerciseById.ts";
-import { getExercise } from "../controllers/exercise/getExercise.ts";
-import { updateExercise } from "../controllers/exercise/updateExercise.ts";
-import { deleteExercise } from "../controllers/exercise/deleteExercise.ts";
+import { createExercise } from "../controllers/exercise/createExercise";
+import { getExerciseById } from "../controllers/exercise/getExerciseById";
+import { getExercise } from "../controllers/exercise/getExercise";
+import { updateExercise } from "../controllers/exercise/updateExercise";
+import { deleteExercise } from "../controllers/exercise/deleteExercise";
 
-import { isAdmin, isUser, verifyTokenMiddleware } from "../middlewares/middleware.ts";
+import { isAdmin, isUser } from "../middlewares/middleware";
 
 const router = Router();
 
