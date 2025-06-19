@@ -126,6 +126,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     // After successful login, fetch the user data
     const userResponse = await fetch(`${API_BASE_URL}/users/getme`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
         credentials: "include",
       });
       
