@@ -47,7 +47,6 @@ EduWMe is a modern, interactive e-learning platform designed to provide a gamifi
 ```
 .
 ├── .env.example            # Example environment variables
-├── api.ts                  # Backend API entry point
 ├── package.json            # Project dependencies and scripts
 ├── README.md               # This file
 ├── tailwind.config.js      # Tailwind CSS configuration
@@ -61,7 +60,8 @@ EduWMe is a modern, interactive e-learning platform designed to provide a gamifi
 │   ├── models/             # Mongoose models for MongoDB
 │   ├── routes/             # API route definitions
 │   ├── utils/              # Utility functions, including seeding script
-│   └── validators/         # Zod schemas for backend request validation
+│   ├── validators/         # Zod schemas for backend request validation
+|   └── api.ts              # Backend API entry point
 ├── src/                    # Frontend source code (React application)
 │   ├── App.tsx             # Main application component
 │   ├── main.tsx            # Frontend entry point
