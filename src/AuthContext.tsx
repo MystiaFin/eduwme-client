@@ -57,7 +57,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const API_BASE_URL =
     import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-  // ...existing code...
   const fetchUser = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/users/getme`, {
@@ -134,7 +133,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(userData);
         setIsAuthenticated(true);
         return true;
-      } else {
+      } 
+      else {
         throw new Error("Failed to get user data after login");
       }
     } catch (error) {
