@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,8 @@ const Register = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState("");
+  const [passwordVisibility, setPasswordVisibility] = useState(false);
+  const [confirmPasswordVisibility, setConfirmPasswordVisibility] = useState(false);
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -44,6 +47,15 @@ const Register = () => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setPasswordVisibility(!passwordVisibility);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setConfirmPasswordVisibility(!confirmPasswordVisibility);
+  };
+
+  
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -162,51 +174,75 @@ const Register = () => {
         )}
       </div>
 
-      <div className="w-full max-w-sm">
-        <label htmlFor="password" className="sr-only">
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          required
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          className={`${inputBaseClass} ${
-            errors.password ? inputErrorBorderClass : inputNormalBorderClass
-          }`}
-        />
-        {errors.password && (
-          <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+      <div className="w-full max-w-sm relative">
+      <label htmlFor="password" className="sr-only">
+        Password
+      </label>
+      <input
+        id="password"
+        name="password"
+        type={passwordVisibility ? "text" : "password"}
+        autoComplete="new-password"
+        required
+        placeholder="Password"
+        value={formData.password}
+        onChange={handleChange}
+        className={`${inputBaseClass} ${
+          errors.password ? inputErrorBorderClass : inputNormalBorderClass
+        }`}
+      />
+      <button
+        type="button"
+        onClick={togglePasswordVisibility}
+        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 focus:outline-none"
+        aria-label={passwordVisibility ? "Hide password" : "Show password"}
+      >
+        {passwordVisibility ? (
+          <FaEyeSlash className="w-5 h-5" />
+        ) : (
+          <FaEye className="w-5 h-5" />
         )}
-      </div>
+      </button>
+      {errors.password && (
+        <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+      )}
+    </div>
 
-      <div className="w-full max-w-sm">
-        <label htmlFor="confirmPassword" className="sr-only">
-          Confirm Password
-        </label>
-        <input
-          id="confirmPassword"
-          name="confirmPassword"
-          type="password"
-          autoComplete="new-password"
-          required
-          placeholder="Confirm Password"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          className={`${inputBaseClass} ${
-            errors.confirmPassword
-              ? inputErrorBorderClass
-              : inputNormalBorderClass
-          }`}
-        />
-        {errors.confirmPassword && (
-          <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+    <div className="w-full max-w-sm relative">
+      <label htmlFor="confirmPassword" className="sr-only">
+        Confirm Password
+      </label>
+      <input
+        id="confirmPassword"
+        name="confirmPassword"
+        type={confirmPasswordVisibility ? "text" : "password"}
+        autoComplete="new-password"
+        required
+        placeholder="Confirm Password"
+        value={formData.confirmPassword}
+        onChange={handleChange}
+        className={`${inputBaseClass} ${
+          errors.confirmPassword
+            ? inputErrorBorderClass
+            : inputNormalBorderClass
+        }`}
+      />
+      <button
+        type="button"
+        onClick={toggleConfirmPasswordVisibility}
+        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 focus:outline-none"
+        aria-label={confirmPasswordVisibility ? "Hide password" : "Show password"}
+      >
+        {confirmPasswordVisibility ? (
+          <FaEyeSlash className="w-5 h-5" />
+        ) : (
+          <FaEye className="w-5 h-5" />
         )}
-      </div>
+      </button>
+      {errors.confirmPassword && (
+        <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+      )}
+    </div>
 
       {submitError && (
         <div className="p-2 text-sm md:text-base bg-red-100 text-red-700 rounded-md w-full max-w-sm">

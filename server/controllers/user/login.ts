@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import User from "../../models/User";
 import { loginSchema } from "../../validators/auth.validators";
 
@@ -29,14 +29,14 @@ export const userLogin = async (
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
       JWT_SECRET,
-      { expiresIn: EXPIRATION_TIME },
+      { expiresIn: EXPIRATION_TIME } as SignOptions,
     );
 
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
     });
-    res.status(200).json({ message: "Login successful", token });
+    res.status(200).json({ message: "Login successful", token});
   } catch (err) {
     console.error(err);
     const message =
