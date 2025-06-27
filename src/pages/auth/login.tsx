@@ -13,8 +13,6 @@ const Login = () => {
 
   const { login } = useAuth();
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -69,22 +67,7 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/users/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(formData),
-      });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
-      }
-
-      // Then update auth context with the login info
       await login(formData.username, formData.password);
 
       const from = location.state?.from?.pathname || "/home";

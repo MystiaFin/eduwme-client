@@ -206,7 +206,7 @@ const Register = () => {
       {errors.password && (
         <p className="mt-1 text-sm text-red-600">{errors.password}</p>
       )}
-    </div>
+      </div>
 
     <div className="w-full max-w-sm relative">
       <label htmlFor="confirmPassword" className="sr-only">
