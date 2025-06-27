@@ -67,7 +67,6 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-
       await login(formData.username, formData.password);
 
       const from = location.state?.from?.pathname || "/home";

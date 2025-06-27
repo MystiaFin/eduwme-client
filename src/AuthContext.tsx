@@ -53,6 +53,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
   // Fixed: Use import.meta.env for Vite
   const API_BASE_URL =
     import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -85,11 +89,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
 
    const logout = async () => {
     try {
