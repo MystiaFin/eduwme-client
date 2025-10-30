@@ -50,7 +50,6 @@ createRoot(document.getElementById("root")!).render(
                 </RequireAuth>
               }>
                 <Route path="/home" element={<HomePage />} />
-                <Route path="/dashboard" element={<HomePage />} />
                 <Route path="/leaderboard" element={<LeaderboardPage />} />
                 <Route path="/shop" element={<ShopPage />} />
                 <Route path="/profile/:userId" element={<ProfilePage />} />
